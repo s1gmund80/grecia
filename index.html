@@ -1,0 +1,1932 @@
+<!DOCTYPE html>
+<!-- Ultima modifica: 6 agosto 2026 — v12.8 universale (Cowork + claude.ai): fix date fuso orario,
+     sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
+     Storico versioni:
+     v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
+     v12.2: aggiunta Masseria Appia Traiana come prima opzione (preferita) per la notte del 3 agosto.
+     v12.3: CONFERMATA Masseria Appia Traiana come sosta notturna del 3 agosto (notteId impostato, Getsemani archiviata come non scelta).
+     v12.4: aggiunto campo mapsLink (Apple Maps) accanto al link sito per soste/tappe, a partire da Masseria Appia Traiana.
+     v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
+     v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
+     v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v12.8 (6 agosto): piano riallineato alla realta' del viaggio. Notti 5-6 ago al Camping Acrogiali (Riza, Preveza)
+     invece del previsto Monolithi/Panorama; aggiunte tappe Necromanteion e Sorgenti dell'Acheronte (pomeriggio 5 ago);
+     completata NOTION_PAGE_ID con le 7 voci che mancavano (Puglia + Acrogiali/Acheronte).
+     Aggiornato costo reale della notte a Masseria Appia Traiana: 30€ (2 adulti) + 6€ (bambini) + 5€ (corrente) = 41€/giorno.
+     Deve coincidere con la riga "Versione" nel footer della pagina. -->
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grecia 2026 — Calendario di viaggio</title>
+<style>
+  :root{
+    color-scheme: light;
+    --deep:#0B2A38;
+    --deep-2:#123B4C;
+    --deep-3:#18485C;
+    --white:#F7F5EF;
+    --white-dim:#EDEADF;
+    --ink:#132226;
+    --ink-soft:#4B5D61;
+    --gold:#D2A84A;
+    --gold-soft:#E9C77A;
+    --olive:#7C8B5B;
+    --coral:#C1665A;
+    --line-dark: rgba(247,245,239,0.14);
+    --line-light: rgba(19,34,38,0.12);
+    --radius: 14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background: radial-gradient(ellipse at top, #103244 0%, var(--deep) 55%, #081c26 100%);
+    color:var(--white);
+    font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+  ::selection{background:var(--gold-soft); color:var(--ink);}
+
+  /* ---------- Header / boarding pass ---------- */
+  header.trip{
+    max-width:1180px; margin:0 auto; padding: 34px 24px 10px;
+  }
+  .ticket{
+    background: linear-gradient(120deg, var(--deep-2), var(--deep-3));
+    border:1px solid var(--line-dark);
+    border-radius: 18px;
+    padding: 22px 28px;
+    display:flex; align-items:center; justify-content:space-between; gap:20px;
+    flex-wrap:wrap;
+    position:relative;
+    overflow:hidden;
+  }
+  .ticket::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image: repeating-linear-gradient(100deg, transparent 0 40px, rgba(255,255,255,0.035) 40px 41px);
+    pointer-events:none;
+  }
+  .ticket .route{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;}
+  .eyebrow{
+    font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--gold-soft); font-weight:600;
+  }
+  h1{
+    font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; font-weight:600; font-size: clamp(28px,4vw,42px);
+    margin:4px 0 2px; letter-spacing:-.01em;
+  }
+  .route-line{
+    font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; font-size:16px; color:var(--white); opacity:.85;
+    display:flex; align-items:center; gap:10px; margin-top:6px;
+  }
+  .route-line .dash{ flex:0 0 auto; width:34px; border-top:1px dashed rgba(247,245,239,.4);}
+  .ferry-meta{
+    display:flex; gap:26px; flex-wrap:wrap;
+  }
+  .ferry-meta .stat{ text-align:right; }
+  .ferry-meta .stat .n{ font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; font-size:22px; color:var(--gold-soft); }
+  .ferry-meta .stat .l{ font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:rgba(247,245,239,.6); }
+
+  /* ---------- Controls ---------- */
+  .sliderbar-end{ font-size:10px; color:rgba(247,245,239,.35); font-weight:600; flex:0 0 auto; }
+  input.dateslider{
+    flex:1; -webkit-appearance:none; appearance:none; height:4px; border-radius:999px;
+    background:linear-gradient(90deg, var(--gold) 0%, var(--gold) var(--pct,0%), rgba(19,34,38,.12) var(--pct,0%));
+    outline:none; cursor:pointer; margin:0;
+  }
+  input.dateslider::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none; width:15px; height:15px; border-radius:50%;
+    background:var(--gold); border:2px solid var(--deep); cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,.25);
+  }
+  input.dateslider::-moz-range-thumb{
+    width:15px; height:15px; border-radius:50%; background:var(--gold); border:2px solid var(--deep); cursor:pointer;
+  }
+  input.dateslider::-moz-range-track{ height:4px; border-radius:999px; background:rgba(19,34,38,.12); }
+  .dateslider-label{
+    font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; font-size:12px; font-weight:600; color:var(--deep);
+    min-width:44px; text-align:right; flex:0 0 auto;
+  }
+
+  .controls{
+    max-width:1180px; margin:18px auto 0; padding:0 24px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  }
+  .seg{
+    display:inline-flex; background:rgba(255,255,255,.06); border:1px solid var(--line-dark); border-radius:999px; padding:3px;
+  }
+  .seg button{
+    border:none; background:transparent; color:rgba(247,245,239,.7); font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-weight:600; font-size:13px;
+    padding:8px 18px; border-radius:999px; cursor:pointer; transition:.15s;
+  }
+  .seg button.active{ background:var(--gold); color:var(--ink); }
+  .btn{
+    border:1px solid var(--line-dark); background:rgba(255,255,255,.05); color:var(--white);
+    font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-weight:600; font-size:13px; padding:9px 16px; border-radius:10px; cursor:pointer; transition:.15s;
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  .btn:hover{ background:rgba(255,255,255,.11); }
+  .btn.gold{ background:var(--gold); color:var(--ink); border-color:var(--gold); }
+  .btn.gold:hover{ background:var(--gold-soft); }
+  .autosave-toggle{
+    display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+    font-size:13px; font-weight:600; color:rgba(247,245,239,.85);
+    padding:8px 14px; border-radius:10px; border:1px solid rgba(233,199,122,.35);
+    background:rgba(233,199,122,.08); user-select:none;
+  }
+  .autosave-toggle input{ accent-color:var(--gold); width:15px; height:15px; margin:0; cursor:pointer; }
+  .autosave-dot{ font-size:11px; opacity:.85; min-width:0; white-space:nowrap; }
+  .notion-sync-status{
+    display:none; max-width:1180px; margin:10px auto 0; padding:0 24px; cursor:pointer;
+  }
+  .notion-sync-status span{
+    display:inline-block; background:rgba(210,168,74,.14); border:1px solid rgba(210,168,74,.35); color:var(--gold-soft);
+    font-size:12.5px; font-weight:600; padding:9px 14px; border-radius:10px; max-width:100%; word-break:break-word;
+  }
+
+  /* ---------- Legend ---------- */
+  .legend{ display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:rgba(247,245,239,.65); }
+  .legend span{ display:inline-flex; align-items:center; gap:6px; }
+  .dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+
+  main{ max-width:1180px; margin:22px auto; padding:0 24px; }
+
+  /* ---------- Week view ---------- */
+  .week-block{ margin-bottom:26px; }
+  .week-label{
+    font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; font-size:14px; color:var(--gold-soft); letter-spacing:.04em;
+    margin:0 0 10px 4px; text-transform:uppercase; font-weight:600;
+  }
+  .grid{
+    display:grid; grid-template-columns:repeat(7,1fr); gap:10px;
+  }
+  .daynames{ display:grid; grid-template-columns:repeat(7,1fr); gap:10px; margin-bottom:8px;}
+  .daynames div{ font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:rgba(247,245,239,.45); text-align:center;}
+
+  .cell{
+    background:var(--white); color:var(--ink); border-radius:var(--radius);
+    min-height:132px; padding:10px 10px 8px; cursor:pointer; position:relative;
+    border:1px solid rgba(19,34,38,.06);
+    display:flex; flex-direction:column; gap:6px;
+    transition:.15s transform, .15s box-shadow;
+  }
+  .cell:hover{ transform:translateY(-2px); box-shadow:0 10px 22px rgba(0,0,0,.25); }
+  .cell.empty{ background:transparent; border:1px dashed rgba(247,245,239,.12); cursor:default; }
+  .cell.empty:hover{ transform:none; box-shadow:none; }
+  .cell .datehead{ display:flex; align-items:baseline; justify-content:space-between;}
+  .cell .daynum{ font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; font-size:20px; font-weight:600; }
+  .cell .daytag{ font-size:9px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.06em;}
+  .cell .base{
+    font-size:12.5px; font-weight:600; color:var(--deep); line-height:1.25;
+    border-top:1px dashed var(--line-light); padding-top:6px;
+  }
+  .cell .chips{ display:flex; flex-wrap:wrap; gap:4px; margin-top:auto; }
+  .chip{
+    font-size:10px; font-weight:600; padding:3px 7px; border-radius:999px; color:#fff; white-space:nowrap;
+    max-width:100%; overflow:hidden; text-overflow:ellipsis;
+  }
+  .chip.mare{ background:#2E7FA0; }
+  .chip.storico{ background:var(--gold); color:var(--ink); }
+  .chip.natura{ background:var(--olive); }
+  .chip.borgo{ background:var(--coral); }
+  .chip.porto{ background:#6B7A80; }
+  .chip.notte{ background:var(--deep); color:var(--gold-soft); }
+
+  /* ---------- Day view ---------- */
+  .day-card{
+    background:var(--white); color:var(--ink); border-radius:18px; padding:18px 20px; margin-bottom:14px;
+    display:grid; grid-template-columns:56px 1fr; gap:14px;
+  }
+  .day-card .dcol{ border-right:1px dashed var(--line-light); padding-right:10px; text-align:left;}
+  .day-card .dcol .dow{ font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); }
+  .day-card .dcol .dnum{ font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; font-size:26px; font-weight:600; line-height:1;}
+  .day-card .dcol .dtag{ margin-top:6px; font-size:9.5px; color:var(--gold); background:rgba(210,168,74,.15); display:inline-block; padding:2px 6px; border-radius:999px; font-weight:700;}
+  .field-label{ font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); margin-bottom:4px; font-weight:700;}
+  .base-input{
+    width:100%; font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; font-size:17px; font-weight:600; color:var(--deep);
+    border:none; border-bottom:1px solid var(--line-light); padding:4px 2px 8px; background:transparent;
+  }
+  .base-input:focus{ outline:none; border-color:var(--gold); }
+  .note-input{
+    width:100%; font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; color:var(--ink); line-height:1.55;
+    border:none; background:transparent; resize:vertical; min-height:80px; padding:6px 2px;
+  }
+  .note-input:focus{ outline:none; }
+  .period-block{ margin-top:10px; }
+  .period-label{
+    display:flex; align-items:center; gap:6px; font-size:10.5px; text-transform:uppercase;
+    letter-spacing:.07em; font-weight:700; color:var(--ink-soft); margin-bottom:3px;
+  }
+  .period-label .pdot{ width:7px; height:7px; border-radius:50%; flex:0 0 auto; }
+  .period-input{
+    width:100%; font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13.5px; color:var(--ink); line-height:1.5;
+    border:none; border-left:2px solid var(--line-light); background:transparent;
+    resize:vertical; min-height:52px; padding:2px 0 4px 10px;
+  }
+  .period-input:focus{ outline:none; }
+  .period-block.mattina .period-input:focus{ border-left-color:var(--gold); }
+  .period-block.pomeriggio .period-input:focus{ border-left-color:var(--coral); }
+  .period-block.sera .period-input:focus{ border-left-color:var(--deep); }
+  .row-flex{ display:flex; gap:22px; margin-top:6px; flex-wrap:wrap; }
+  .row-flex > div{ flex:1; min-width:200px; }
+  .tappe-row{ margin-top:12px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .tappa-chip-lg{
+    display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:#fff;
+    padding:6px 8px 6px 10px; border-radius:10px; cursor:pointer;
+  }
+  .tappa-chip-lg .x{ opacity:.7; font-size:14px; }
+  .tappa-chip-lg .x:hover{ opacity:1; }
+  .tappa-chip-lg.notte{ background:var(--deep); color:var(--gold-soft); }
+  .add-chip{
+    border:1.5px dashed var(--line-light); color:var(--ink-soft); background:transparent;
+    font-size:12.5px; font-weight:600; padding:6px 12px; border-radius:10px; cursor:pointer;
+  }
+  .add-chip:hover{ border-color:var(--gold); color:var(--deep); }
+  .quickadd{ display:flex; flex-direction:column; gap:8px; margin-top:6px; }
+  .qa-input{
+    width:100%; padding:9px 12px; border-radius:10px; border:1px solid var(--line-light);
+    font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13.5px; resize:vertical; min-height:auto;
+  }
+  textarea.qa-input{ min-height:56px; }
+
+  /* ---------- Modal ---------- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(6,18,24,.7); backdrop-filter:blur(2px);
+    display:none; align-items:flex-start; justify-content:center; padding:40px 16px; z-index:50; overflow-y:auto;
+    overscroll-behavior:contain;
+  }
+  #overlayDay{ z-index:40; }
+  #overlayLib{ z-index:55; }
+  #overlayDetail{ z-index:60; }
+  .overlay.show{ display:flex; }
+  .modal{
+    background:var(--white); color:var(--ink); border-radius:18px; max-width:640px; width:100%;
+    padding:26px 26px 22px; position:relative; margin-bottom:40px;
+  }
+  .modal .close{
+    position:absolute; top:16px; right:16px; border:none; background:rgba(19,34,38,.06); width:30px; height:30px;
+    border-radius:50%; cursor:pointer; font-size:16px; color:var(--ink-soft);
+  }
+  .lib-search{
+    width:100%; padding:10px 14px; border-radius:10px; border:1px solid var(--line-light); font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; margin-bottom:14px;
+  }
+  .modal.daymodal{
+    display:flex; flex-direction:column;
+    height:88vh; max-height:88vh;
+    padding:52px 22px 16px;
+  }
+  .dm-topbar{
+    flex:0 0 auto; display:flex; align-items:center; justify-content:center; gap:16px;
+    padding-bottom:10px;
+  }
+  .dm-title{ text-align:center; min-width:96px; }
+  .dm-dow{ font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); font-weight:700; }
+  .dm-dnum{ font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; font-size:23px; font-weight:600; color:var(--deep); line-height:1.2; }
+  .dm-month{ font-size:13px; font-weight:400; color:var(--ink-soft); }
+  .dm-slider{
+    flex:0 0 auto; display:flex; align-items:center; gap:8px;
+    padding-bottom:14px; margin-bottom:8px; border-bottom:1px dashed var(--line-light);
+  }
+  #dayModalContent.dm-body-scroll{
+    flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
+  }
+  .daynav-btn{
+    flex:0 0 auto; width:30px; height:30px; border:none; background:rgba(19,34,38,.06); border-radius:9px;
+    font-size:17px; color:var(--ink-soft); cursor:pointer;
+  }
+  .daynav-btn:hover:not(:disabled){ background:rgba(19,34,38,.12); color:var(--deep); }
+  .daynav-btn:disabled{ opacity:.25; cursor:default; }
+  .lib-group-title{
+    font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); font-weight:700; margin:16px 0 8px;
+  }
+  .lib-list{ display:flex; flex-direction:column; gap:6px; }
+  .lib-item{
+    display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:10px; cursor:pointer; border:1px solid transparent;
+  }
+  .lib-item:hover{ background:var(--white-dim); border-color:var(--line-light); }
+  .lib-item .icn{ font-size:18px; width:24px; text-align:center;}
+  .lib-item .tt{ font-weight:600; font-size:13.5px; flex:1; }
+  .lib-item .info-btn{ font-size:11px; color:var(--ink-soft); text-decoration:underline; cursor:pointer; }
+
+  .detail-body h2{ font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; font-size:24px; margin:0 0 2px; }
+  .detail-tags{ display:flex; gap:6px; margin:6px 0 14px; flex-wrap:wrap;}
+  .detail-body h3{ font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); margin:16px 0 6px; }
+  .detail-body p, .detail-body li{ font-size:14px; line-height:1.6; color:var(--ink); }
+  .detail-body ul{ margin:0; padding-left:18px; }
+  .detail-body a{ color:#2E7FA0; }
+  .detail-body .campeggio-box{
+    background:var(--white-dim); border-radius:10px; padding:10px 14px; font-size:13.5px; margin-top:6px;
+  }
+  .extra-note{ font-size:12.5px; color:var(--ink-soft); font-style:italic; margin-top:14px; }
+
+  footer{ max-width:1180px; margin:30px auto 0; padding:0 24px 10px; font-size:12px; color:rgba(247,245,239,.4); text-align:center; }
+
+  .cell .daydow{ display:none; }
+
+  @media (max-width:640px){
+    .modal.daymodal{ height:92vh; max-height:92vh; padding-top:48px; overflow-y:hidden; }
+    .daynav-btn{ width:34px; height:34px; font-size:18px; }
+    .dm-dnum{ font-size:20px; }
+
+    header.trip{ padding:20px 14px 6px; }
+    .ticket{ padding:16px 16px; flex-direction:column; align-items:flex-start; gap:14px; }
+    .ferry-meta{ gap:20px; width:100%; }
+    .ferry-meta .stat{ text-align:left; }
+    .route-line{ font-size:13.5px; flex-wrap:wrap; }
+
+    .controls{ padding:0 14px; flex-direction:column; align-items:stretch; gap:12px; }
+    .controls > div{ justify-content:space-between; }
+    .seg{ width:100%; }
+    .seg button{ flex:1; padding:10px 8px; font-size:12.5px; }
+    .btn{ padding:11px 14px; font-size:12.5px; }
+    .legend{ font-size:10.5px; gap:8px 10px; }
+
+    main{ padding:0 14px; margin:16px auto; }
+    .week-label{ font-size:12.5px; }
+
+    /* Week view becomes a compact single-column agenda on phones */
+    .daynames{ display:none; }
+    .grid{ grid-template-columns:1fr; gap:8px; }
+    .cell{
+      flex-direction:row; align-items:center; min-height:auto; padding:12px 14px; gap:12px;
+      border-radius:12px;
+    }
+    .cell .datehead{ flex-direction:column; align-items:flex-start; gap:1px; min-width:38px; flex:0 0 auto; }
+    .cell .daynum{ font-size:19px; line-height:1; }
+    .cell .daytag{ font-size:9px; }
+    .cell .daydow{ display:block; font-size:9px; font-weight:700; color:var(--ink-soft); letter-spacing:.06em; }
+    .cell .base{
+      border-top:none; border-left:1px dashed var(--line-light);
+      padding-top:0; padding-left:12px; margin:0; flex:1; font-size:12.5px;
+    }
+    .cell .chips{ margin-top:0; flex-direction:column; align-items:flex-end; gap:4px; flex:0 0 auto; max-width:96px; }
+    .cell .chips .chip{ max-width:96px; }
+
+    .day-card{ grid-template-columns:1fr; padding:16px 16px; border-radius:14px; }
+    .day-card .dcol{ border-right:none; border-bottom:1px dashed var(--line-light); padding-right:0; padding-bottom:10px; margin-bottom:12px;
+      display:flex; align-items:baseline; gap:10px; }
+    .day-card .dcol .dnum{ font-size:26px; }
+
+    /* Inputs: 16px min font-size prevents iOS auto-zoom on focus */
+    .base-input{ font-size:16px; }
+    .note-input{ font-size:15px; }
+    .period-input{ font-size:15px; min-height:44px; }
+    .lib-search{ font-size:16px; }
+
+    /* Bottom-sheet style modals */
+    .overlay{ align-items:flex-end; padding:0; }
+    .modal{ border-radius:20px 20px 0 0; max-height:88vh; overflow-y:auto; margin-bottom:0; padding:20px 16px 28px; width:100%; }
+    .modal .close{ top:12px; right:12px; width:36px; height:36px; font-size:18px; }
+
+    .tappa-chip-lg{ padding:9px 10px 9px 12px; font-size:13px; }
+    .tappa-chip-lg .x{ padding:4px; font-size:16px; }
+    .add-chip{ padding:9px 14px; font-size:13px; }
+    .lib-item{ padding:12px 10px; }
+    .lib-item .info-btn{ font-size:12px; padding:4px 2px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="trip">
+  <div class="ticket">
+    <div class="route">
+      <div>
+        <div class="eyebrow">Viaggio in roulotte · 3–23 agosto 2026</div>
+        <h1>🇬🇷 Grecia</h1>
+        <div class="route-line">Roma → Brindisi 3 ago <span class="dash"></span> ⛴ 4 ago 13:00 → 22:00 <span class="dash"></span> Igoumenitsa &nbsp;·&nbsp; rientro 22 ago 14:00 → 21:00 + 23 ago viaggio verso Roma</div>
+      </div>
+    </div>
+    <div class="ferry-meta">
+      <div class="stat"><div class="n">18</div><div class="l">notti in Grecia</div></div>
+      <div class="stat"><div class="n">21</div><div class="l">giorni di piano</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="seg">
+    <button id="btnWeek" class="active">Vista settimana</button>
+    <button id="btnDay">Vista giorno</button>
+  </div>
+  <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+    <div class="legend">
+      <span><i class="dot" style="background:#2E7FA0"></i>Mare</span>
+      <span><i class="dot" style="background:var(--gold)"></i>Storico</span>
+      <span><i class="dot" style="background:var(--olive)"></i>Natura</span>
+      <span><i class="dot" style="background:var(--coral)"></i>Borgo</span>
+      <span><i class="dot" style="background:#6B7A80"></i>Porto</span>
+      <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
+    </div>
+    <button class="btn gold" id="btnLibrary">📖 Libreria tappe</button>
+    <button class="btn gold" id="btnSoste">🌙 Soste notturne</button>
+    <label class="autosave-toggle" title="Quando chiudi la scheda di un giorno, se l'hai modificato viene salvato su Notion da solo — solo quel giorno.">
+      <input type="checkbox" id="chkAutosave">
+      <span>☁️ Salvataggio automatico su Notion</span>
+      <span class="autosave-dot" id="autosaveDot"></span>
+    </label>
+    <button class="btn gold" id="btnPushNotion">💾 Salva su Notion</button>
+    <button class="btn gold" id="btnPullNotion">🔄 Aggiorna da Notion</button>
+    <button class="btn" id="btnExport">📤 Esporta piano</button>
+    <button class="btn" id="btnImport">📥 Importa piano</button>
+    <button class="btn" id="btnReset">Ripristina piano di base</button>
+  </div>
+</div>
+
+<div id="notionSyncStatus" class="notion-sync-status"></div>
+
+<main id="mainArea"></main>
+
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 6 agosto 2026 · v12.8 — universale (Cowork + claude.ai)</span></footer>
+
+<!-- Library / picker modal -->
+<div class="overlay" id="overlayLib">
+  <div class="modal">
+    <button class="close" id="closeLib">✕</button>
+    <div id="pickingForLabel" style="display:none; background:rgba(210,168,74,.15); color:#8a6a1c; font-size:12.5px; font-weight:700; padding:8px 12px; border-radius:10px; margin-bottom:14px;"></div>
+    <h2 id="libraryTitle" style="font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; margin:0 0 4px;">Libreria delle tappe</h2>
+    <p style="font-size:13px; color:var(--ink-soft); margin:0 0 14px;">Clicca "ⓘ" per i dettagli, o clicca la riga per aggiungerla al giorno selezionato.</p>
+    <input class="lib-search" id="libSearch" placeholder="Cerca una tappa…">
+    <div id="libContent"></div>
+  </div>
+</div>
+
+<!-- Detail modal -->
+<div class="overlay" id="overlayDetail">
+  <div class="modal">
+    <button class="close" id="closeDetail">✕</button>
+    <div class="detail-body" id="detailBody"></div>
+  </div>
+</div>
+
+<!-- Day detail modal (used from week view) -->
+<div class="overlay" id="overlayDay">
+  <div class="modal daymodal" style="max-width:600px;">
+    <button class="close" id="closeDay">✕</button>
+    <div class="dm-topbar" id="dmTopbar"></div>
+    <div class="dm-slider" id="dmSlider"></div>
+    <div id="dayModalContent" class="dm-body-scroll"></div>
+  </div>
+</div>
+
+<script>
+/* ============================= DATA ============================= */
+
+const TAPPE = [
+  {id:"torre-pozzelle", icon:"🏖️", title:"Torre Pozzelle (Ostuni)", tipi:["mare","natura"], notti:"0 (gita in giornata)",
+   teaser:"Calette di roccia lavica alternate a piccoli tratti di sabbia, a ~12 km dalla masseria. Ampio parcheggio gratuito.",
+   vedere:["Calette scavate nella roccia, ognuna un po' appartata","Snorkeling: acqua limpida e fondale interessante","Piccole vasche naturali con cristalli di sale","Bar sulla spiaggia con docce"],
+   campeggio:"Nessun campeggio: spiaggia libera raggiungibile in auto dalla Masseria Appia Traiana in ~20 minuti. Scarpette da scoglio consigliate, la parte sabbiosa è piccola.",
+   link:"http://www.comune.ostuni.br.it/turismo/le-spiagge/", mapsLink:"https://maps.apple.com/?ll=40.769200,17.663390&q=Parcheggio%20Torre%20Pozzelle", extra:false},
+  {id:"villanova-camerini", icon:"🏖️", title:"Villanova / Camerini (Ostuni)", tipi:["mare","porto"], notti:"0 (gita in giornata)",
+   teaser:"La spiaggia più vicina alla masseria (~5 minuti in auto), con parcheggio gratuito sul fronte mare. Buona per un bagno veloce.",
+   vedere:["Mangiamuso Beach: sabbia e scogli, parcheggio libero","Baia di Camerini: stabilimenti, bar e noleggio ombrelloni","Piccolo porto e borgo marinaro di Villanova","Stabilimento Il Faro per pranzo o aperitivo"],
+   campeggio:"Nessun campeggio: spiaggia raggiungibile in auto o in bici dalla Masseria Appia Traiana. Parcheggio gratuito lungo il fronte mare (limitato ai residenti in alcuni tratti tra luglio e settembre).",
+   link:"http://www.viaggiareinpuglia.it/at/134/parco/4910/it/Villanova", mapsLink:"https://maps.apple.com/?ll=40.7885951,17.5942998&q=Villanova%20Mangiamuso%20Beach", extra:false},
+  {id:"necromanteion", icon:"🏛️", title:"Necromanteion dell'Acheronte (Mesopotamos)", tipi:["storico"], notti:"0 (visita breve)",
+   teaser:"L'oracolo dei morti dell'antichità sulle rive dell'Acheronte, visitato il pomeriggio del 5 agosto. A ~25 min in auto dal Camping Acrogiali.",
+   vedere:["La cripta sotterranea, la parte più suggestiva del sito","Mura poligonali e ambienti a volta","Vale leggere qualcosa prima di entrare: le rovine da sole dicono poco","Alcuni studiosi contestano che sia il vero Necromanteion"],
+   campeggio:"Sito recintato con biglietto d'ingresso: 10€. Orario 8:00-20:00. Tel. +30 2684 041206. Coordinate: 39.23674, 20.53353. Visita rapida, meno di un'ora.",
+   link:"https://en.wikipedia.org/wiki/Necromanteion_of_Acheron", mapsLink:"https://maps.apple.com/?ll=39.2367386,20.5335267&q=Necromanteion%20of%20Acheron", extra:false},
+  {id:"acheron-sorgenti", icon:"🏞️", title:"Sorgenti dell'Acheronte (Glyki)", tipi:["natura"], notti:"0 (mezza giornata)",
+   teaser:"Passeggiata dentro il fiume e bagno, il pomeriggio del 5 agosto. Acqua tra i 5 e i 12 gradi anche in agosto. 4.9/5 su oltre 17.000 recensioni.",
+   vedere:["Risalita della gola camminando nel fiume","Alcuni tratti troppo profondi: lì si nuota","Sentieri lungo il fiume e sul versante della montagna","Nel mito è il fiume degli inferi, quello di Caronte"],
+   campeggio:"Accesso libero, aperto 24 ore. Parcheggi e taverne nel villaggio di Glyki. Coordinate: 39.32773, 20.62261. Indispensabili scarpette da acqua e una sacca impermeabile per telefono e chiavi.",
+   link:"https://en.wikipedia.org/wiki/Acheron", mapsLink:"https://maps.apple.com/?ll=39.327733,20.6226141&q=Acheron%20Springs", extra:false},
+  {id:"igoumenitsa-parga", icon:"⛴️", title:"Igoumenitsa & Parga", tipi:["porto","mare"], notti:"0–1",
+   teaser:"Porto di sbarco dall'Italia; a 35 km il borgo pastello di Parga con castello veneziano.",
+   vedere:["Parga e il castello veneziano sul mare","Spiagge di Valtos, Lichnos, Kryoneri","Isolotto della Panagia","Gita in barca alle grotte vicine"],
+   campeggio:"Campeggi sulla costa tra Igoumenitsa e Parga (zona Plataria/Lichnos), comodi per roulotte, pochi minuti dal porto.",
+   link:"https://en.wikipedia.org/wiki/Parga", extra:false},
+  {id:"preveza", icon:"🏖️", title:"Preveza / Monolithi / Kanali", tipi:["mare","storico","natura"], notti:"1–2",
+   teaser:"Tappa ponte pratica sullo Ionio: base a Monolithi/Kanali, con Nikopolis e il fiume Acheron nei dintorni.",
+   vedere:["Preveza città: lungomare e taverne (bella la sera)","Monolithi Beach: lunga, tramonti","Kanali/Kastrosykia: spiaggia organizzata","Ammoudia: sabbia e fondale basso, family","Necromanteion dell'Acheron","Antica Nikopolis e museo"],
+   campeggio:"Camping Monolithi o Camping Panorama, entrambi in zona Monolithi — comodi per mare + Nikopolis + Kanali.",
+   link:"https://travelpreveza.gr/en/beach/monolithi/", extra:false},
+  {id:"lefkada", icon:"🏖️", title:"Lefkada (gita da Preveza)", tipi:["mare"], notti:"0 (gita in giornata)",
+   teaser:"Isola collegata da ponte, niente traghetto: gita in auto da Preveza senza spostare la roulotte.",
+   vedere:["Lefkada town: centro pedonale e marina","Castello di Agia Mavra","Agios Nikitas: borgo scenografico","Kathisma Beach: comoda, organizzata","Porto Katsiki: spiaggia icona sotto le falesie (partire presto)","Nydri: costa est più riparata"],
+   campeggio:"Non serve cambiare campeggio — resta a Preveza/Monolithi/Kanali e vai in auto.",
+   link:"https://experiencelefkada.gr/beaches/", extra:false},
+  {id:"pylos", icon:"🏖️", title:"Pylos & Voidokilia ⭐", tipi:["mare","storico"], notti:"2",
+   teaser:"La costa più bella della Messenia: Voidokilia a forma di Ω, baia di Navarino, laguna di Gialova.",
+   vedere:["Spiaggia di Voidokilia + grotta di Nestore + Palaiokastro","Laguna di Gialova (birdwatching)","Pylos: piazza e castello di Niokastro","Palazzo di Nestore (sito miceneo)"],
+   campeggio:"Zona Gialova/Pylos (es. campeggio Erodios) — comoda per Voidokilia, portare ombrellone e acqua (spiaggia libera).",
+   link:"https://en.wikipedia.org/wiki/Voidokilia_Beach", extra:false},
+  {id:"methoni", icon:"🏰", title:"Methoni", tipi:["borgo","mare"], notti:"0 (mezza giornata da Pylos)",
+   teaser:"Castello veneziano che arriva fino al mare, col Bourtzi ottagonale collegato da una passerella. ~15-20 min da Pylos.",
+   vedere:["Castello di Methoni: mura, bastioni, Bourtzi","Borgo basso, piccolo e tranquillo","Bagno sulla spiaggia sotto il castello","Se c'è tempo: Finikounda o Koroni"],
+   campeggio:"Nessuno — si visita in giornata dalla base di Pylos/Gialova.",
+   link:"https://www.hh.gr/en/destinations/methoni-castle/", extra:false},
+  {id:"gythio", icon:"🏞️", title:"Areopoli, Mani & Gythio", tipi:["natura","borgo","mare"], notti:"2",
+   teaser:"Il Mani: case-torri in pietra, villaggi arroccati, calette. Gythio è la porta d'accesso, porticciolo grazioso.",
+   vedere:["Areopoli: borgo di pietra, capitale del Mani","Grotte di Diros (Vlychada): barca tra stalattiti","Vathia: villaggio-torre abbandonato","Relitto Dimitrios sulla spiaggia di Valtaki","Capo Tenaro, punta più a sud"],
+   campeggio:"Gythion Bay Camping — sul mare, spazioso, ombreggiato, ottimo per roulotte.",
+   link:"https://gythiocamping.gr/", extra:false},
+  {id:"elafonisos", icon:"🏖️", title:"Elafonisos (Simos) ⭐", tipi:["mare"], notti:"2",
+   teaser:"Isola raggiunta con breve traghetto da Pounta: Simos, tra le spiagge più belle di Grecia, acqua turchese e dune.",
+   vedere:["Megalo Simos e Mikro Simos: dune, mare caraibico","Paesino di Elafonisos, taverne di pesce","Spiaggia di Kato Nisi"],
+   campeggio:"Simos Camping — unico campeggio dell'isola, sulla spiaggia. ⚠️ verificare ammissione roulotte sul traghetto-chiatta, o lasciarla sulla terraferma (Neapoli).",
+   link:"https://simoscamping.gr/it/", extra:false},
+  {id:"nafplio", icon:"🏰", title:"Nafplio (Napulia)", tipi:["borgo","mare"], notti:"2–3",
+   teaser:"La città più elegante del Peloponneso, prima capitale della Grecia indipendente. Base per Micene ed Epidauro.",
+   vedere:["Fortezza di Palamidi (999 gradini o in auto)","Il Bourtzi, castelletto su isolotto","Centro storico veneziano, Piazza Syntagma","Spiagge di Karathona e Arvanitia"],
+   campeggio:"Zona Drepano/Palaia Epidavros: Camping Bekas, Nicolas II o Lefka — ben posizionati per Micene/Epidauro.",
+   link:"https://www.bekas.gr/", extra:false},
+  {id:"micene", icon:"🏛️", title:"Micene", tipi:["storico"], notti:"0 (in giornata da Nafplio)",
+   teaser:"Capitale della civiltà micenea, patrimonio UNESCO — Porta dei Leoni e Tesoro di Atreo.",
+   vedere:["Porta dei Leoni","Circolo delle tombe reali (maschera di Agamennone)","Tesoro di Atreo (tomba a tholos)","Museo archeologico del sito"],
+   campeggio:"Nessuno — visita al mattino presto (poca ombra), si abbina a Nafplio.",
+   link:"https://en.wikipedia.org/wiki/Mycenae", extra:false},
+  {id:"epidauro", icon:"🏛️", title:"Epidauro", tipi:["storico"], notti:"0 (in giornata da Nafplio)",
+   teaser:"Santuario di Asclepio, famoso per il teatro antico dall'acustica perfetta. Patrimonio UNESCO.",
+   vedere:["Il teatro (IV sec. a.C.)","Santuario di Asclepio e museo","Palaia Epidavros: città sommersa snorkelabile"],
+   campeggio:"Nessuno — in giornata da Nafplio.",
+   link:"https://en.wikipedia.org/wiki/Ancient_Theatre_of_Epidaurus", extra:false},
+  {id:"delfi", icon:"🏛️", title:"Delfi", tipi:["storico"], notti:"1",
+   teaser:"Santuario dell'oracolo di Apollo, l'ombelico del mondo per i greci antichi. Vista sulla valle fino al mare.",
+   vedere:["Tempio di Apollo e Via Sacra","Tesoro degli Ateniesi e teatro","La Tholos (immagine simbolo di Delfi)","Museo di Delfi: l'Auriga di bronzo","Deviazione: monastero di Osios Loukas"],
+   campeggio:"Da valutare in zona Itea/Galaxidi/Arachova.",
+   link:"https://en.wikipedia.org/wiki/Delphi", extra:false},
+  {id:"meteore", icon:"🏞️", title:"Meteore (Kalambaka/Kastraki)", tipi:["natura","storico"], notti:"2",
+   teaser:"Torri di roccia con monasteri ortodossi \"sospesi nel cielo\", UNESCO. Base a Kastraki.",
+   vedere:["6 monasteri visitabili (Gran Meteora il più grande)","Punti panoramici al tramonto","Grotta di Theopetra, lago di Plastiras"],
+   campeggio:"Camping Vrachos Kastraki — piscina, staff italiano, 1 km da Kalambaka.",
+   link:"https://www.campingkastraki.com/en/", extra:false},
+  {id:"olympia", icon:"🏛️", title:"Olympia", tipi:["storico"], notti:"1",
+   teaser:"Santuario dove nacquero le Olimpiadi (776 a.C.), in una valle verde tra i fiumi Alfeo e Cladeo.",
+   vedere:["Stadio antico (si corre sulla pista originale)","Tempio di Zeus e Tempio di Hera","La palestra e l'officina di Fidia","Museo: l'Hermes di Prassitele"],
+   campeggio:"Campeggi nel paese di Olympia, pochi minuti dal sito.",
+   link:"https://en.wikipedia.org/wiki/Olympia,_Greece", extra:false},
+  {id:"atene", icon:"🏛️", title:"Atene", tipi:["storico"], notti:"2",
+   teaser:"Non inclusa nel Piano Verosimile attuale. Acropoli e centro storico — richiede tempo e gestione del traffico con roulotte.",
+   vedere:["Scheda completa da approfondire su Notion"],
+   campeggio:"Da verificare — meglio lasciare la roulotte fuori città.",
+   link:"", extra:true},
+  {id:"corinto", icon:"🏛️", title:"Corinto (Canale + Corinto antica)", tipi:["storico"], notti:"0",
+   teaser:"Punto di passaggio obbligato tra Peloponneso e resto della Grecia — vista sul celebre canale.",
+   vedere:["Canale di Corinto","Corinto antica (sito archeologico)"],
+   campeggio:"Nessuno — tappa di passaggio.",
+   link:"", extra:true},
+  {id:"sparta-mistra", icon:"🏛️", title:"Sparta & Mistrà", tipi:["storico"], notti:"1",
+   teaser:"Citata come opzione culturale per una giornata libera a Gythio (12 ago). Mistrà: città bizantina UNESCO sulle pendici del Taigeto.",
+   vedere:["Città bizantina di Mistrà (UNESCO)","Sparta: museo e resti archeologici"],
+   campeggio:"Da valutare, eventualmente in giornata da Gythio.",
+   link:"", extra:true},
+  {id:"monemvasia", icon:"🏰", title:"Monemvasia", tipi:["borgo","mare"], notti:"1",
+   teaser:"Città-fortezza su isolotto roccioso collegato da un ponte — una delle più scenografiche del Peloponneso. Non ancora inserita nel piano.",
+   vedere:["Città bassa medievale","Fortezza superiore","Bagno sulla spiaggia sotto la rocca"],
+   campeggio:"Da verificare in zona.",
+   link:"", extra:true},
+  {id:"kalamata", icon:"🏖️", title:"Kalamata", tipi:["mare"], notti:"0–1",
+   teaser:"Città costiera della Messenia; nei dintorni Kardamyli, tra i tratti di mare più belli del Mani.",
+   vedere:["Lungomare e centro di Kalamata","Kardamyli: calette e sentieri costieri"],
+   campeggio:"Da verificare.",
+   link:"", extra:true},
+  {id:"patrasso", icon:"⛴️", title:"Patrasso", tipi:["porto"], notti:"0",
+   teaser:"Il piano attuale rientra da Igoumenitsa, non da Patrasso — resta un'alternativa di rientro da valutare.",
+   vedere:["Scheda da approfondire su Notion"],
+   campeggio:"—",
+   link:"", extra:true},
+  {id:"nafpaktos", icon:"🏰", title:"Nafpaktos / Galaxidi / Itea", tipi:["borgo","mare"], notti:"0–1",
+   teaser:"Cittadine costiere del golfo di Corinto, utili per spezzare la risalita verso Delfi/Meteore.",
+   vedere:["Nafpaktos: porticciolo veneziano","Galaxidi: borgo marinaro","Itea: base pratica per Delfi"],
+   campeggio:"Da valutare in zona Itea/Galaxidi.",
+   link:"", extra:true},
+  {id:"kyllini", icon:"⛴️", title:"Kyllini — spezza viaggio + Olympia", tipi:["porto","storico"], notti:"0–1",
+   teaser:"Porto sul lato ovest del Peloponneso, utile come sosta per spezzare il viaggio verso/da Olympia.",
+   vedere:["Scheda da approfondire su Notion"],
+   campeggio:"Da verificare.",
+   link:"", extra:true},
+];
+const TAPPE_BY_ID = Object.fromEntries(TAPPE.map(t=>[t.id,t]));
+
+function primaryTipo(t){
+  const order=['mare','storico','natura','borgo','porto'];
+  for(const o of order) if(t.tipi.includes(o)) return o;
+  return 'storico';
+}
+
+const SOSTE = [
+  {id:"masseria-appia-traiana", icon:"✅", title:"Area Sosta Camper Masseria Appia Traiana — confermata", zona:"C.da Mangiamuso, Ostuni (BR), ~2 km dal mare",
+   teaser:"Sosta confermata per la notte del 3 agosto. 15 piazzole ombreggiate tra ulivi secolari, elettricità, carico/scarico, docce calde, WC, WiFi gratuito, area barbecue/picnic, recintata e videosorvegliata h24.",
+   note:"Indirizzo: Contrada Mangiamuso, 72017 Ostuni (BR). Coordinate: 40.77338, 17.58409. Tel. +39 335 458170. Costo per la nostra notte: 30€ (2 adulti) + 6€ (bambini) + 5€ (corrente) = 41€/giorno. Prenotazione consigliata in anticipo.",
+   link:"https://www.masseriappiatraiana.it/area-sosta-camper/", mapsLink:"https://maps.apple.com/?ll=40.77338,17.58409&q=Masseria%20Appia%20Traiana", custom:false},
+  {id:"ostuni-getsemani", icon:"⚪", title:"Area Sosta Camper Getsemani (Ostuni/Villanova) — non scelta", zona:"Villanova – Marina di Ostuni (BR), ~30 km da Brindisi",
+   teaser:"Alternativa valutata per la notte del 3 agosto, non scelta (si va a Masseria Appia Traiana). Piazzole con corrente, carico/scarico, bagni e docce (giu-set); spiaggia a 5 min a piedi.",
+   note:"Indirizzo: Via Consolato Veneziano, Villanova, 72017 Ostuni (BR). Coordinate: 40.78798, 17.58887. Ancora da confermare tra le opzioni.",
+   link:"https://sostacamperostuni.it", custom:false},
+  {id:"drepanos", icon:"🏕️", title:"Camping Drepanos", zona:"Igoumenitsa / Drepano",
+   teaser:"Comodo per lo sbarco/imbarco a Igoumenitsa, pochi minuti dal porto.",
+   note:"Verificare orari reception per arrivi serali (sbarco previsto alle 22:00).", link:"", custom:false},
+  {id:"acrogiali", icon:"✅", title:"Camping Acrogiali (Riza, Preveza)", zona:"Paralia Riza, 481 00 Preveza — 25 km da Preveza",
+   teaser:"Sosta effettiva del 5 e 6 agosto. Impresa familiare dal 1968, piazzole ombreggiate da ulivi, gelsi e pioppi a pochi passi dalla spiaggia di Riza. Taverna, minimarket, cucina comune, lavanderia, WiFi.",
+   note:"Coordinate: 39.13506, 20.58429. Tel. +30 2682 056382. Non prende prenotazioni: si arriva e si scegle la piazzola. Aperto tutto l'anno. Parcheggio libero. Sostituisce nel piano il previsto Camping Monolithi / Panorama.",
+   link:"https://acrogiali-rooms.com/en/camping/", mapsLink:"https://maps.apple.com/?ll=39.1350555,20.5842857&q=Camping%20Acrogiali", custom:false},
+  {id:"monolithi-panorama", icon:"🏕️", title:"Camping Monolithi / Panorama", zona:"Preveza · Monolithi",
+   teaser:"Due campeggi vicini sulla spiaggia di Monolithi, comodi per mare + Nikopolis + Kanali.",
+   note:"", link:"https://travelpreveza.gr/en/beach/monolithi/", custom:false},
+  {id:"erodios", icon:"🏕️", title:"Camping Erodios", zona:"Gialova / Pylos",
+   teaser:"Base comoda per Voidokilia, la laguna di Gialova e il centro di Pylos.",
+   note:"", link:"", custom:false},
+  {id:"gythion-bay", icon:"🏕️", title:"Gythion Bay Camping", zona:"Mavrovouni / Gythio",
+   teaser:"Sul mare, spazioso e ombreggiato, ottimo per roulotte; base comoda per il Mani.",
+   note:"", link:"https://gythiocamping.gr/", custom:false},
+  {id:"simos", icon:"🏖️", title:"Simos Camping", zona:"Elafonisos",
+   teaser:"Unico campeggio dell'isola, direttamente sulla spiaggia di Simos.",
+   note:"Verificare tariffa e ammissione roulotte sul traghetto-chiatta da Pounta; alternativa: lasciarla sulla terraferma.", link:"https://simoscamping.gr/it/", custom:false},
+  {id:"nafplio-camp", icon:"🏕️", title:"Bekas / Nicolas II / Lefka", zona:"Drepano · Palaia Epidavros",
+   teaser:"Tre alternative in zona Argolide, ben posizionate per Nafplio, Micene ed Epidauro.",
+   note:"Da confermare quale delle tre in base a disponibilità.", link:"https://www.bekas.gr/", custom:false},
+  {id:"itea-galaxidi-camp", icon:"❓", title:"Da definire — zona Itea / Galaxidi", zona:"Golfo di Corinto",
+   teaser:"Nessun campeggio ancora scelto per questa notte.",
+   note:"Da valutare a ridosso della partenza — aggiorna questa scheda dall'app o da Notion quando trovi l'opzione giusta.", link:"", custom:false},
+  {id:"kastraki-vrachos", icon:"🏕️", title:"Camping Vrachos Kastraki", zona:"Meteore / Kastraki",
+   teaser:"Piscina, staff italiano, a 1 km da Kalambaka, ai piedi delle torri di roccia.",
+   note:"", link:"https://www.campingkastraki.com/en/", custom:false},
+];
+let customSoste = []; // aggiunte dall'utente direttamente in app, persistite separatamente
+let itemOverrides = {}; // modifiche dell'utente a schede esistenti (sosta o tappa), keyed by id, persistite separatamente
+function allSoste(){ return [...SOSTE, ...customSoste]; }
+function getSosta(id){ return allSoste().find(s=>s.id===id); }
+function getItem(id){
+  let base = null;
+  if(TAPPE_BY_ID[id]) base = {...TAPPE_BY_ID[id], kind:'tappa'};
+  else { const s = getSosta(id); if(s) base = {...s, kind:'sosta'}; }
+  if(!base) return null;
+  const ov = itemOverrides[id];
+  return ov ? {...base, ...ov} : base;
+}
+
+const DEFAULT_SCHEDULE = [
+ {date:"2026-08-03", base:"Roma → Brindisi",
+  mattina:"Partenza da Roma con la roulotte, direzione Puglia.",
+  pomeriggio:"Trasferimento in autostrada verso Brindisi (circa 6-7h, soste comprese). Arrivo alla masseria e bagno a Torre Pozzelle (~20 min in auto, parcheggio gratuito).",
+  sera:"Notte confermata: Masseria Appia Traiana, C.da Mangiamuso, Ostuni (BR) — tel. +39 335 458170. Arrivo in giornata, per essere tranquilli all'imbarco di domani alle 13:00.",
+  tappe:["torre-pozzelle"], notteId:"masseria-appia-traiana"},
+ {date:"2026-08-04", base:"Igoumenitsa / Drepano",
+  mattina:"Eventuale bagno veloce a Villanova/Camerini (5 min in auto), check-out entro le 12:00. In traghetto verso la Grecia (partenza da Brindisi alle 13:00). Lì almeno alle 11",
+  pomeriggio:"Prosegue la traversata in traghetto.",
+  sera:"Sbarco a Igoumenitsa alle 22:00, notte tecnica vicino al porto (Camping Drepanos o zona Drepano) — mare non prioritario.",
+  tappe:["villanova-camerini","igoumenitsa-parga"], notteId:"drepanos"},
+ {date:"2026-08-05", base:"Riza / Preveza — Camping Acrogiali",
+  mattina:"Arrivo al Camping Acrogiali (Riza, Preveza) e bagno alla spiaggia del campeggio.",
+  pomeriggio:"Visita al Necromanteion sull'Acheronte (Mesopotamos), poi passeggiata e bagno alle sorgenti dell'Acheronte a Glyki.",
+  sera:"Rientro al Camping Acrogiali.",
+  tappe:["necromanteion","acheron-sorgenti"], notteId:"acrogiali"},
+ {date:"2026-08-06", base:"Riza / Preveza — Camping Acrogiali",
+  mattina:"Da completare.",
+  pomeriggio:"Da completare.",
+  sera:"Ultima notte al Camping Acrogiali: si parte domani mattina.",
+  tappe:[], notteId:"acrogiali"},
+ {date:"2026-08-07", base:"Pylos / Gialova",
+  mattina:"Partenza dal Camping Acrogiali: lungo trasferimento verso il Peloponneso (Rio-Antirrio, poi costa sud).",
+  pomeriggio:"Prosegue il viaggio; possibile sosta a Olympia lungo il percorso se i tempi lo permettono — pesante con roulotte, valutare sul momento.",
+  sera:"Arrivo a Pylos / Gialova e sistemazione in campeggio.",
+  tappe:["pylos","olympia"], notteId:"erodios"},
+ {date:"2026-08-08", base:"Pylos / Gialova",
+  mattina:"Voidokilia presto, prima del caldo e della folla — spiaggia, grotta di Nestore, Palaiokastro.",
+  pomeriggio:"Laguna di Gialova (birdwatching) e relax.",
+  sera:"Cena a Pylos, passeggiata al castello di Niokastro.",
+  tappe:["pylos"], notteId:"erodios"},
+ {date:"2026-08-09", base:"Pylos / Gialova",
+  mattina:"Giornata più lenta: mare in loco oppure partenza per Methoni e il suo castello.",
+  pomeriggio:"Eventuale proseguimento verso Finikounda o Koroni, altrimenti mare libero.",
+  sera:"Rientro e cena in campeggio.",
+  tappe:["pylos","methoni"], notteId:"erodios"},
+ {date:"2026-08-10", base:"Gythio / Mavrovouni",
+  mattina:"Partenza e trasferimento verso il Mani / Gythio, attraverso le montagne della Messenia.",
+  pomeriggio:"Prosegue il viaggio; arrivo e sistemazione a Gythio / Mavrovouni.",
+  sera:"Pomeriggio/sera di assestamento, primo bagno a Mavrovouni Beach.",
+  tappe:["gythio"], notteId:"gythion-bay"},
+ {date:"2026-08-11", base:"Gythio / Mavrovouni",
+  mattina:"Areopoli e Limeni, borghi di pietra del Mani.",
+  pomeriggio:"Grotte di Diros (Vlychada) in barca.",
+  sera:"Rientro a Gythio, bagno a Mavrovouni o sosta a Limeni, cena in paese.",
+  tappe:["gythio"], notteId:"gythion-bay"},
+ {date:"2026-08-12", base:"Gythio / Mavrovouni",
+  mattina:"Giornata libera: mare a Gythio oppure partenza per Sparta/Mistra se si vuole cultura.",
+  pomeriggio:"Mistrà: città bizantina UNESCO, oppure relitto Dimitrios a Valtaki.",
+  sera:"Rientro in campeggio, ultima serata nel Mani.",
+  tappe:["gythio","sparta-mistra"], notteId:"gythion-bay"},
+ {date:"2026-08-13", base:"Elafonisos / Simos",
+  mattina:"Spostamento breve verso Pounta (circa 1h15), traghettino per Elafonisos e sistemazione.",
+  pomeriggio:"Primo bagno a Simos.",
+  sera:"Passeggiata nel paesino di Elafonisos, cena di pesce.",
+  tappe:["elafonisos"], notteId:"simos"},
+ {date:"2026-08-14", base:"Elafonisos / Simos",
+  mattina:"Mare a Megalo Simos.",
+  pomeriggio:"Mikro Simos o relax tra le dune.",
+  sera:"Cena in paese.",
+  tappe:["elafonisos"], notteId:"simos"},
+ {date:"2026-08-15", base:"Elafonisos / Simos",
+  mattina:"Giornata lenta: ancora Simos, con calma.",
+  pomeriggio:"In alternativa Kato Nisi/Panagia, se si vuole cambiare spiaggia.",
+  sera:"Ultima serata a Elafonisos, passeggiata in paese.",
+  tappe:["elafonisos"], notteId:"simos"},
+ {date:"2026-08-16", base:"Nafplio / Drepano / Vivari",
+  mattina:"Traghettino di ritorno a Pounta e partenza per l'Argolide.",
+  pomeriggio:"Prosegue il trasferimento verso Nafplio / Drepano / Vivari.",
+  sera:"Sistemazione e, se l'arrivo non è troppo tardi, prima passeggiata a Nafplio.",
+  tappe:["nafplio"], notteId:"nafplio-camp"},
+ {date:"2026-08-17", base:"Nafplio / Drepano / Vivari",
+  mattina:"Micene: Porta dei Leoni, tombe reali, Tesoro di Atreo (da visitare presto, poca ombra).",
+  pomeriggio:"Nafplio: centro storico e fortezza di Palamidi. In alternativa: Epidauro + Palaia Epidavros.",
+  sera:"Cena a Nafplio, passeggiata nel centro veneziano.",
+  tappe:["nafplio","micene","epidauro"], notteId:"nafplio-camp"},
+ {date:"2026-08-18", base:"Itea / Galaxidi",
+  mattina:"Partenza e lungo trasferimento verso Delfi, via Corinto.",
+  pomeriggio:"Visita al santuario di Delfi: Via Sacra, tempio di Apollo, museo.",
+  sera:"Sistemazione a Itea o Galaxidi; passeggiata sul porto se si vuole.",
+  tappe:["delfi"], notteId:"itea-galaxidi-camp"},
+ {date:"2026-08-19", base:"Meteore / Kastraki",
+  mattina:"Partenza e trasferimento verso le Meteore.",
+  pomeriggio:"Prosegue il viaggio; arrivo a Kastraki e sistemazione.",
+  sera:"Giro panoramico al tramonto tra le torri di roccia.",
+  tappe:["meteore"], notteId:"kastraki-vrachos"},
+ {date:"2026-08-20", base:"Meteore / Kastraki",
+  mattina:"Visita a 2-3 monasteri (Gran Meteora e altri).",
+  pomeriggio:"Pausa e relax in campeggio (piscina).",
+  sera:"Secondo giro panoramico nel tardo pomeriggio/sera.",
+  tappe:["meteore"], notteId:"kastraki-vrachos"},
+ {date:"2026-08-21", base:"Parga / Igoumenitsa",
+  mattina:"Partenza e trasferimento verso la costa Ionica.",
+  pomeriggio:"Prosegue il viaggio verso Parga o Igoumenitsa.",
+  sera:"Ultima notte prudente prima del traghetto; se si vuole mare bello, tappa a Parga.",
+  tappe:["igoumenitsa-parga"], notteId:"drepanos"},
+ {date:"2026-08-22", base:"Traghetto di ritorno",
+  mattina:"Ultimi preparativi, colazione con calma.",
+  pomeriggio:"Partenza da Igoumenitsa alle 14:00 — arrivare al porto con anticipo.",
+  sera:"In traghetto verso l'Italia, arrivo a Brindisi previsto alle 21:00.",
+  tappe:[], notteId:null},
+ {date:"2026-08-23", base:"Viaggio Brindisi → Roma",
+  mattina:"Sbarco a Brindisi (arrivo la sera prima), colazione con calma e partenza verso Roma.",
+  pomeriggio:"Lungo trasferimento in autostrada verso Roma (circa 6-7h da Brindisi).",
+  sera:"Arrivo a Roma.",
+  tappe:[], notteId:null},
+];
+
+/* ============================= STATE ============================= */
+let schedule = {}; // dateStr -> {base, note, tappe:[], notteId}
+let view = 'week';
+let pickingForDate = null;
+let pickingKind = 'tappa'; // 'tappa' | 'sosta'
+
+function scheduleFromDefault(){
+  const s = {};
+  DEFAULT_SCHEDULE.forEach(d=> s[d.date] = {
+    base:d.base, mattina:d.mattina, pomeriggio:d.pomeriggio, sera:d.sera,
+    tappe:[...d.tappe], notteId: d.notteId || null
+  });
+  return s;
+}
+
+/* Storage: negli artifact Cowork window.storage non esiste, ma localStorage persiste
+   tra riaperture e riavvii dell'app. Manteniamo la stessa firma async. */
+const HAS_ARTIFACT_STORAGE = typeof window.storage === 'object' && window.storage && typeof window.storage.get === 'function';
+const LS = {
+  get: async (k) => {
+    if(HAS_ARTIFACT_STORAGE){
+      try{ const r = await window.storage.get(k, false); return (r && r.value !== undefined) ? {value:r.value} : null; }catch(e){ /* cade su localStorage */ }
+    }
+    try{ const v = localStorage.getItem(k); return v === null ? null : {value:v}; }catch(e){ return null; }
+  },
+  set: async (k, v) => {
+    if(HAS_ARTIFACT_STORAGE){
+      try{ await window.storage.set(k, v, false); return; }catch(e){ /* cade su localStorage */ }
+    }
+    try{ localStorage.setItem(k, v); }catch(e){}
+  }
+};
+
+/* Se lo stato salvato viene da una versione precedente può non avere tutti i
+   giorni (es. il 3 agosto, aggiunto dopo) oppure averli vuoti perché creati
+   dal bug delle date. Riempiamo dal piano di base solo ciò che manca:
+   le modifiche dell'utente non vengono mai toccate. */
+function mergeGiorniMancanti(){
+  const base = scheduleFromDefault();
+  let aggiunti = 0;
+  Object.keys(base).forEach(ds=>{
+    const cur = schedule[ds];
+    const vuoto = !cur || (!cur.base && !cur.mattina && !cur.pomeriggio && !cur.sera &&
+                           !(cur.tappe && cur.tappe.length) && !cur.notteId);
+    if(vuoto){ schedule[ds] = base[ds]; aggiunti++; }
+  });
+  return aggiunti;
+}
+
+async function loadState(){
+  try{
+    const res = await LS.get('grecia-schedule-v1');
+    if(res && res.value){
+      schedule = JSON.parse(res.value);
+      if(mergeGiorniMancanti()) await saveState();
+      return;
+    }
+  }catch(e){ /* not found, or storage unavailable */ }
+  schedule = scheduleFromDefault();
+  await saveState();
+}
+let storageWarned = false;
+function logStorageIssue(context, e){
+  // Intentionally silent: no console output at all. Some preview environments
+  // auto-open a console drawer on ANY console message (even console.log), which
+  // eats screen space. The app keeps working from in-memory state regardless;
+  // only cross-session persistence is affected when this fires.
+  storageWarned = true;
+}
+
+async function saveState(){
+  try{ await LS.set('grecia-schedule-v1', JSON.stringify(schedule)); }
+  catch(e){ logStorageIssue('salvataggio piano', e); }
+}
+async function loadSoste(){
+  try{
+    const res = await LS.get('grecia-soste-custom-v1');
+    if(res && res.value){ customSoste = JSON.parse(res.value); }
+  }catch(e){ customSoste = []; }
+}
+async function saveSoste(){
+  try{ await LS.set('grecia-soste-custom-v1', JSON.stringify(customSoste)); }
+  catch(e){ logStorageIssue('salvataggio soste', e); }
+}
+async function loadOverrides(){
+  try{
+    const res = await LS.get('grecia-item-overrides-v1');
+    if(res && res.value){ itemOverrides = JSON.parse(res.value); }
+  }catch(e){ itemOverrides = {}; }
+}
+async function saveOverrides(){
+  try{ await LS.set('grecia-item-overrides-v1', JSON.stringify(itemOverrides)); }
+  catch(e){ logStorageIssue('salvataggio modifiche scheda', e); }
+}
+
+/* ============================= DATE HELPERS ============================= */
+const DOW = ['LUN','MAR','MER','GIO','VEN','SAB','DOM'];
+const MESI = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+function fmtDate(d){
+  // NON usare toISOString(): converte in UTC e in fuso positivo (Europe/Rome, CEST=UTC+2)
+  // la mezzanotte locale del 4 ago diventa il 3 ago 22:00 UTC, spostando tutto il calendario
+  // indietro di un giorno e facendo sparire il 23 agosto. Formattiamo in ora LOCALE.
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + dd;
+}
+function dowIndex(d){ return (d.getDay()+6)%7; } // Monday=0
+function allDates(){
+  const out=[]; let cur=new Date('2026-08-03T00:00:00');
+  const end=new Date('2026-08-23T00:00:00');
+  while(cur<=end){ out.push(fmtDate(cur)); cur.setDate(cur.getDate()+1); }
+  return out;
+}
+function dayEntry(dateStr){
+  if(!schedule[dateStr]) schedule[dateStr] = {base:'', mattina:'', pomeriggio:'', sera:'', tappe:[], notteId:null};
+  const e = schedule[dateStr];
+  if(e.notteId === undefined) e.notteId = null;
+  if(e.mattina === undefined) e.mattina = '';
+  if(e.pomeriggio === undefined) e.pomeriggio = (e.note || ''); // migrazione da versione precedente a 3 fasce
+  if(e.sera === undefined) e.sera = '';
+  return e;
+}
+
+/* ============================= RENDER: WEEK VIEW ============================= */
+function renderWeekView(){
+  const dates = allDates();
+  // group into week rows starting Monday
+  const first = new Date(dates[0]+'T00:00:00');
+  const startOffset = dowIndex(first);
+  const cells = [];
+  for(let i=0;i<startOffset;i++) cells.push(null);
+  dates.forEach(d=>cells.push(d));
+  while(cells.length % 7 !== 0) cells.push(null);
+
+  let html = `<div class="daynames">${DOW.map(d=>`<div>${d}</div>`).join('')}</div>`;
+  for(let w=0; w<cells.length/7; w++){
+    const weekCells = cells.slice(w*7, w*7+7);
+    const validDates = weekCells.filter(Boolean);
+    if(validDates.length===0) continue;
+    const label = `Settimana del ${dayLabelShort(validDates[0])}`;
+    html += `<div class="week-block"><div class="week-label">${label}</div><div class="grid">`;
+    weekCells.forEach(ds=>{
+      if(!ds){ html += `<div class="cell empty"></div>`; return; }
+      const entry = dayEntry(ds);
+      const d = new Date(ds+'T00:00:00');
+      const chips = entry.tappe.map(id=>{
+        const t = TAPPE_BY_ID[id]; if(!t) return '';
+        return `<span class="chip ${primaryTipo(t)}">${t.icon} ${t.title.split(' (')[0].split(' —')[0]}</span>`;
+      }).join('');
+      const sosta = entry.notteId ? getSosta(entry.notteId) : null;
+      const nottaChip = sosta ? `<span class="chip notte">🌙 ${sosta.title.split(' / ')[0].split(' — ')[0]}</span>` : '';
+      html += `<div class="cell" data-date="${ds}">
+        <div class="datehead"><span class="daynum">${d.getDate()}</span><span class="daytag">${MESI[d.getMonth()]}</span><span class="daydow">${DOW[dowIndex(d)]}</span></div>
+        <div class="base">${entry.base || '<span style="opacity:.4;font-weight:400">senza base…</span>'}</div>
+        <div class="chips">${chips}${nottaChip}</div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+  return html;
+}
+function dayLabelShort(ds){
+  const d = new Date(ds+'T00:00:00');
+  return `${d.getDate()} ${MESI[d.getMonth()]}`;
+}
+
+/* ============================= RENDER: DAY VIEW ============================= */
+function renderDayView(){
+  const dates = allDates();
+  return dates.map(ds=>renderDayCard(ds)).join('');
+}
+
+function renderDayFields(ds){
+  const entry = dayEntry(ds);
+  const chips = entry.tappe.map(id=>{
+    const t = TAPPE_BY_ID[id]; if(!t) return '';
+    return `<span class="tappa-chip-lg ${primaryTipo(t)}" style="background:${chipColor(primaryTipo(t))}" data-open-item="${id}">
+      ${t.icon} ${t.title}
+      <span class="x" data-remove-tappa="${id}" data-date="${ds}" title="Rimuovi">✕</span>
+    </span>`;
+  }).join('');
+  const sosta = entry.notteId ? getSosta(entry.notteId) : null;
+  const notteHtml = sosta ? `
+    <span class="tappa-chip-lg notte" data-open-item="${sosta.id}">
+      🌙 ${sosta.title}
+      <span class="x" data-remove-notte data-date="${ds}" title="Rimuovi">✕</span>
+    </span>` : `<button class="add-chip" data-add-notte-for="${ds}">+ scegli dove dormire</button>`;
+  return `
+    <div class="field-label">Base / zona</div>
+    <input class="base-input" value="${escapeAttr(entry.base)}" data-field="base" data-date="${ds}" placeholder="zona di riferimento…">
+
+    <div class="period-block mattina">
+      <div class="period-label"><span class="pdot" style="background:var(--gold)"></span>🌅 Mattina</div>
+      <textarea class="period-input" data-field="mattina" data-date="${ds}" placeholder="cosa si fa la mattina…">${escapeHTML(entry.mattina)}</textarea>
+    </div>
+    <div class="period-block pomeriggio">
+      <div class="period-label"><span class="pdot" style="background:var(--coral)"></span>☀️ Pomeriggio</div>
+      <textarea class="period-input" data-field="pomeriggio" data-date="${ds}" placeholder="cosa si fa il pomeriggio…">${escapeHTML(entry.pomeriggio)}</textarea>
+    </div>
+    <div class="period-block sera">
+      <div class="period-label"><span class="pdot" style="background:var(--deep)"></span>🌆 Sera</div>
+      <textarea class="period-input" data-field="sera" data-date="${ds}" placeholder="cosa si fa la sera…">${escapeHTML(entry.sera)}</textarea>
+    </div>
+
+    <div class="field-label" style="margin-top:8px;">Tappe / visite</div>
+    <div class="tappe-row">
+      ${chips}
+      <button class="add-chip" data-add-for="${ds}">+ aggiungi tappa</button>
+    </div>
+    <div class="field-label" style="margin-top:14px;">🌙 Dove dormi stanotte</div>
+    <div class="tappe-row">
+      ${notteHtml}
+    </div>
+  `;
+}
+function renderDayCard(ds){
+  const d = new Date(ds+'T00:00:00');
+  return `<div class="day-card" data-date="${ds}">
+    <div class="dcol">
+      <div class="dow">${DOW[dowIndex(d)]}</div>
+      <div class="dnum">${d.getDate()}</div>
+      <div style="font-size:12px;color:var(--ink-soft);margin-top:2px;">agosto '26</div>
+    </div>
+    <div>${renderDayFields(ds)}</div>
+  </div>`;
+}
+function chipColor(tipo){
+  return {mare:'#2E7FA0', storico:'#B5892A', natura:'#7C8B5B', borgo:'#C1665A', porto:'#6B7A80'}[tipo] || '#6B7A80';
+}
+function escapeAttr(s){ return (s||'').replace(/"/g,'&quot;'); }
+function escapeHTML(s){ return (s||'').replace(/</g,'&lt;'); }
+
+/* ============================= LIBRARY MODAL ============================= */
+function renderLibrary(filter=''){
+  const f = filter.trim().toLowerCase();
+  if(pickingKind === 'sosta'){
+    const match = s => !f || s.title.toLowerCase().includes(f) || s.zona.toLowerCase().includes(f);
+    const items = allSoste().filter(match);
+    const list = items.length ? `
+      <div class="lib-group-title">Soste notturne</div>
+      <div class="lib-list">
+        ${items.map(s=>`
+          <div class="lib-item" data-pick="${s.id}">
+            <span class="icn">${s.icon}</span>
+            <span class="tt">${s.title}<br><span style="font-weight:400;color:var(--ink-soft);font-size:11.5px;">${s.zona}</span></span>
+            <span class="info-btn" data-info="${s.id}">dettagli ⓘ</span>
+          </div>`).join('')}
+      </div>` : `<p style="font-size:13px;color:var(--ink-soft);">Nessuna sosta trovata.</p>`;
+    const quickAdd = `
+      <div class="lib-group-title">+ Aggiungi una sosta personalizzata</div>
+      <div class="quickadd">
+        <input class="qa-input" id="qaTitle" placeholder="Nome (es. Camping Aphrodite)">
+        <input class="qa-input" id="qaZona" placeholder="Zona (es. Kalamata)">
+        <textarea class="qa-input" id="qaNote" placeholder="Note: prezzo, contatti, link…"></textarea>
+        <button class="btn gold" id="qaSave" type="button">Salva${pickingForDate ? ' e usa per questo giorno' : ''}</button>
+      </div>`;
+    document.getElementById('libContent').innerHTML = list + quickAdd;
+  } else {
+    const match = t => !f || t.title.toLowerCase().includes(f) || t.teaser.toLowerCase().includes(f);
+    const core = TAPPE.filter(t=>!t.extra && match(t));
+    const extra = TAPPE.filter(t=>t.extra && match(t));
+    const renderGroup = (title, arr) => arr.length ? `
+      <div class="lib-group-title">${title}</div>
+      <div class="lib-list">
+        ${arr.map(t=>`
+          <div class="lib-item" data-pick="${t.id}">
+            <span class="icn">${t.icon}</span>
+            <span class="tt">${t.title}</span>
+            <span class="info-btn" data-info="${t.id}">dettagli ⓘ</span>
+          </div>`).join('')}
+      </div>` : '';
+    document.getElementById('libContent').innerHTML =
+      renderGroup('Già nel piano', core) +
+      renderGroup('Extra — da valutare / aggiungere', extra);
+  }
+}
+
+function openLibrary(forDate, kind='tappa'){
+  pickingForDate = forDate || null;
+  pickingKind = kind;
+  const label = document.getElementById('pickingForLabel');
+  const titleEl = document.getElementById('libraryTitle');
+  if(pickingForDate){
+    label.style.display='block';
+    const d = new Date(pickingForDate+'T00:00:00');
+    label.textContent = kind==='sosta'
+      ? `Scegli dove dormire il ${d.getDate()} ${MESI[d.getMonth()]}`
+      : `Scegli una tappa da aggiungere al ${d.getDate()} ${MESI[d.getMonth()]}`;
+  } else {
+    label.style.display='none';
+  }
+  titleEl.textContent = kind==='sosta' ? '🌙 Soste notturne' : '📖 Libreria delle tappe';
+  document.getElementById('libSearch').value='';
+  renderLibrary('');
+  document.getElementById('overlayLib').classList.add('show');
+  updateBodyScrollLock();
+}
+function closeLibrary(){ document.getElementById('overlayLib').classList.remove('show'); pickingForDate=null; updateBodyScrollLock(); }
+
+function openDetail(id){
+  const t = getItem(id); if(!t) return;
+  if(t.kind === 'sosta'){
+    document.getElementById('detailBody').innerHTML = `
+      <h2>${t.icon} ${t.title}</h2>
+      <div class="detail-tags"><span class="chip notte">${t.zona}</span></div>
+      <p>${t.teaser}</p>
+      ${t.note ? `<h3>Note</h3><div class="campeggio-box">${t.note}</div>` : ''}
+      ${t.link ? `<p style="margin-top:14px;"><a href="${t.link}" target="_blank" rel="noopener">Sito ↗</a></p>` : ''}
+      ${t.mapsLink ? `<p style="margin-top:6px;"><a href="${t.mapsLink}" target="_blank" rel="noopener">📍 Apri su Mappe ↗</a></p>` : ''}
+      ${t.custom ? `<div class="extra-note">Sosta aggiunta da te nell'app.</div>` : ''}
+      <p style="margin-top:18px;"><button class="btn" onclick="openEdit('${id}')">✏️ Modifica scheda</button></p>
+    `;
+  } else {
+    const tagHtml = t.tipi.map(ti=>`<span class="chip ${ti}" style="background:${chipColor(ti)}">${ti}</span>`).join('');
+    document.getElementById('detailBody').innerHTML = `
+      <h2>${t.icon} ${t.title}</h2>
+      <div class="detail-tags">${tagHtml}<span class="chip" style="background:#132226">${t.notti} notti</span></div>
+      <p>${t.teaser}</p>
+      <h3>Cosa vedere / fare</h3>
+      <ul>${t.vedere.map(v=>`<li>${v}</li>`).join('')}</ul>
+      <h3>Campeggio</h3>
+      <div class="campeggio-box">${t.campeggio}</div>
+      ${t.link ? `<p style="margin-top:14px;"><a href="${t.link}" target="_blank" rel="noopener">Sito ↗</a></p>` : ''}
+      ${t.mapsLink ? `<p style="margin-top:6px;"><a href="${t.mapsLink}" target="_blank" rel="noopener">📍 Apri su Mappe ↗</a></p>` : ''}
+      ${t.extra ? `<div class="extra-note">Non ancora inserita nel piano di base — aggiungila a un giorno dalla libreria se decidi di includerla.</div>` : ''}
+      <p style="margin-top:18px;"><button class="btn" onclick="openEdit('${id}')">✏️ Modifica scheda</button></p>
+    `;
+  }
+  document.getElementById('overlayDetail').classList.add('show');
+  updateBodyScrollLock();
+}
+
+function openEdit(id){
+  const t = getItem(id); if(!t) return;
+  const esc = (v) => (v||'').toString().replace(/"/g,'&quot;');
+  const noteField = t.kind === 'sosta' ? 'note' : 'campeggio';
+  const noteLabel = t.kind === 'sosta' ? 'Note (indirizzo, tariffe, contatti...)' : 'Info campeggio';
+  document.getElementById('detailBody').innerHTML = `
+    <h2>${t.icon} Modifica scheda</h2>
+    <label style="display:block;margin-top:12px;font-size:13px;opacity:.8;">Titolo</label>
+    <input id="edTitle" type="text" value="${esc(t.title)}" style="width:100%;box-sizing:border-box;padding:8px;margin-top:4px;">
+    <label style="display:block;margin-top:12px;font-size:13px;opacity:.8;">Descrizione breve</label>
+    <textarea id="edTeaser" rows="3" style="width:100%;box-sizing:border-box;padding:8px;margin-top:4px;">${t.teaser||''}</textarea>
+    <label style="display:block;margin-top:12px;font-size:13px;opacity:.8;">${noteLabel}</label>
+    <textarea id="edNote" rows="4" style="width:100%;box-sizing:border-box;padding:8px;margin-top:4px;">${t[noteField]||''}</textarea>
+    <label style="display:block;margin-top:12px;font-size:13px;opacity:.8;">Link sito</label>
+    <input id="edLink" type="text" value="${esc(t.link)}" style="width:100%;box-sizing:border-box;padding:8px;margin-top:4px;">
+    <label style="display:block;margin-top:12px;font-size:13px;opacity:.8;">Link mappe (Apple Maps)</label>
+    <input id="edMapsLink" type="text" value="${esc(t.mapsLink)}" style="width:100%;box-sizing:border-box;padding:8px;margin-top:4px;">
+    <div style="margin-top:18px;display:flex;gap:10px;">
+      <button class="btn" onclick="saveEdit('${id}')">💾 Salva</button>
+      <button class="btn" onclick="openDetail('${id}')">Annulla</button>
+    </div>
+  `;
+}
+
+async function saveEdit(id){
+  const t = getItem(id); if(!t) return;
+  const noteField = t.kind === 'sosta' ? 'note' : 'campeggio';
+  const override = {
+    title: document.getElementById('edTitle').value.trim(),
+    teaser: document.getElementById('edTeaser').value.trim(),
+    link: document.getElementById('edLink').value.trim(),
+    mapsLink: document.getElementById('edMapsLink').value.trim(),
+  };
+  override[noteField] = document.getElementById('edNote').value.trim();
+  itemOverrides[id] = {...(itemOverrides[id]||{}), ...override};
+  await saveOverrides();
+  openDetail(id);
+}
+function closeDetail(){ document.getElementById('overlayDetail').classList.remove('show'); updateBodyScrollLock(); }
+
+/* ============================= DAY MODAL (from week view) ============================= */
+let currentModalDate = null;
+
+function updateBodyScrollLock(){
+  const anyOpen = ['overlayDay','overlayLib','overlayDetail']
+    .some(id => document.getElementById(id).classList.contains('show'));
+  document.documentElement.style.overflow = anyOpen ? 'hidden' : '';
+  document.body.style.overflow = anyOpen ? 'hidden' : '';
+}
+
+function dmTopbarHtml(ds){
+  const d = new Date(ds+'T00:00:00');
+  return `
+    <button class="daynav-btn" id="dayPrev" type="button" aria-label="Giorno precedente">‹</button>
+    <div class="dm-title">
+      <div class="dm-dow">${DOW[dowIndex(d)]}</div>
+      <div class="dm-dnum">${d.getDate()} <span class="dm-month">agosto '26</span></div>
+    </div>
+    <button class="daynav-btn" id="dayNext" type="button" aria-label="Giorno successivo">›</button>
+  `;
+}
+
+/* Update chrome (topbar+body) for a date without touching the slider element itself
+   (the slider must survive its own drag — it's only created once per modal open). */
+function goToModalDate(ds, opts={}){
+  // se stiamo lasciando un giorno modificato, il salvataggio parte subito in background
+  if(currentModalDate && currentModalDate !== ds) flushDirty();
+  currentModalDate = ds;
+  document.getElementById('dmTopbar').innerHTML = dmTopbarHtml(ds);
+  const dates = allDates();
+  const idx = dates.indexOf(ds);
+  const prevBtn = document.getElementById('dayPrev');
+  const nextBtn = document.getElementById('dayNext');
+  prevBtn.disabled = idx<=0;
+  nextBtn.disabled = idx>=dates.length-1;
+  prevBtn.addEventListener('click', ()=> navigateModalDay(-1));
+  nextBtn.addEventListener('click', ()=> navigateModalDay(1));
+
+  const container = document.getElementById('dayModalContent');
+  container.innerHTML = renderDayFields(ds);
+  bindDynamicEvents(container);
+  container.scrollTop = 0;
+
+  if(opts.moveSlider !== false){
+    const slider = document.getElementById('dateSlider');
+    if(slider){
+      slider.value = idx;
+      const pct = dates.length>1 ? (idx/(dates.length-1))*100 : 0;
+      slider.style.setProperty('--pct', pct+'%');
+      const lbl = document.getElementById('dateSliderLabel');
+      const d = new Date(ds+'T00:00:00');
+      if(lbl) lbl.textContent = `${d.getDate()} ${MESI[d.getMonth()]}`;
+    }
+  }
+}
+
+function navigateModalDay(delta){
+  const dates = allDates();
+  const idx = dates.indexOf(currentModalDate);
+  const newIdx = idx + delta;
+  if(newIdx<0 || newIdx>=dates.length) return;
+  goToModalDate(dates[newIdx]);
+}
+
+function openDayModal(ds){
+  const dates = allDates();
+  const idx = dates.indexOf(ds);
+
+  // Build the slider fresh only on open — never mid-navigation — so a drag in progress is never interrupted.
+  document.getElementById('dmSlider').innerHTML = `
+    <span class="sliderbar-end">${new Date(dates[0]+'T00:00:00').getDate()}</span>
+    <input type="range" id="dateSlider" class="dateslider" min="0" max="${dates.length-1}" value="${idx}" step="1" aria-label="Scorri i giorni del viaggio">
+    <span class="sliderbar-end">${new Date(dates[dates.length-1]+'T00:00:00').getDate()}</span>
+    <span class="dateslider-label" id="dateSliderLabel"></span>
+  `;
+  const slider = document.getElementById('dateSlider');
+  const pct = dates.length>1 ? (idx/(dates.length-1))*100 : 0;
+  slider.style.setProperty('--pct', pct+'%');
+  slider.addEventListener('input', ()=>{
+    const i = parseInt(slider.value,10);
+    const newDs = dates[i];
+    const dd = new Date(newDs+'T00:00:00');
+    document.getElementById('dateSliderLabel').textContent = `${dd.getDate()} ${MESI[dd.getMonth()]}`;
+    const p = dates.length>1 ? (i/(dates.length-1))*100 : 0;
+    slider.style.setProperty('--pct', p+'%');
+    goToModalDate(newDs, {moveSlider:false});
+  });
+
+  goToModalDate(ds, {moveSlider:false}); // slider already positioned correctly at creation time
+  document.getElementById('overlayDay').classList.add('show');
+  updateBodyScrollLock();
+}
+function closeDayModal(){
+  flushDirty();   // in background: non blocca la chiusura
+  document.getElementById('overlayDay').classList.remove('show');
+  currentModalDate = null;
+  updateBodyScrollLock();
+  renderAll();
+}
+
+/* Swipe left/right on the open day card to move between days (vertical scroll passes through) */
+(function setupDaySwipe(){
+  const zone = document.getElementById('dayModalContent');
+  let startX=0, startY=0, tracking=false;
+  zone.addEventListener('touchstart', e=>{
+    if(e.touches.length!==1) return;
+    startX = e.touches[0].clientX; startY = e.touches[0].clientY; tracking=true;
+  }, {passive:true});
+  zone.addEventListener('touchend', e=>{
+    if(!tracking) return; tracking=false;
+    const endX = e.changedTouches[0].clientX, endY = e.changedTouches[0].clientY;
+    const dx = endX-startX, dy = endY-startY;
+    if(Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)*1.5){
+      navigateModalDay(dx < 0 ? 1 : -1);
+    }
+  }, {passive:true});
+})();
+
+document.addEventListener('keydown', e=>{
+  if(!document.getElementById('overlayDay').classList.contains('show')) return;
+  if(e.key==='ArrowLeft') navigateModalDay(-1);
+  else if(e.key==='ArrowRight') navigateModalDay(1);
+  else if(e.key==='Escape') closeDayModal();
+});
+
+/* ============================= EVENTS ============================= */
+function bindDynamicEvents(root){
+  root.querySelectorAll('[data-field]').forEach(el=>{
+    el.addEventListener('change', async e=>{
+      const ds = el.getAttribute('data-date');
+      const field = el.getAttribute('data-field');
+      dayEntry(ds)[field] = el.value;
+      await saveState();
+      markDirty(ds);
+      if(view==='week') renderAll();
+    });
+  });
+  root.querySelectorAll('[data-add-for]').forEach(el=>{
+    el.addEventListener('click', ()=> openLibrary(el.getAttribute('data-add-for'), 'tappa'));
+  });
+  root.querySelectorAll('[data-add-notte-for]').forEach(el=>{
+    el.addEventListener('click', ()=> openLibrary(el.getAttribute('data-add-notte-for'), 'sosta'));
+  });
+  root.querySelectorAll('[data-remove-tappa]').forEach(el=>{
+    el.addEventListener('click', async e=>{
+      e.stopPropagation();
+      const id = el.getAttribute('data-remove-tappa');
+      const ds = el.getAttribute('data-date');
+      const entry = dayEntry(ds);
+      entry.tappe = entry.tappe.filter(x=>x!==id);
+      await saveState();
+      markDirty(ds);
+      renderAll();
+      if(document.getElementById('overlayDay').classList.contains('show')) openDayModal(ds);
+    });
+  });
+  root.querySelectorAll('[data-remove-notte]').forEach(el=>{
+    el.addEventListener('click', async e=>{
+      e.stopPropagation();
+      const ds = el.getAttribute('data-date');
+      dayEntry(ds).notteId = null;
+      await saveState();
+      markDirty(ds);
+      renderAll();
+      if(document.getElementById('overlayDay').classList.contains('show')) openDayModal(ds);
+    });
+  });
+  root.querySelectorAll('[data-open-item]').forEach(el=>{
+    el.addEventListener('click', e=>{
+      if(e.target.closest('[data-remove-tappa]') || e.target.closest('[data-remove-notte]')) return;
+      openDetail(el.getAttribute('data-open-item'));
+    });
+  });
+  root.querySelectorAll('.cell[data-date]').forEach(el=>{
+    el.addEventListener('click', ()=> openDayModal(el.getAttribute('data-date')));
+  });
+}
+
+document.getElementById('btnWeek').addEventListener('click', ()=>{ view='week'; renderAll(); });
+document.getElementById('btnDay').addEventListener('click', ()=>{ view='day'; renderAll(); });
+document.getElementById('btnLibrary').addEventListener('click', ()=> openLibrary(null, 'tappa'));
+document.getElementById('btnSoste').addEventListener('click', ()=> openLibrary(null, 'sosta'));
+document.getElementById('btnReset').addEventListener('click', async ()=>{
+  if(confirm('Ripristinare il piano di base (Piano Verosimile da Notion)? Le modifiche fatte finora andranno perse.')){
+    schedule = scheduleFromDefault();
+    await saveState();
+    allDates().forEach(markDirty);
+    renderAll();
+  }
+});
+document.getElementById('closeLib').addEventListener('click', closeLibrary);
+document.getElementById('closeDetail').addEventListener('click', closeDetail);
+document.getElementById('closeDay').addEventListener('click', closeDayModal);
+document.getElementById('libSearch').addEventListener('input', e=> renderLibrary(e.target.value));
+
+document.getElementById('libContent').addEventListener('click', async e=>{
+  if(e.target.id === 'qaSave'){
+    const titleEl = document.getElementById('qaTitle');
+    const zonaEl = document.getElementById('qaZona');
+    const noteEl = document.getElementById('qaNote');
+    const title = titleEl.value.trim();
+    if(!title){ titleEl.focus(); return; }
+    const id = 'custom-' + Date.now().toString(36);
+    customSoste.push({id, icon:'🏕️', title, zona: zonaEl.value.trim() || 'Zona da definire', teaser:'', note: noteEl.value.trim(), link:'', custom:true});
+    await saveSoste();
+    if(pickingForDate){
+      dayEntry(pickingForDate).notteId = id;
+      await saveState();
+      markDirty(pickingForDate);
+    }
+    const targetDate = pickingForDate;
+    const dayModalWasOpen = document.getElementById('overlayDay').classList.contains('show');
+    closeLibrary();
+    renderAll();
+    if(dayModalWasOpen && targetDate) openDayModal(targetDate);
+    return;
+  }
+  const infoEl = e.target.closest('[data-info]');
+  if(infoEl){ openDetail(infoEl.getAttribute('data-info')); return; }
+  const pickEl = e.target.closest('[data-pick]');
+  if(pickEl && pickingForDate){
+    const id = pickEl.getAttribute('data-pick');
+    const targetDate = pickingForDate;
+    const entry = dayEntry(targetDate);
+    if(pickingKind === 'sosta'){
+      entry.notteId = id;
+    } else {
+      if(!entry.tappe.includes(id)) entry.tappe.push(id);
+    }
+    await saveState();
+    markDirty(targetDate);
+    const dayModalWasOpen = document.getElementById('overlayDay').classList.contains('show');
+    closeLibrary();
+    renderAll();
+    if(dayModalWasOpen) openDayModal(targetDate);
+  } else if(pickEl && !pickingForDate){
+    openDetail(pickEl.getAttribute('data-pick'));
+  }
+});
+
+[  ['overlayLib', closeLibrary], ['overlayDetail', closeDetail], ['overlayDay', closeDayModal]
+].forEach(([id, fn])=>{
+  document.getElementById(id).addEventListener('click', e=>{ if(e.target.id===id) fn(); });
+});
+
+/* ============================= MAIN RENDER ============================= */
+function renderAll(){
+  document.getElementById('btnWeek').classList.toggle('active', view==='week');
+  document.getElementById('btnDay').classList.toggle('active', view==='day');
+  const main = document.getElementById('mainArea');
+  main.innerHTML = view==='week' ? renderWeekView() : renderDayView();
+  bindDynamicEvents(main);
+  // rebind day-modal content too (in case open)
+  bindDynamicEvents(document.getElementById('dayModalContent'));
+}
+
+/* ============================= NOTION SYNC ============================= */
+const NOTION_PIANO_DS = '3b09b270-fd37-8005-8ad9-000b40fdf430'; // "Itinerario Grecia" (Piano Giornaliero)
+const NOTION_TAPPE_DS = 'f903dee5-c04a-4ee1-b600-e11323203582'; // "Tappe & Soste — Grecia"
+
+let syncStatusTimer = null;
+function setSyncStatus(msg, isError){
+  const el = document.getElementById('notionSyncStatus');
+  el.innerHTML = `<span>${msg}</span>`;
+  el.style.display = 'block';
+  el.onclick = ()=>{ el.style.display='none'; };
+  clearTimeout(syncStatusTimer);
+  if(!isError){
+    syncStatusTimer = setTimeout(()=>{ el.style.display='none'; }, 7000);
+  }
+  // errors stay on screen (tap to dismiss) so there's time to read/report them
+}
+
+function normTitle(s){
+  return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,' ').trim();
+}
+function titleToTappaId(name){
+  const n = normTitle(name);
+  if(!n) return null;
+  const found = TAPPE.find(t=>{
+    const tn = normTitle(t.title);
+    return tn===n || tn.includes(n) || n.includes(tn);
+  });
+  return found ? found.id : null;
+}
+function titleToSostaId(name){
+  const n = normTitle(name);
+  if(!n) return null;
+  const found = allSoste().find(s=>{
+    const sn = normTitle(s.title);
+    return sn===n || sn.includes(n) || n.includes(sn);
+  });
+  return found ? found.id : null;
+}
+
+
+/* ============================= SYNC NOTION (Cowork) =============================
+   La versione precedente chiamava api.anthropic.com direttamente dalla pagina:
+   non poteva funzionare, un artifact non ha credenziali (401 / CORS).
+   Qui invece usiamo il ponte di Cowork verso i connettori dell'utente:
+   window.cowork.callMcpTool() parla col connettore Notion senza API key.
+================================================================================ */
+
+const NOTION_SRV = 'mcp__60f97415-b456-4e52-95ac-156a7ce80963__';
+const T_QUERY  = NOTION_SRV + 'notion-query-data-sources';
+const T_UPDATE = NOTION_SRV + 'notion-update-page';
+
+/* Mappa esplicita id-app -> id-pagina-Notion. Meglio del matching sui titoli:
+   deterministica, e non si rompe se un titolo cambia da una parte sola. */
+const NOTION_PAGE_ID = {
+  'igoumenitsa-parga':'3b09b270-fd37-8148-ad1b-cdafeb668c43',
+  'preveza':'3b09b270-fd37-813a-85ed-cfafae4ac3ea',
+  'lefkada':'3b09b270-fd37-817e-9ca0-f971ae35d7a0',
+  'pylos':'3b09b270-fd37-81fd-a0e8-dc04253b8884',
+  'methoni':'3b09b270-fd37-81f9-9d83-de00bf94e6dc',
+  'gythio':'3b09b270-fd37-8119-87dd-f1b8d86bb945',
+  'elafonisos':'3b09b270-fd37-819b-8fe7-ebede87424e6',
+  'nafplio':'3b09b270-fd37-813d-b3e7-f7904457ba49',
+  'micene':'3b09b270-fd37-81bc-b568-f6912fdf4deb',
+  'epidauro':'3b09b270-fd37-813a-b2de-e9d3ef21acd7',
+  'delfi':'3b09b270-fd37-8158-8afc-d93df9378f67',
+  'meteore':'3b09b270-fd37-818e-887d-fed5e8a7b988',
+  'olympia':'3b09b270-fd37-811b-838f-f053c7f332e2',
+  'atene':'3b09b270-fd37-81b7-84a0-c83cbcd03c74',
+  'corinto':'3b09b270-fd37-8187-8ade-c4e538508009',
+  'sparta-mistra':'3b09b270-fd37-81bf-93da-f70ad9487331',
+  'monemvasia':'3b09b270-fd37-812b-b37b-c550aae1115a',
+  'kalamata':'3b09b270-fd37-814d-bb13-d0b1c78d91f2',
+  'patrasso':'3b09b270-fd37-81a5-b422-ea6dac4cbd94',
+  'nafpaktos':'3b09b270-fd37-816c-bb7a-d0c4e630a00b',
+  'kyllini':'3b09b270-fd37-813b-9859-feb9f22c9531',
+  'drepanos':'3b09b270-fd37-8171-be8e-e4f1d01b13c1',
+  'monolithi-panorama':'3b09b270-fd37-81c2-ad9a-ffac138e1499',
+  'erodios':'3b09b270-fd37-8162-8e32-f8df1243ac95',
+  'gythion-bay':'3b09b270-fd37-816a-81a0-cb7b2841e136',
+  'simos':'3b09b270-fd37-81b4-9034-cc78c80412d0',
+  'nafplio-camp':'3b09b270-fd37-81d5-a738-ed042acc2d70',
+  'itea-galaxidi-camp':'3b09b270-fd37-816f-b775-d4c7dd4c6137',
+  'kastraki-vrachos':'3b09b270-fd37-81bd-b7c6-cdb8bf341e67',
+  /* aggiunte in corso di viaggio */
+  'masseria-appia-traiana':'3b19b270-fd37-8118-a7a9-c565a6d88af3',
+  'ostuni-getsemani':'3b19b270-fd37-817f-9396-cc23195cbdc1',
+  'torre-pozzelle':'3b19b270-fd37-8180-849e-e0702e6a5f02',
+  'villanova-camerini':'3b19b270-fd37-819f-bde1-f1d734c2642b',
+  'acrogiali':'3b49b270-fd37-81e4-ae7a-e5b9b545f426',
+  'necromanteion':'3b49b270-fd37-818d-9fc5-dd415cce4c66',
+  'acheron-sorgenti':'3b49b270-fd37-8148-8bbb-dafe7f63eb1c'
+};
+/* mappa inversa: nelle relazioni Notion restituisce URL con id senza trattini */
+const ID_BY_NOTION = {};
+Object.keys(NOTION_PAGE_ID).forEach(k => { ID_BY_NOTION[NOTION_PAGE_ID[k].replace(/-/g,'')] = k; });
+
+function relToAppIds(raw){
+  if(!raw) return [];
+  let arr = raw;
+  if(typeof raw === 'string'){ try{ arr = JSON.parse(raw); }catch(e){ return []; } }
+  if(!Array.isArray(arr)) return [];
+  return arr.map(u => {
+    const m = String(u).replace(/-/g,'').match(/([0-9a-f]{32})/i);
+    return m ? ID_BY_NOTION[m[1].toLowerCase()] : null;
+  }).filter(Boolean);
+}
+
+async function mcp(tool, args){
+  if(!window.cowork || !window.cowork.callMcpTool)
+    throw new Error("questo file va aperto come artifact in Cowork (manca il ponte verso i connettori)");
+  const r = await window.cowork.callMcpTool(tool, args);
+  if(r && r.isError){
+    const t = (r.content && r.content[0] && r.content[0].text) || 'errore sconosciuto';
+    throw new Error(String(t).slice(0, 240));
+  }
+  if(r && r.structuredContent) return r.structuredContent;
+  const txt = r && r.content && r.content[0] && r.content[0].text;
+  if(!txt) throw new Error('risposta vuota dal connettore Notion');
+  try{ return JSON.parse(txt); }catch(e){ return { _raw: txt }; }
+}
+
+async function fetchPiano(){
+  const url = 'collection://' + NOTION_PIANO_DS;
+  const out = await mcp(T_QUERY, { data: { data_source_urls:[url], query: 'SELECT * FROM "' + url + '"' } });
+  const rows = out.results || [];
+  if(!rows.length) throw new Error('il database Itinerario Grecia ha restituito 0 righe');
+  return rows;
+}
+
+/* ===================== SALVATAGGIO AUTOMATICO PER SINGOLO GIORNO =====================
+   Ogni modifica marca SOLO il giorno toccato. Quando chiudi la scheda (o passi a un
+   altro giorno) parte il salvataggio in background dei soli giorni marcati: gli altri
+   19-20 giorni non vengono nemmeno sfiorati. Se il salvataggio fallisce il giorno resta
+   marcato, così al tentativo successivo ci riprova.
+==================================================================================== */
+
+const K_AUTOSAVE = 'grecia-notion-autosave-v1';
+const K_DIRTY    = 'grecia-notion-dirty-v1';
+const K_PAGEIDS  = 'grecia-notion-pageids-v1';
+
+let autosaveOn = false;
+let dirty      = new Set();
+let pageIdByDate = {};
+let flushing = false, flushAgain = false;
+
+function loadAutosavePrefs(){
+  try{ autosaveOn = localStorage.getItem(K_AUTOSAVE) === '1'; }catch(e){}
+  try{ const d = JSON.parse(localStorage.getItem(K_DIRTY) || '[]'); if(Array.isArray(d)) dirty = new Set(d); }catch(e){}
+  try{ pageIdByDate = JSON.parse(localStorage.getItem(K_PAGEIDS) || '{}') || {}; }catch(e){}
+}
+function persistDirty(){ try{ localStorage.setItem(K_DIRTY, JSON.stringify([...dirty])); }catch(e){} }
+function persistPageIds(){ try{ localStorage.setItem(K_PAGEIDS, JSON.stringify(pageIdByDate)); }catch(e){} }
+
+function autosaveDot(txt){
+  const el = document.getElementById('autosaveDot');
+  if(el) el.textContent = txt || '';
+}
+function refreshDot(){
+  if(!autosaveOn){ autosaveDot(dirty.size ? '· ' + dirty.size + ' da salvare' : ''); return; }
+  if(flushing) return;                       // il testo lo gestisce flushDirty
+  autosaveDot(dirty.size ? '· ' + dirty.size + ' in attesa' : '· tutto salvato');
+}
+
+let markDirty = function(ds){
+  if(!ds) return;
+  dirty.add(ds);
+  persistDirty();
+  refreshDot();
+};
+
+/* mappa data -> id pagina Notion, interrogando il database solo quando serve */
+async function ensurePageIds(dates){
+  const mancanti = dates.filter(d => !pageIdByDate[d]);
+  if(!mancanti.length) return;
+  const rows = await fetchPiano();
+  rows.forEach(r=>{ const d = r['date:Data:start']; if(d && r.id) pageIdByDate[d] = r.id; });
+  persistPageIds();
+}
+
+async function salvaGiorno(ds){
+  const pid = pageIdByDate[ds];
+  if(!pid) throw new Error('nessuna riga su Notion per il ' + dayLabelShort(ds));
+  const e = dayEntry(ds);
+  await mcp(T_UPDATE, {
+    page_id: pid,
+    command: 'update_properties',
+    properties: {
+      'Base / zona': e.base || '',
+      'Mattina':     e.mattina || '',
+      'Pomeriggio':  e.pomeriggio || '',
+      'Sera':        e.sera || '',
+      'Tappe del giorno': (e.tappe || []).map(id => NOTION_PAGE_ID[id]).filter(Boolean),
+      'Sosta notturna':   (e.notteId && NOTION_PAGE_ID[e.notteId]) ? [NOTION_PAGE_ID[e.notteId]] : []
+    }
+  });
+}
+
+/* Volutamente NON async per chi la chiama: parte e basta, l'interfaccia non aspetta. */
+function flushDirty(){
+  if(!autosaveOn || !dirty.size) return;
+  if(flushing){ flushAgain = true; return; }
+  flushing = true;
+  (async ()=>{
+    try{
+      do{
+        flushAgain = false;
+        const todo = [...dirty];
+        autosaveDot('· salvo ' + todo.length + '…');
+        await ensurePageIds(todo);
+        const falliti = [];
+        for(const ds of todo){
+          try{ await salvaGiorno(ds); dirty.delete(ds); }
+          catch(err){ falliti.push(dayLabelShort(ds) + ': ' + err.message); }
+        }
+        persistDirty();
+        if(falliti.length){
+          autosaveDot('· ⚠️ ' + falliti.length + ' non salvati');
+          setSyncStatus('⚠️ Salvataggio automatico non riuscito per ' + falliti.length +
+            ' giorno/i — ' + falliti.slice(0,2).join(' | ') + '. Riprovo alla prossima modifica.', true);
+        } else {
+          autosaveDot('· ✓ salvato');
+          setTimeout(refreshDot, 4000);
+        }
+      } while(flushAgain && dirty.size);
+    } finally { flushing = false; }
+  })();
+}
+
+/* rete di sicurezza: modifiche fatte in Vista Giorno (senza modale da chiudere)
+   e uscita dalla pagina con qualcosa ancora in sospeso */
+let autosaveTimer = null;
+const _markDirty = markDirty;
+markDirty = function(ds){
+  _markDirty(ds);
+  if(!autosaveOn) return;
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(flushDirty, 2500);
+};
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden) flushDirty(); });
+window.addEventListener('pagehide', flushDirty);
+
+/* ============================= EXPORT / IMPORT JSON =============================
+   Funziona ovunque, anche senza connettore Notion: esporta il piano in JSON e
+   incollalo dove vuoi (in una chat con Claude, nelle note, su Notion), oppure
+   reimportalo qui. È il ponte fra il telefono e il computer.
+================================================================================ */
+
+function buildExportPayload(){
+  return {
+    _formato: 'grecia-viaggio-2026',
+    _versione: 1,
+    _esportato: new Date().toISOString(),
+    giorni: allDates().map(ds=>{
+      const e = dayEntry(ds);
+      const sosta = e.notteId ? getSosta(e.notteId) : null;
+      return {
+        data: ds,
+        base: e.base || '',
+        mattina: e.mattina || '',
+        pomeriggio: e.pomeriggio || '',
+        sera: e.sera || '',
+        tappe: (e.tappe||[]).map(id => (TAPPE_BY_ID[id]||{}).title).filter(Boolean),
+        notte: sosta ? sosta.title : null
+      };
+    }),
+    sosteCustom: customSoste
+  };
+}
+
+function applyImportPayload(obj){
+  const giorni = Array.isArray(obj) ? obj : (obj && obj.giorni);
+  if(!Array.isArray(giorni)) throw new Error('non trovo la lista "giorni"');
+  if(obj && Array.isArray(obj.sosteCustom)){
+    obj.sosteCustom.forEach(s=>{
+      if(s && s.id && !customSoste.some(c=>c.id===s.id)) customSoste.push(s);
+    });
+  }
+  let n = 0, saltati = [];
+  giorni.forEach(r=>{
+    const ds = r && (r.data || r.date);
+    if(!ds) return;
+    if(!/^2026-08-(0[3-9]|1\d|2[0-3])$/.test(ds)){ saltati.push(ds); return; }
+    const e = dayEntry(ds);
+    if(r.base !== undefined) e.base = r.base || '';
+    if(r.mattina !== undefined) e.mattina = r.mattina || '';
+    if(r.pomeriggio !== undefined) e.pomeriggio = r.pomeriggio || '';
+    if(r.sera !== undefined) e.sera = r.sera || '';
+    if(Array.isArray(r.tappe)) e.tappe = r.tappe.map(titleToTappaId).filter(Boolean);
+    if(r.notte !== undefined) e.notteId = r.notte ? titleToSostaId(r.notte) : null;
+    n++;
+  });
+  return { aggiornati: n, saltati: saltati };
+}
+
+/* --- overlay riusabile con textarea --- */
+function jsonOverlay(opts){
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(11,42,56,.72);display:flex;align-items:center;justify-content:center;padding:16px;';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:var(--white,#F7F5EF);color:var(--ink,#132226);border-radius:14px;max-width:640px;width:100%;max-height:86vh;display:flex;flex-direction:column;gap:10px;padding:16px;box-shadow:0 18px 50px rgba(0,0,0,.35);';
+  const h = document.createElement('div');
+  h.style.cssText = 'font-weight:700;font-size:16px;';
+  h.textContent = opts.titolo;
+  const p = document.createElement('div');
+  p.style.cssText = 'font-size:13px;opacity:.75;line-height:1.45;';
+  p.textContent = opts.aiuto;
+  const ta = document.createElement('textarea');
+  ta.style.cssText = 'flex:1;min-height:200px;font:12px/1.45 ui-monospace,Menlo,Consolas,monospace;padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,.18);background:#fff;color:#132226;resize:vertical;';
+  ta.value = opts.valore || '';
+  ta.placeholder = opts.placeholder || '';
+  ta.spellcheck = false;
+  const msg = document.createElement('div');
+  msg.style.cssText = 'font-size:13px;min-height:18px;font-weight:600;';
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;';
+  const mkBtn = (label, primary) => {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.style.cssText = 'padding:9px 14px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid ' +
+      (primary ? 'transparent;background:var(--gold,#D2A84A);color:#0B2A38;' : 'rgba(0,0,0,.2);background:transparent;color:inherit;');
+    return b;
+  };
+  const close = () => wrap.remove();
+  const bClose = mkBtn('Chiudi', false);
+  bClose.addEventListener('click', close);
+  row.appendChild(bClose);
+  (opts.azioni || []).forEach(a=>{
+    const b = mkBtn(a.label, true);
+    b.addEventListener('click', ()=>a.run(ta, msg, close));
+    row.appendChild(b);
+  });
+  box.append(h, p, ta, msg, row);
+  wrap.appendChild(box);
+  wrap.addEventListener('click', ev=>{ if(ev.target === wrap) close(); });
+  document.body.appendChild(wrap);
+  if(opts.seleziona){ ta.focus(); ta.select(); }
+  return { ta: ta, msg: msg, close: close };
+}
+
+function doExport(){
+  const json = JSON.stringify(buildExportPayload(), null, 2);
+  const ui = jsonOverlay({
+    titolo: '📤 Esporta il piano',
+    aiuto: 'Tutto il calendario in JSON. Copialo e incollalo dove vuoi: in Notion, nelle note, o in una chat con Claude per farlo scrivere sui database.',
+    valore: json,
+    seleziona: true,
+    azioni: [{
+      label: 'Copia negli appunti',
+      run: function(ta, msg){
+        const ok = () => { msg.style.color = '#1c7c3c'; msg.textContent = '✅ Copiato.'; };
+        const ko = () => { msg.style.color = '#a05b00'; msg.textContent = '⚠️ Copia automatica non riuscita — seleziona il testo e copialo a mano.'; };
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(ta.value).then(ok).catch(ko);
+        } else {
+          ta.select();
+          try{ document.execCommand('copy') ? ok() : ko(); }catch(e){ ko(); }
+        }
+      }
+    }]
+  });
+  return ui;
+}
+
+function doImport(){
+  jsonOverlay({
+    titolo: '📥 Importa il piano',
+    aiuto: 'Incolla qui un JSON esportato in precedenza. Sovrascrive i giorni presenti nel file; quelli non citati restano come sono.',
+    valore: '',
+    placeholder: '{ "giorni": [ ... ] }',
+    azioni: [{
+      label: 'Importa',
+      run: async function(ta, msg, close){
+        let obj;
+        try{ obj = JSON.parse(ta.value.replace(/```json|```/g, '').trim()); }
+        catch(e){ msg.style.color = '#b00020'; msg.textContent = '⚠️ JSON non valido: ' + e.message; return; }
+        let res;
+        try{ res = applyImportPayload(obj); }
+        catch(e){ msg.style.color = '#b00020'; msg.textContent = '⚠️ ' + e.message; return; }
+        await saveState();
+        await saveSoste();
+        renderAll();
+        close();
+        setSyncStatus('✅ Importati ' + res.aggiornati + ' giorni' +
+          (res.saltati.length ? ' — ignorate ' + res.saltati.length + ' date fuori viaggio' : '') + '.');
+      }
+    }]
+  });
+}
+
+document.getElementById('btnExport').addEventListener('click', doExport);
+document.getElementById('btnImport').addEventListener('click', doImport);
+
+/* Il ponte verso i connettori esiste solo negli artifact Cowork. Su claude.ai
+   (desktop e app mobile) non c'è: invece di lasciare due pulsanti che falliscono,
+   li nascondiamo e lasciamo export/import, che funziona ovunque. */
+function initAmbiente(){
+  const bridge = !!(window.cowork && typeof window.cowork.callMcpTool === 'function');
+  if(!bridge){
+    ['btnPushNotion','btnPullNotion'].forEach(id=>{
+      const el = document.getElementById(id); if(el) el.style.display = 'none';
+    });
+    const lbl = document.querySelector('.autosave-toggle');
+    if(lbl) lbl.style.display = 'none';
+    const f = document.getElementById('envNote');
+    if(f) f.textContent = 'Modalità autonoma: il piano resta su questo dispositivo. Usa 📤/📥 per travasarlo da/verso Notion o un altro dispositivo.';
+  } else {
+    const f = document.getElementById('envNote');
+    if(f) f.textContent = 'Connettore Notion attivo: puoi salvare e rileggere il piano direttamente dai database.';
+  }
+  return bridge;
+}
+
+function initAutosave(){
+  loadAutosavePrefs();
+  const chk = document.getElementById('chkAutosave');
+  chk.checked = autosaveOn;
+  chk.addEventListener('change', ()=>{
+    autosaveOn = chk.checked;
+    try{ localStorage.setItem(K_AUTOSAVE, autosaveOn ? '1' : '0'); }catch(e){}
+    if(autosaveOn){
+      setSyncStatus('☁️ Salvataggio automatico attivo: chiudendo la scheda di un giorno modificato lo salvo su Notion, solo quello.');
+      flushDirty();
+    } else {
+      setSyncStatus('☁️ Salvataggio automatico disattivato. Usa 💾 Salva su Notion quando vuoi.');
+    }
+    refreshDot();
+  });
+  refreshDot();
+}
+
+let notionBusy = false;
+function busy(v){
+  notionBusy = v;
+  ['btnPushNotion','btnPullNotion'].forEach(id=>{
+    const b = document.getElementById(id); if(b) b.disabled = v;
+  });
+}
+
+async function pullFromNotion(){
+  if(notionBusy) return;
+  busy(true);
+  setSyncStatus('🔄 Sto leggendo il piano da Notion…');
+  try{
+    const rows = await fetchPiano();
+    let n = 0, ignorate = [];
+    rows.forEach(r=>{
+      const ds = r['date:Data:start'];
+      if(!ds) return;
+      if(!/^2026-08-(0[3-9]|1\d|2[0-3])$/.test(ds)){ ignorate.push(ds); return; }
+      const e = dayEntry(ds);
+      e.base       = r['Base / zona'] || '';
+      e.mattina    = r['Mattina'] || '';
+      e.pomeriggio = r['Pomeriggio'] || '';
+      e.sera       = r['Sera'] || '';
+      e.tappe      = relToAppIds(r['Tappe del giorno']);
+      const notti  = relToAppIds(r['Sosta notturna']);
+      e.notteId    = notti.length ? notti[0] : null;
+      n++;
+    });
+    await saveState();
+    dirty.clear(); persistDirty(); refreshDot();
+    renderAll();
+    setSyncStatus('✅ Aggiornati ' + n + ' giorni da Notion' +
+      (ignorate.length ? ' (ignorate ' + ignorate.length + ' righe fuori viaggio)' : '') + '.');
+  }catch(e){
+    setSyncStatus('⚠️ Lettura da Notion non riuscita: ' + e.message, true);
+  }finally{ busy(false); }
+}
+
+async function pushToNotion(){
+  if(notionBusy) return;
+  busy(true);
+  setSyncStatus('💾 Preparo il salvataggio su Notion…');
+  try{
+    const rows = await fetchPiano();
+    const byDate = {};
+    rows.forEach(r=>{ if(r['date:Data:start']) byDate[r['date:Data:start']] = r; });
+
+    const dates = allDates();
+    let ok = 0; const mancanti = [], falliti = [];
+
+    for(let i = 0; i < dates.length; i++){
+      const ds = dates[i];
+      const row = byDate[ds];
+      if(!row){ mancanti.push(ds); continue; }
+      const e = dayEntry(ds);
+      const props = {
+        'Base / zona': e.base || '',
+        'Mattina':     e.mattina || '',
+        'Pomeriggio':  e.pomeriggio || '',
+        'Sera':        e.sera || '',
+        'Tappe del giorno': (e.tappe || []).map(id => NOTION_PAGE_ID[id]).filter(Boolean),
+        'Sosta notturna':   (e.notteId && NOTION_PAGE_ID[e.notteId]) ? [NOTION_PAGE_ID[e.notteId]] : []
+      };
+      setSyncStatus('💾 Salvo su Notion… ' + (i + 1) + '/' + dates.length + ' (' + dayLabelShort(ds) + ')');
+      try{
+        await mcp(T_UPDATE, { page_id: row.id, command: 'update_properties', properties: props });
+        ok++;
+      }catch(err){ falliti.push(dayLabelShort(ds) + ': ' + err.message); }
+    }
+
+    if(!falliti.length){ dirty.clear(); persistDirty(); refreshDot(); }
+    let msg = '✅ Salvati ' + ok + '/' + dates.length + ' giorni su Notion.';
+    const note = [];
+    if(mancanti.length) note.push('senza riga su Notion: ' + mancanti.join(', '));
+    if(falliti.length)  note.push('errori — ' + falliti.slice(0, 3).join(' | '));
+    if(note.length) msg = '⚠️ ' + msg + ' ' + note.join('; ');
+    setSyncStatus(msg, note.length > 0);
+  }catch(e){
+    setSyncStatus('⚠️ Salvataggio su Notion non riuscito: ' + e.message, true);
+  }finally{ busy(false); }
+}
+
+/* Le soste personalizzate create nell'app non esistono su Notion: avvisiamo
+   invece di far fallire il salvataggio in silenzio. */
+function avvisoSosteCustom(){
+  const usate = allDates().map(ds => dayEntry(ds).notteId)
+    .filter(id => id && !NOTION_PAGE_ID[id]);
+  if(usate.length) setSyncStatus('ℹ️ ' + usate.length + ' notte/i usano soste create nell\'app: su Notion resteranno vuote finché non crei la scheda lì.', true);
+}
+
+document.getElementById('btnPullNotion').addEventListener('click', pullFromNotion);
+document.getElementById('btnPushNotion').addEventListener('click', ()=>{ avvisoSosteCustom(); pushToNotion(); });
+
+
+(async function init(){
+  await Promise.all([loadState(), loadSoste(), loadOverrides()]);
+  const bridge = initAmbiente();
+  if(bridge) initAutosave();
+  renderAll();
+})();
+</script>
+</body>
+</html>
