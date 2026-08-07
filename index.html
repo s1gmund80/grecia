@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 7 agosto 2026 — v13.5 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 7 agosto 2026 — v13.6 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,8 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.6 (7 agosto): diario del 6 agosto importato da Notion. Nuova relazione Notion "Tappa collegata"/"Soste notte":
+     ogni tappa mostra ora le soste notturne candidate (campo sosteNotte[]) e ogni sosta rimanda alla tappa di riferimento.
      v13.5 (7 agosto): interfaccia semplificata. Sync Notion ed export/import spostati nel pannello "Impostazioni";
      rimosso il pulsante "Ripristina piano di base"; i campi del giorno sono in SOLA LETTURA di default (flag nelle
      Impostazioni per abilitare la modifica) e il testo di mattina/pomeriggio/sera si vede tutto, senza aree che scorrono.
@@ -483,7 +485,7 @@
 
 <main id="mainArea"></main>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 7 agosto 2026 · v13.5 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 7 agosto 2026 · v13.6 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -548,7 +550,7 @@ const TAPPE = [
    teaser:"Porto di sbarco dall'Italia; a 35 km il borgo pastello di Parga con castello veneziano.",
    vedere:["Parga e il castello veneziano sul mare","Spiagge di Valtos, Lichnos, Kryoneri","Isolotto della Panagia","Gita in barca alle grotte vicine"],
    campeggio:"Campeggi sulla costa tra Igoumenitsa e Parga (zona Plataria/Lichnos), comodi per roulotte, pochi minuti dal porto.",
-   link:"https://en.wikipedia.org/wiki/Parga", extra:false},
+   link:"https://en.wikipedia.org/wiki/Parga", sosteNotte:["drepanos","kalami-beach","elena-beach","sofas","valtos-parga"], extra:false},
   {id:"preveza", icon:"🏖️", title:"Preveza / Monolithi / Kanali", tipi:["mare","storico","natura"], notti:"1–2",
    teaser:"Tappa ponte pratica sullo Ionio: base a Monolithi/Kanali, con Nikopolis e il fiume Acheron nei dintorni.",
    vedere:["Preveza città: lungomare e taverne (bella la sera)","Monolithi Beach: lunga, tramonti","Kanali/Kastrosykia: spiaggia organizzata","Ammoudia: sabbia e fondale basso, family","Necromanteion dell'Acheron","Antica Nikopolis e museo"],
@@ -573,17 +575,17 @@ const TAPPE = [
    teaser:"Il Mani: case-torri in pietra, villaggi arroccati, calette. Gythio è la porta d'accesso, porticciolo grazioso.",
    vedere:["Areopoli: borgo di pietra, capitale del Mani","Grotte di Diros (Vlychada): barca tra stalattiti","Vathia: villaggio-torre abbandonato","Relitto Dimitrios sulla spiaggia di Valtaki","Capo Tenaro, punta più a sud"],
    campeggio:"Gythion Bay Camping — sul mare, spazioso, ombreggiato, ottimo per roulotte.",
-   link:"https://gythiocamping.gr/", extra:false},
+   link:"https://gythiocamping.gr/", sosteNotte:["gythion-bay","meltemi","dias-beach","mani-beach","castello-antico"], extra:false},
   {id:"elafonisos", icon:"🏖️", title:"Elafonisos (Simos) ⭐", tipi:["mare"], notti:"2",
    teaser:"Isola raggiunta con breve traghetto da Pounta: Simos, tra le spiagge più belle di Grecia, acqua turchese e dune.",
    vedere:["Megalo Simos e Mikro Simos: dune, mare caraibico","Paesino di Elafonisos, taverne di pesce","Spiaggia di Kato Nisi"],
    campeggio:"Simos Camping — unico campeggio dell'isola, sulla spiaggia. ⚠️ verificare ammissione roulotte sul traghetto-chiatta, o lasciarla sulla terraferma (Neapoli).",
-   link:"https://simoscamping.gr/it/", extra:false},
+   link:"https://simoscamping.gr/it/", sosteNotte:["simos","elafonisos-resort","berdoussis","hotel-elafonissos","limira-mare"], extra:false},
   {id:"nafplio", icon:"🏰", title:"Nafplio (Napulia)", tipi:["borgo","mare"], notti:"2–3",
    teaser:"La città più elegante del Peloponneso, prima capitale della Grecia indipendente. Base per Micene ed Epidauro.",
    vedere:["Fortezza di Palamidi (999 gradini o in auto)","Il Bourtzi, castelletto su isolotto","Centro storico veneziano, Piazza Syntagma","Spiagge di Karathona e Arvanitia"],
    campeggio:"Zona Drepano/Palaia Epidavros: Camping Bekas, Nicolas II o Lefka — ben posizionati per Micene/Epidauro.",
-   link:"https://www.bekas.gr/", extra:false},
+   link:"https://www.bekas.gr/", sosteNotte:["nafplio-camp","lefka-beach","kastraki-assini","lido-tolo","ancient-assini"], extra:false},
   {id:"micene", icon:"🏛️", title:"Micene", tipi:["storico"], notti:"0 (in giornata da Nafplio)",
    teaser:"Capitale della civiltà micenea, patrimonio UNESCO — Porta dei Leoni e Tesoro di Atreo.",
    vedere:["Porta dei Leoni","Circolo delle tombe reali (maschera di Agamennone)","Tesoro di Atreo (tomba a tholos)","Museo archeologico del sito"],
@@ -603,7 +605,7 @@ const TAPPE = [
    teaser:"Torri di roccia con monasteri ortodossi \"sospesi nel cielo\", UNESCO. Base a Kastraki.",
    vedere:["6 monasteri visitabili (Gran Meteora il più grande)","Punti panoramici al tramonto","Grotta di Theopetra, lago di Plastiras"],
    campeggio:"Camping Vrachos Kastraki — piscina, staff italiano, 1 km da Kalambaka.",
-   link:"https://www.campingkastraki.com/en/", extra:false},
+   link:"https://www.campingkastraki.com/en/", sosteNotte:["kastraki-vrachos","meteora-garden","the-cave-kastraki","doupiani-house","meteora-hotel-kastraki"], extra:false},
   {id:"olympia", icon:"🏛️", title:"Olympia", tipi:["storico"], notti:"1",
    teaser:"Santuario dove nacquero le Olimpiadi (776 a.C.), in una valle verde tra i fiumi Alfeo e Cladeo.",
    vedere:["Stadio antico (si corre sulla pista originale)","Tempio di Zeus e Tempio di Hera","La palestra e l'officina di Fidia","Museo: l’Hermes di Prassitele"],
@@ -643,7 +645,7 @@ const TAPPE = [
    teaser:"Cittadine costiere del golfo di Corinto, utili per spezzare la risalita verso Delfi/Meteore.",
    vedere:["Nafpaktos: porticciolo veneziano","Galaxidi: borgo marinaro","Itea: base pratica per Delfi"],
    campeggio:"Da valutare in zona Itea/Galaxidi.",
-   link:"", extra:true},
+   link:"", sosteNotte:["delphi-camping","chrissa","apollon-delphi","trokadero","hotel-galaxidi"], extra:true},
   {id:"kyllini", icon:"⛴️", title:"Kyllini — spezza viaggio + Olympia", tipi:["porto","storico"], notti:"0–1",
    teaser:"Porto sul lato ovest del Peloponneso, utile come sosta per spezzare il viaggio verso/da Olympia.",
    vedere:["Scheda da approfondire su Notion"],
@@ -651,6 +653,10 @@ const TAPPE = [
    link:"", extra:true},
 ];
 const TAPPE_BY_ID = Object.fromEntries(TAPPE.map(t=>[t.id,t]));
+/* Indice inverso: per ogni sosta, la tappa a cui e' collegata su Notion
+   (relazione "Tappa collegata" / "Soste notte"). Serve per navigare in entrambi i versi. */
+const TAPPA_DI_SOSTA = {};
+TAPPE.forEach(t => (t.sosteNotte || []).forEach(sid => { TAPPA_DI_SOSTA[sid] = t.id; }));
 
 function primaryTipo(t){
   const order=['mare','storico','natura','borgo','porto'];
@@ -829,9 +835,9 @@ const DEFAULT_SCHEDULE = [
   sera:"Rientro al Camping Acrogiali.",
   tappe:["necromanteion","acheron-sorgenti"], notteOpzioni:[], notteId:"acrogiali"},
  {date:"2026-08-06", base:"Riza / Preveza — Camping Acrogiali",
-  mattina:"Da completare.",
-  pomeriggio:"Da completare.",
-  sera:"Ultima notte al Camping Acrogiali: si parte domani mattina.",
+  mattina:"Mattinata al mare al Camping Acrogiali, con una bellissima passeggiata lungo la costa e bagno. Momento memorabile (in senso tragico): il drone è finito in acqua 🤦🏼‍♂️😭.",
+  pomeriggio:"Pomeriggio di relax e giochi in campeggio.",
+  sera:"Cena fuori a Preveza, poi rientro al Camping Acrogiali per l'ultima notte prima della partenza del mattino successivo.",
   tappe:[], notteOpzioni:[], notteId:"acrogiali"},
  {date:"2026-08-07", base:"Pylos / Gialova",
   mattina:"Partenza dal Camping Acrogiali: lungo trasferimento verso il Peloponneso (Rio-Antirrio, poi costa sud).",
@@ -1258,6 +1264,30 @@ function openLibrary(forDate, kind='tappa', comeOpzione=false){
 }
 function closeLibrary(){ document.getElementById('overlayLib').classList.remove('show'); pickingForDate=null; updateBodyScrollLock(); }
 
+/* Chip delle soste notturne collegate a una tappa. Il badge dice se c'e' l'email:
+   cosi' si vede subito per quali si puo' gia' mandare la richiesta di disponibilita'. */
+function chipsSosteNotte(t){
+  const lista = (t.sosteNotte || []).filter(sid => getSosta(sid));
+  if(!lista.length) return '';
+  const chips = lista.map(sid => {
+    const s = getItem(sid) || getSosta(sid);
+    const badge = s.email ? '✉️' : '⚠️';
+    return `<span class="tappa-chip-lg notte" style="cursor:pointer" onclick="openDetail('${sid}')">${badge} ${s.title}</span>`;
+  }).join('');
+  return `<h3>🌙 Dove dormire in questa tappa</h3>
+    <div class="tappe-row">${chips}</div>
+    <div style="font-size:12px;color:var(--ink-soft);margin-top:6px;">✉️ email presente, si può chiedere la disponibilità · ⚠️ email da trovare</div>`;
+}
+
+/* Chip inverso: dalla sosta si risale alla tappa di riferimento. */
+function chipTappaDiSosta(sid){
+  const tid = TAPPA_DI_SOSTA[sid];
+  if(!tid) return '';
+  const t = getItem(tid); if(!t) return '';
+  return `<h3>Tappa di riferimento</h3>
+    <div class="tappe-row"><span class="tappa-chip-lg" style="background:${chipColor(primaryTipo(t))};cursor:pointer" onclick="openDetail('${tid}')">${t.icon} ${t.title}</span></div>`;
+}
+
 function openDetail(id){
   const t = getItem(id); if(!t) return;
   if(t.kind === 'sosta'){
@@ -1266,6 +1296,7 @@ function openDetail(id){
       <div class="detail-tags"><span class="chip notte">${t.zona}</span></div>
       <p>${t.teaser}</p>
       ${t.note ? `<h3>Note</h3><div class="campeggio-box">${t.note}</div>` : ''}
+      ${chipTappaDiSosta(id)}
       <h3>Contatto</h3>
       <div class="campeggio-box">
         ${t.email
@@ -1292,6 +1323,7 @@ function openDetail(id){
       <ul>${t.vedere.map(v=>`<li>${v}</li>`).join('')}</ul>
       <h3>Campeggio</h3>
       <div class="campeggio-box">${t.campeggio}</div>
+      ${chipsSosteNotte(t)}
       ${t.link ? `<p style="margin-top:14px;"><a href="${t.link}" target="_blank" rel="noopener">Sito ↗</a></p>` : ''}
       ${t.mapsLink ? `<p style="margin-top:6px;"><a href="${t.mapsLink}" target="_blank" rel="noopener">📍 Apri su Mappe ↗</a></p>` : ''}
       ${t.extra ? `<div class="extra-note">Non ancora inserita nel piano di base — aggiungila a un giorno dalla libreria se decidi di includerla.</div>` : ''}
