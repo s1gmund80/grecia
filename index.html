@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 6 agosto 2026 — v12.8 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 7 agosto 2026 — v13.2 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,14 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.2 (7 agosto): rilettura da Notion. Aggiunta la tappa "Traghetto Brindisi -> Igoumenitsa" creata su Notion,
+     collegata al 4 agosto; dati di prenotazione e targhe NON riportati qui perche' il repo GitHub e' pubblico.
+     v13.1 (7 agosto): il pulsante "Prepara mail" e' ora sempre visibile nella scheda sosta ed e' un vero link
+     mailto (la navigazione via JS veniva bloccata dall'iframe dell'artifact); se manca l'email il pulsante apre la modifica.
+     v13.0 (7 agosto): ogni giorno puo' avere piu' OPZIONI per la notte (notteOpzioni[]) oltre alla sosta confermata;
+     nuovo campo email sulle soste, mostrato sempre nella scheda; pulsante "Prepara mail" che apre il client di posta
+     con la richiesta di disponibilita' precompilata (date calcolate dal piano, 2 adulti + 2 bambini, caravan 7,30 m).
+     Su Notion: nuova colonna "Email" su Tappe & Soste e nuova relazione "Opzioni notte" su Itinerario Grecia.
      v12.8 (6 agosto): piano riallineato alla realta' del viaggio. Notti 5-6 ago al Camping Acrogiali (Riza, Preveza)
      invece del previsto Monolithi/Panorama; aggiunte tappe Necromanteion e Sorgenti dell'Acheronte (pomeriggio 5 ago);
      completata NOTION_PAGE_ID con le 7 voci che mancavano (Puglia + Acrogiali/Acheronte).
@@ -123,7 +131,7 @@
   .btn{
     border:1px solid var(--line-dark); background:rgba(255,255,255,.05); color:var(--white);
     font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-weight:600; font-size:13px; padding:9px 16px; border-radius:10px; cursor:pointer; transition:.15s;
-    display:inline-flex; align-items:center; gap:8px;
+    display:inline-flex; align-items:center; gap:8px; text-decoration:none;
   }
   .btn:hover{ background:rgba(255,255,255,.11); }
   .btn.gold{ background:var(--gold); color:var(--ink); border-color:var(--gold); }
@@ -437,7 +445,7 @@
 
 <main id="mainArea"></main>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 6 agosto 2026 · v12.8 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 7 agosto 2026 · v13.2 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -483,6 +491,11 @@ const TAPPE = [
    vedere:["Mangiamuso Beach: sabbia e scogli, parcheggio libero","Baia di Camerini: stabilimenti, bar e noleggio ombrelloni","Piccolo porto e borgo marinaro di Villanova","Stabilimento Il Faro per pranzo o aperitivo"],
    campeggio:"Nessun campeggio: spiaggia raggiungibile in auto o in bici dalla Masseria Appia Traiana. Parcheggio gratuito lungo il fronte mare (limitato ai residenti in alcuni tratti tra luglio e settembre).",
    link:"http://www.viaggiareinpuglia.it/at/134/parco/4910/it/Villanova", mapsLink:"https://maps.apple.com/?ll=40.7885951,17.5942998&q=Villanova%20Mangiamuso%20Beach", extra:false},
+  {id:"traghetto-brindisi", icon:"⛴️", title:"Traghetto Brindisi → Igoumenitsa (confermato)", tipi:["porto"], notti:"0 (traversata diurna/serale)",
+   teaser:"Grimaldi Lines del 4 agosto: partenza da Brindisi alle 13:00, arrivo a Igoumenitsa alle 22:00. Al check-in con auto e roulotte entro le 11:00.",
+   vedere:["Documenti e bagaglio a mano pronti prima dell'imbarco: in traversata il garage resta chiuso","Carta d'identità valida per l'espatrio o passaporto per tutti","Disattivare il roaming marittimo o mettere la modalità aereo, per evitare costi satellitari","Giornata di trasferimento: nessuna visita in programma"],
+   campeggio:"Terminal: Costa Morena, c.da Pandi, 72100 Brindisi (non il porto passeggeri in centro). Pin esatto: 40.643203, 17.961478. Dalla SS16 seguire Grecia/Porto/Zona industriale, poi Porto/Costa Morena/Grecia. Con veicolo al seguito il check-in va fatto almeno 2 ore prima; in alta stagione conviene arrivare 3 ore prima. Dati di prenotazione e targhe: solo su Notion, non qui.",
+   link:"https://www.grimaldi-lines.com/it/porti/porto-di-brindisi/", mapsLink:"https://maps.apple.com/?ll=40.643203,17.961478&q=Grimaldi%20Lines%20Terminal%20Costa%20Morena", extra:false},
   {id:"necromanteion", icon:"🏛️", title:"Necromanteion dell'Acheronte (Mesopotamos)", tipi:["storico"], notti:"0 (visita breve)",
    teaser:"L'oracolo dei morti dell'antichità sulle rive dell'Acheronte, visitato il pomeriggio del 5 agosto. A ~25 min in auto dal Camping Acrogiali.",
    vedere:["La cripta sotterranea, la parte più suggestiva del sito","Mura poligonali e ambienti a volta","Vale leggere qualcosa prima di entrare: le rovine da sole dicono poco","Alcuni studiosi contestano che sia il vero Necromanteion"],
@@ -555,7 +568,7 @@ const TAPPE = [
    link:"https://www.campingkastraki.com/en/", extra:false},
   {id:"olympia", icon:"🏛️", title:"Olympia", tipi:["storico"], notti:"1",
    teaser:"Santuario dove nacquero le Olimpiadi (776 a.C.), in una valle verde tra i fiumi Alfeo e Cladeo.",
-   vedere:["Stadio antico (si corre sulla pista originale)","Tempio di Zeus e Tempio di Hera","La palestra e l'officina di Fidia","Museo: l'Hermes di Prassitele"],
+   vedere:["Stadio antico (si corre sulla pista originale)","Tempio di Zeus e Tempio di Hera","La palestra e l'officina di Fidia","Museo: l’Hermes di Prassitele"],
    campeggio:"Campeggi nel paese di Olympia, pochi minuti dal sito.",
    link:"https://en.wikipedia.org/wiki/Olympia,_Greece", extra:false},
   {id:"atene", icon:"🏛️", title:"Atene", tipi:["storico"], notti:"2",
@@ -611,7 +624,7 @@ const SOSTE = [
   {id:"masseria-appia-traiana", icon:"✅", title:"Area Sosta Camper Masseria Appia Traiana — confermata", zona:"C.da Mangiamuso, Ostuni (BR), ~2 km dal mare",
    teaser:"Sosta confermata per la notte del 3 agosto. 15 piazzole ombreggiate tra ulivi secolari, elettricità, carico/scarico, docce calde, WC, WiFi gratuito, area barbecue/picnic, recintata e videosorvegliata h24.",
    note:"Indirizzo: Contrada Mangiamuso, 72017 Ostuni (BR). Coordinate: 40.77338, 17.58409. Tel. +39 335 458170. Costo per la nostra notte: 30€ (2 adulti) + 6€ (bambini) + 5€ (corrente) = 41€/giorno. Prenotazione consigliata in anticipo.",
-   link:"https://www.masseriappiatraiana.it/area-sosta-camper/", mapsLink:"https://maps.apple.com/?ll=40.77338,17.58409&q=Masseria%20Appia%20Traiana", custom:false},
+   link:"https://www.masseriappiatraiana.it/area-sosta-camper/", email:"areacamper@masseriappiatraiana.it", mapsLink:"https://maps.apple.com/?ll=40.77338,17.58409&q=Masseria%20Appia%20Traiana", custom:false},
   {id:"ostuni-getsemani", icon:"⚪", title:"Area Sosta Camper Getsemani (Ostuni/Villanova) — non scelta", zona:"Villanova – Marina di Ostuni (BR), ~30 km da Brindisi",
    teaser:"Alternativa valutata per la notte del 3 agosto, non scelta (si va a Masseria Appia Traiana). Piazzole con corrente, carico/scarico, bagni e docce (giu-set); spiaggia a 5 min a piedi.",
    note:"Indirizzo: Via Consolato Veneziano, Villanova, 72017 Ostuni (BR). Coordinate: 40.78798, 17.58887. Ancora da confermare tra le opzioni.",
@@ -619,6 +632,10 @@ const SOSTE = [
   {id:"drepanos", icon:"🏕️", title:"Camping Drepanos", zona:"Igoumenitsa / Drepano",
    teaser:"Comodo per lo sbarco/imbarco a Igoumenitsa, pochi minuti dal porto.",
    note:"Verificare orari reception per arrivi serali (sbarco previsto alle 22:00).", link:"", custom:false},
+  {id:"kalami-beach", icon:"💤", title:"Camping Kalami Beach (Igoumenitsa)", zona:"Kalami, Igoumenitsa — 6 km dal porto",
+   teaser:"Opzione da contattare per l'ultima notte prima del traghetto. Piazzole ampie e terrazzate, adatte a caravan; già sulla strada principale, a differenza di Drepano che sta sulla penisola opposta.",
+   note:"Coordinate: 39.47366, 20.24035. Tel. +30 2665 071211. Terrazzato sul fianco della collina: attenzione in manovra con la roulotte. Ristorante chiuso dopo le 20:00. Orari di ingresso flessibili secondo le recensioni. 4.6/5 su 988 recensioni. Sito ed email ancora da trovare.",
+   link:"", mapsLink:"https://maps.apple.com/?ll=39.4736581,20.2403546&q=Camping%20Kalami%20Beach", custom:false},
   {id:"acrogiali", icon:"✅", title:"Camping Acrogiali (Riza, Preveza)", zona:"Paralia Riza, 481 00 Preveza — 25 km da Preveza",
    teaser:"Sosta effettiva del 5 e 6 agosto. Impresa familiare dal 1968, piazzole ombreggiate da ulivi, gelsi e pioppi a pochi passi dalla spiaggia di Riza. Taverna, minimarket, cucina comune, lavanderia, WiFi.",
    note:"Coordinate: 39.13506, 20.58429. Tel. +30 2682 056382. Non prende prenotazioni: si arriva e si scegle la piazzola. Aperto tutto l'anno. Parcheggio libero. Sostituisce nel piano il previsto Camping Monolithi / Panorama.",
@@ -628,13 +645,13 @@ const SOSTE = [
    note:"", link:"https://travelpreveza.gr/en/beach/monolithi/", custom:false},
   {id:"erodios", icon:"🏕️", title:"Camping Erodios", zona:"Gialova / Pylos",
    teaser:"Base comoda per Voidokilia, la laguna di Gialova e il centro di Pylos.",
-   note:"", link:"", custom:false},
+   note:"", link:"https://www.erodios.com/", email:"info@erodioss.gr", custom:false},
   {id:"gythion-bay", icon:"🏕️", title:"Gythion Bay Camping", zona:"Mavrovouni / Gythio",
    teaser:"Sul mare, spazioso e ombreggiato, ottimo per roulotte; base comoda per il Mani.",
-   note:"", link:"https://gythiocamping.gr/", custom:false},
+   note:"", link:"https://gythiocamping.gr/", email:"contact@gythiocamping.gr", custom:false},
   {id:"simos", icon:"🏖️", title:"Simos Camping", zona:"Elafonisos",
    teaser:"Unico campeggio dell'isola, direttamente sulla spiaggia di Simos.",
-   note:"Verificare tariffa e ammissione roulotte sul traghetto-chiatta da Pounta; alternativa: lasciarla sulla terraferma.", link:"https://simoscamping.gr/it/", custom:false},
+   note:"Verificare tariffa e ammissione roulotte sul traghetto-chiatta da Pounta; alternativa: lasciarla sulla terraferma.", link:"https://simoscamping.gr/it/", email:"info@simoscamping.gr", custom:false},
   {id:"nafplio-camp", icon:"🏕️", title:"Bekas / Nicolas II / Lefka", zona:"Drepano · Palaia Epidavros",
    teaser:"Tre alternative in zona Argolide, ben posizionate per Nafplio, Micene ed Epidauro.",
    note:"Da confermare quale delle tre in base a disponibilità.", link:"https://www.bekas.gr/", custom:false},
@@ -663,107 +680,107 @@ const DEFAULT_SCHEDULE = [
   mattina:"Partenza da Roma con la roulotte, direzione Puglia.",
   pomeriggio:"Trasferimento in autostrada verso Brindisi (circa 6-7h, soste comprese). Arrivo alla masseria e bagno a Torre Pozzelle (~20 min in auto, parcheggio gratuito).",
   sera:"Notte confermata: Masseria Appia Traiana, C.da Mangiamuso, Ostuni (BR) — tel. +39 335 458170. Arrivo in giornata, per essere tranquilli all'imbarco di domani alle 13:00.",
-  tappe:["torre-pozzelle"], notteId:"masseria-appia-traiana"},
+  tappe:["torre-pozzelle"], notteOpzioni:[], notteId:"masseria-appia-traiana"},
  {date:"2026-08-04", base:"Igoumenitsa / Drepano",
   mattina:"Eventuale bagno veloce a Villanova/Camerini (5 min in auto), check-out entro le 12:00. In traghetto verso la Grecia (partenza da Brindisi alle 13:00). Lì almeno alle 11",
   pomeriggio:"Prosegue la traversata in traghetto.",
   sera:"Sbarco a Igoumenitsa alle 22:00, notte tecnica vicino al porto (Camping Drepanos o zona Drepano) — mare non prioritario.",
-  tappe:["villanova-camerini","igoumenitsa-parga"], notteId:"drepanos"},
+  tappe:["villanova-camerini","traghetto-brindisi","igoumenitsa-parga"], notteOpzioni:[], notteId:"drepanos"},
  {date:"2026-08-05", base:"Riza / Preveza — Camping Acrogiali",
   mattina:"Arrivo al Camping Acrogiali (Riza, Preveza) e bagno alla spiaggia del campeggio.",
   pomeriggio:"Visita al Necromanteion sull'Acheronte (Mesopotamos), poi passeggiata e bagno alle sorgenti dell'Acheronte a Glyki.",
   sera:"Rientro al Camping Acrogiali.",
-  tappe:["necromanteion","acheron-sorgenti"], notteId:"acrogiali"},
+  tappe:["necromanteion","acheron-sorgenti"], notteOpzioni:[], notteId:"acrogiali"},
  {date:"2026-08-06", base:"Riza / Preveza — Camping Acrogiali",
   mattina:"Da completare.",
   pomeriggio:"Da completare.",
   sera:"Ultima notte al Camping Acrogiali: si parte domani mattina.",
-  tappe:[], notteId:"acrogiali"},
+  tappe:[], notteOpzioni:[], notteId:"acrogiali"},
  {date:"2026-08-07", base:"Pylos / Gialova",
   mattina:"Partenza dal Camping Acrogiali: lungo trasferimento verso il Peloponneso (Rio-Antirrio, poi costa sud).",
   pomeriggio:"Prosegue il viaggio; possibile sosta a Olympia lungo il percorso se i tempi lo permettono — pesante con roulotte, valutare sul momento.",
   sera:"Arrivo a Pylos / Gialova e sistemazione in campeggio.",
-  tappe:["pylos","olympia"], notteId:"erodios"},
+  tappe:["pylos","olympia"], notteOpzioni:[], notteId:"erodios"},
  {date:"2026-08-08", base:"Pylos / Gialova",
   mattina:"Voidokilia presto, prima del caldo e della folla — spiaggia, grotta di Nestore, Palaiokastro.",
   pomeriggio:"Laguna di Gialova (birdwatching) e relax.",
   sera:"Cena a Pylos, passeggiata al castello di Niokastro.",
-  tappe:["pylos"], notteId:"erodios"},
+  tappe:["pylos"], notteOpzioni:[], notteId:"erodios"},
  {date:"2026-08-09", base:"Pylos / Gialova",
   mattina:"Giornata più lenta: mare in loco oppure partenza per Methoni e il suo castello.",
   pomeriggio:"Eventuale proseguimento verso Finikounda o Koroni, altrimenti mare libero.",
   sera:"Rientro e cena in campeggio.",
-  tappe:["pylos","methoni"], notteId:"erodios"},
+  tappe:["pylos","methoni"], notteOpzioni:[], notteId:"erodios"},
  {date:"2026-08-10", base:"Gythio / Mavrovouni",
   mattina:"Partenza e trasferimento verso il Mani / Gythio, attraverso le montagne della Messenia.",
   pomeriggio:"Prosegue il viaggio; arrivo e sistemazione a Gythio / Mavrovouni.",
   sera:"Pomeriggio/sera di assestamento, primo bagno a Mavrovouni Beach.",
-  tappe:["gythio"], notteId:"gythion-bay"},
+  tappe:["gythio"], notteOpzioni:[], notteId:"gythion-bay"},
  {date:"2026-08-11", base:"Gythio / Mavrovouni",
   mattina:"Areopoli e Limeni, borghi di pietra del Mani.",
   pomeriggio:"Grotte di Diros (Vlychada) in barca.",
   sera:"Rientro a Gythio, bagno a Mavrovouni o sosta a Limeni, cena in paese.",
-  tappe:["gythio"], notteId:"gythion-bay"},
+  tappe:["gythio"], notteOpzioni:[], notteId:"gythion-bay"},
  {date:"2026-08-12", base:"Gythio / Mavrovouni",
   mattina:"Giornata libera: mare a Gythio oppure partenza per Sparta/Mistra se si vuole cultura.",
   pomeriggio:"Mistrà: città bizantina UNESCO, oppure relitto Dimitrios a Valtaki.",
   sera:"Rientro in campeggio, ultima serata nel Mani.",
-  tappe:["gythio","sparta-mistra"], notteId:"gythion-bay"},
+  tappe:["gythio","sparta-mistra"], notteOpzioni:[], notteId:"gythion-bay"},
  {date:"2026-08-13", base:"Elafonisos / Simos",
   mattina:"Spostamento breve verso Pounta (circa 1h15), traghettino per Elafonisos e sistemazione.",
   pomeriggio:"Primo bagno a Simos.",
   sera:"Passeggiata nel paesino di Elafonisos, cena di pesce.",
-  tappe:["elafonisos"], notteId:"simos"},
+  tappe:["elafonisos"], notteOpzioni:[], notteId:"simos"},
  {date:"2026-08-14", base:"Elafonisos / Simos",
   mattina:"Mare a Megalo Simos.",
   pomeriggio:"Mikro Simos o relax tra le dune.",
   sera:"Cena in paese.",
-  tappe:["elafonisos"], notteId:"simos"},
+  tappe:["elafonisos"], notteOpzioni:[], notteId:"simos"},
  {date:"2026-08-15", base:"Elafonisos / Simos",
   mattina:"Giornata lenta: ancora Simos, con calma.",
   pomeriggio:"In alternativa Kato Nisi/Panagia, se si vuole cambiare spiaggia.",
   sera:"Ultima serata a Elafonisos, passeggiata in paese.",
-  tappe:["elafonisos"], notteId:"simos"},
+  tappe:["elafonisos"], notteOpzioni:[], notteId:"simos"},
  {date:"2026-08-16", base:"Nafplio / Drepano / Vivari",
-  mattina:"Traghettino di ritorno a Pounta e partenza per l'Argolide.",
+  mattina:"Traghettino di ritorno a Pounta e partenza per l’Argolide.",
   pomeriggio:"Prosegue il trasferimento verso Nafplio / Drepano / Vivari.",
   sera:"Sistemazione e, se l'arrivo non è troppo tardi, prima passeggiata a Nafplio.",
-  tappe:["nafplio"], notteId:"nafplio-camp"},
+  tappe:["nafplio"], notteOpzioni:[], notteId:"nafplio-camp"},
  {date:"2026-08-17", base:"Nafplio / Drepano / Vivari",
   mattina:"Micene: Porta dei Leoni, tombe reali, Tesoro di Atreo (da visitare presto, poca ombra).",
   pomeriggio:"Nafplio: centro storico e fortezza di Palamidi. In alternativa: Epidauro + Palaia Epidavros.",
   sera:"Cena a Nafplio, passeggiata nel centro veneziano.",
-  tappe:["nafplio","micene","epidauro"], notteId:"nafplio-camp"},
+  tappe:["nafplio","micene","epidauro"], notteOpzioni:[], notteId:"nafplio-camp"},
  {date:"2026-08-18", base:"Itea / Galaxidi",
   mattina:"Partenza e lungo trasferimento verso Delfi, via Corinto.",
   pomeriggio:"Visita al santuario di Delfi: Via Sacra, tempio di Apollo, museo.",
   sera:"Sistemazione a Itea o Galaxidi; passeggiata sul porto se si vuole.",
-  tappe:["delfi"], notteId:"itea-galaxidi-camp"},
+  tappe:["delfi"], notteOpzioni:[], notteId:"itea-galaxidi-camp"},
  {date:"2026-08-19", base:"Meteore / Kastraki",
   mattina:"Partenza e trasferimento verso le Meteore.",
   pomeriggio:"Prosegue il viaggio; arrivo a Kastraki e sistemazione.",
   sera:"Giro panoramico al tramonto tra le torri di roccia.",
-  tappe:["meteore"], notteId:"kastraki-vrachos"},
+  tappe:["meteore"], notteOpzioni:[], notteId:"kastraki-vrachos"},
  {date:"2026-08-20", base:"Meteore / Kastraki",
   mattina:"Visita a 2-3 monasteri (Gran Meteora e altri).",
   pomeriggio:"Pausa e relax in campeggio (piscina).",
   sera:"Secondo giro panoramico nel tardo pomeriggio/sera.",
-  tappe:["meteore"], notteId:"kastraki-vrachos"},
+  tappe:["meteore"], notteOpzioni:[], notteId:"kastraki-vrachos"},
  {date:"2026-08-21", base:"Parga / Igoumenitsa",
   mattina:"Partenza e trasferimento verso la costa Ionica.",
   pomeriggio:"Prosegue il viaggio verso Parga o Igoumenitsa.",
   sera:"Ultima notte prudente prima del traghetto; se si vuole mare bello, tappa a Parga.",
-  tappe:["igoumenitsa-parga"], notteId:"drepanos"},
+  tappe:["igoumenitsa-parga"], notteOpzioni:["kalami-beach"], notteId:"drepanos"},
  {date:"2026-08-22", base:"Traghetto di ritorno",
   mattina:"Ultimi preparativi, colazione con calma.",
   pomeriggio:"Partenza da Igoumenitsa alle 14:00 — arrivare al porto con anticipo.",
   sera:"In traghetto verso l'Italia, arrivo a Brindisi previsto alle 21:00.",
-  tappe:[], notteId:null},
+  tappe:[], notteOpzioni:[], notteId:null},
  {date:"2026-08-23", base:"Viaggio Brindisi → Roma",
   mattina:"Sbarco a Brindisi (arrivo la sera prima), colazione con calma e partenza verso Roma.",
   pomeriggio:"Lungo trasferimento in autostrada verso Roma (circa 6-7h da Brindisi).",
   sera:"Arrivo a Roma.",
-  tappe:[], notteId:null},
+  tappe:[], notteOpzioni:[], notteId:null},
 ];
 
 /* ============================= STATE ============================= */
@@ -771,12 +788,14 @@ let schedule = {}; // dateStr -> {base, note, tappe:[], notteId}
 let view = 'week';
 let pickingForDate = null;
 let pickingKind = 'tappa'; // 'tappa' | 'sosta'
+let pickingComeOpzione = false; // true = la sosta scelta va tra le opzioni, non confermata
 
 function scheduleFromDefault(){
   const s = {};
   DEFAULT_SCHEDULE.forEach(d=> s[d.date] = {
     base:d.base, mattina:d.mattina, pomeriggio:d.pomeriggio, sera:d.sera,
-    tappe:[...d.tappe], notteId: d.notteId || null
+    tappe:[...d.tappe], notteId: d.notteId || null,
+    notteOpzioni: [...(d.notteOpzioni || [])]
   });
   return s;
 }
@@ -881,9 +900,10 @@ function allDates(){
   return out;
 }
 function dayEntry(dateStr){
-  if(!schedule[dateStr]) schedule[dateStr] = {base:'', mattina:'', pomeriggio:'', sera:'', tappe:[], notteId:null};
+  if(!schedule[dateStr]) schedule[dateStr] = {base:'', mattina:'', pomeriggio:'', sera:'', tappe:[], notteId:null, notteOpzioni:[]};
   const e = schedule[dateStr];
   if(e.notteId === undefined) e.notteId = null;
+  if(!Array.isArray(e.notteOpzioni)) e.notteOpzioni = [];
   if(e.mattina === undefined) e.mattina = '';
   if(e.pomeriggio === undefined) e.pomeriggio = (e.note || ''); // migrazione da versione precedente a 3 fasce
   if(e.sera === undefined) e.sera = '';
@@ -954,6 +974,18 @@ function renderDayFields(ds){
       🌙 ${sosta.title}
       <span class="x" data-remove-notte data-date="${ds}" title="Rimuovi">✕</span>
     </span>` : `<button class="add-chip" data-add-notte-for="${ds}">+ scegli dove dormire</button>`;
+  const opzioniHtml = (entry.notteOpzioni || [])
+    .filter(id => id !== entry.notteId)
+    .map(id => {
+      const o = getSosta(id); if(!o) return '';
+      const oi = getItem(id) || o;
+      const mailBadge = oi.email ? '✉️' : '⚠️';
+      return `<span class="tappa-chip-lg notte" style="opacity:.85" data-open-item="${id}">
+        ${mailBadge} ${o.title}
+        <span class="x" data-conferma-notte="${id}" data-date="${ds}" title="Conferma come sosta della notte">✓</span>
+        <span class="x" data-remove-opzione="${id}" data-date="${ds}" title="Rimuovi opzione">✕</span>
+      </span>`;
+    }).join('');
   return `
     <div class="field-label">Base / zona</div>
     <input class="base-input" value="${escapeAttr(entry.base)}" data-field="base" data-date="${ds}" placeholder="zona di riferimento…">
@@ -979,6 +1011,11 @@ function renderDayFields(ds){
     <div class="field-label" style="margin-top:14px;">🌙 Dove dormi stanotte</div>
     <div class="tappe-row">
       ${notteHtml}
+    </div>
+    <div class="field-label" style="margin-top:14px;">💤 Opzioni per la notte <span style="font-weight:400;opacity:.6;">(candidate da contattare)</span></div>
+    <div class="tappe-row">
+      ${opzioniHtml}
+      <button class="add-chip" data-add-opzione-for="${ds}">+ aggiungi opzione</button>
     </div>
   `;
 }
@@ -1044,9 +1081,10 @@ function renderLibrary(filter=''){
   }
 }
 
-function openLibrary(forDate, kind='tappa'){
+function openLibrary(forDate, kind='tappa', comeOpzione=false){
   pickingForDate = forDate || null;
   pickingKind = kind;
+  pickingComeOpzione = !!comeOpzione;
   const label = document.getElementById('pickingForLabel');
   const titleEl = document.getElementById('libraryTitle');
   if(pickingForDate){
@@ -1074,10 +1112,21 @@ function openDetail(id){
       <div class="detail-tags"><span class="chip notte">${t.zona}</span></div>
       <p>${t.teaser}</p>
       ${t.note ? `<h3>Note</h3><div class="campeggio-box">${t.note}</div>` : ''}
+      <h3>Contatto</h3>
+      <div class="campeggio-box">
+        ${t.email
+          ? `✉️ <a href="mailto:${t.email}">${t.email}</a>`
+          : `<span style="opacity:.75">✉️ Email non ancora trovata — aggiungila con “Modifica scheda” per abilitare la richiesta di disponibilità.</span>`}
+      </div>
       ${t.link ? `<p style="margin-top:14px;"><a href="${t.link}" target="_blank" rel="noopener">Sito ↗</a></p>` : ''}
       ${t.mapsLink ? `<p style="margin-top:6px;"><a href="${t.mapsLink}" target="_blank" rel="noopener">📍 Apri su Mappe ↗</a></p>` : ''}
       ${t.custom ? `<div class="extra-note">Sosta aggiunta da te nell'app.</div>` : ''}
-      <p style="margin-top:18px;"><button class="btn" onclick="openEdit('${id}')">✏️ Modifica scheda</button></p>
+      <p style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn" onclick="openEdit('${id}')">✏️ Modifica scheda</button>
+        ${t.email
+          ? `<a class="btn" href="${mailtoPerSosta(id)}" target="_blank" rel="noopener">✉️ Prepara mail</a>`
+          : `<button class="btn" onclick="openEdit('${id}')">✉️ Prepara mail — aggiungi prima l'email</button>`}
+      </p>
     `;
   } else {
     const tagHtml = t.tipi.map(ti=>`<span class="chip ${ti}" style="background:${chipColor(ti)}">${ti}</span>`).join('');
@@ -1112,6 +1161,8 @@ function openEdit(id){
     <textarea id="edTeaser" rows="3" style="width:100%;box-sizing:border-box;padding:8px;margin-top:4px;">${t.teaser||''}</textarea>
     <label style="display:block;margin-top:12px;font-size:13px;opacity:.8;">${noteLabel}</label>
     <textarea id="edNote" rows="4" style="width:100%;box-sizing:border-box;padding:8px;margin-top:4px;">${t[noteField]||''}</textarea>
+    <label style="display:block;margin-top:12px;font-size:13px;opacity:.8;">Email (per la richiesta di disponibilità)</label>
+    <input id="edEmail" type="email" inputmode="email" autocapitalize="off" autocorrect="off" value="${esc(t.email)}" placeholder="es. info@campeggio.gr" style="width:100%;box-sizing:border-box;padding:8px;margin-top:4px;">
     <label style="display:block;margin-top:12px;font-size:13px;opacity:.8;">Link sito</label>
     <input id="edLink" type="text" value="${esc(t.link)}" style="width:100%;box-sizing:border-box;padding:8px;margin-top:4px;">
     <label style="display:block;margin-top:12px;font-size:13px;opacity:.8;">Link mappe (Apple Maps)</label>
@@ -1123,12 +1174,83 @@ function openEdit(id){
   `;
 }
 
+/* Giorni in cui questa sosta è confermata o è tra le opzioni.
+   Serve per scrivere le date esatte nella richiesta di disponibilità. */
+function nottiPerSosta(id){
+  return allDates().filter(ds=>{
+    const e = dayEntry(ds);
+    return e.notteId === id || (e.notteOpzioni || []).includes(id);
+  }).sort();
+}
+
+const EN_MESI = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const EN_GIORNI = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+function fmtDateEN(ds){
+  const d = new Date(ds+'T00:00:00');
+  return `${EN_GIORNI[d.getDay()]}, ${d.getDate()} ${EN_MESI[d.getMonth()]} ${d.getFullYear()}`;
+}
+function giornoDopo(ds){
+  const d = new Date(ds+'T00:00:00');
+  d.setDate(d.getDate()+1);
+  return fmtDate(d);
+}
+
+/* Costruisce l'URL mailto della richiesta di disponibilità.
+   Restituisce una stringa vuota se manca l'email.
+   Nota: si usa un vero link <a href="mailto:..."> perché negli artifact la
+   navigazione via window.location può essere bloccata dall'iframe. */
+function mailtoPerSosta(id){
+  const t = getItem(id);
+  if(!t || !t.email) return '';
+  const notti = nottiPerSosta(id);
+  let righeDate;
+  if(notti.length){
+    const arrivo = notti[0];
+    const partenza = giornoDopo(notti[notti.length-1]);
+    righeDate = `Arrival: ${fmtDateEN(arrivo)}\n`
+              + `Departure: ${fmtDateEN(partenza)}\n`
+              + `Number of nights: ${notti.length}\n`;
+  } else {
+    righeDate = `Arrival: (to be confirmed)\nDeparture: (to be confirmed)\n`;
+  }
+
+  const corpo =
+`Dear Sir or Madam,
+
+we are an Italian family travelling through Greece with a caravan, and we would like to ask about the availability of a pitch at your campsite.
+
+${righeDate}Party: 4 people - 2 adults and 2 children aged 10 and 12
+Caravan length: 7.30 metres (plus car)
+
+Could you please let us know whether you have a pitch available for these dates, and what the total cost would be, including electricity and any tourist tax?
+
+Thank you very much for your time. We look forward to hearing from you.
+
+Kind regards,
+Famiglia Martinelli`;
+
+  return 'mailto:' + t.email
+       + '?cc=' + 'manfroni@gmail.com'
+       + '&subject=' + encodeURIComponent('Pitch for a caravan - Martinelli')
+       + '&body=' + encodeURIComponent(corpo);
+}
+
+/* Fallback per eventuali chiamate diverse dal link: crea un <a> e lo clicca. */
+function preparaMail(id){
+  const url = mailtoPerSosta(id);
+  if(!url){ openEdit(id); return; }
+  const a = document.createElement('a');
+  a.href = url; a.target = '_blank'; a.rel = 'noopener';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
 async function saveEdit(id){
   const t = getItem(id); if(!t) return;
   const noteField = t.kind === 'sosta' ? 'note' : 'campeggio';
   const override = {
     title: document.getElementById('edTitle').value.trim(),
     teaser: document.getElementById('edTeaser').value.trim(),
+    email: document.getElementById('edEmail').value.trim(),
     link: document.getElementById('edLink').value.trim(),
     mapsLink: document.getElementById('edMapsLink').value.trim(),
   };
@@ -1279,6 +1401,9 @@ function bindDynamicEvents(root){
   root.querySelectorAll('[data-add-for]').forEach(el=>{
     el.addEventListener('click', ()=> openLibrary(el.getAttribute('data-add-for'), 'tappa'));
   });
+  root.querySelectorAll('[data-add-opzione-for]').forEach(el=>{
+    el.addEventListener('click', ()=> openLibrary(el.getAttribute('data-add-opzione-for'), 'sosta', true));
+  });
   root.querySelectorAll('[data-add-notte-for]').forEach(el=>{
     el.addEventListener('click', ()=> openLibrary(el.getAttribute('data-add-notte-for'), 'sosta'));
   });
@@ -1306,9 +1431,39 @@ function bindDynamicEvents(root){
       if(document.getElementById('overlayDay').classList.contains('show')) openDayModal(ds);
     });
   });
+  root.querySelectorAll('[data-remove-opzione]').forEach(el=>{
+    el.addEventListener('click', async e=>{
+      e.stopPropagation();
+      const ds = el.getAttribute('data-date');
+      const id = el.getAttribute('data-remove-opzione');
+      const entry = dayEntry(ds);
+      entry.notteOpzioni = (entry.notteOpzioni||[]).filter(x=>x!==id);
+      await saveState();
+      markDirty(ds);
+      renderAll();
+      if(document.getElementById('overlayDay').classList.contains('show')) openDayModal(ds);
+    });
+  });
+  root.querySelectorAll('[data-conferma-notte]').forEach(el=>{
+    el.addEventListener('click', async e=>{
+      e.stopPropagation();
+      const ds = el.getAttribute('data-date');
+      const id = el.getAttribute('data-conferma-notte');
+      const entry = dayEntry(ds);
+      const precedente = entry.notteId;
+      entry.notteId = id;
+      entry.notteOpzioni = (entry.notteOpzioni||[]).filter(x=>x!==id);
+      if(precedente && precedente !== id && !entry.notteOpzioni.includes(precedente)) entry.notteOpzioni.push(precedente);
+      await saveState();
+      markDirty(ds);
+      renderAll();
+      if(document.getElementById('overlayDay').classList.contains('show')) openDayModal(ds);
+    });
+  });
   root.querySelectorAll('[data-open-item]').forEach(el=>{
     el.addEventListener('click', e=>{
-      if(e.target.closest('[data-remove-tappa]') || e.target.closest('[data-remove-notte]')) return;
+      if(e.target.closest('[data-remove-tappa]') || e.target.closest('[data-remove-notte]')
+         || e.target.closest('[data-remove-opzione]') || e.target.closest('[data-conferma-notte]')) return;
       openDetail(el.getAttribute('data-open-item'));
     });
   });
@@ -1364,7 +1519,13 @@ document.getElementById('libContent').addEventListener('click', async e=>{
     const targetDate = pickingForDate;
     const entry = dayEntry(targetDate);
     if(pickingKind === 'sosta'){
-      entry.notteId = id;
+      if(pickingComeOpzione){
+        if(id !== entry.notteId && !(entry.notteOpzioni||[]).includes(id)){
+          entry.notteOpzioni = [...(entry.notteOpzioni||[]), id];
+        }
+      } else {
+        entry.notteId = id;
+      }
     } else {
       if(!entry.tappe.includes(id)) entry.tappe.push(id);
     }
@@ -1486,7 +1647,9 @@ const NOTION_PAGE_ID = {
   'villanova-camerini':'3b19b270-fd37-819f-bde1-f1d734c2642b',
   'acrogiali':'3b49b270-fd37-81e4-ae7a-e5b9b545f426',
   'necromanteion':'3b49b270-fd37-818d-9fc5-dd415cce4c66',
-  'acheron-sorgenti':'3b49b270-fd37-8148-8bbb-dafe7f63eb1c'
+  'acheron-sorgenti':'3b49b270-fd37-8148-8bbb-dafe7f63eb1c',
+  'kalami-beach':'3b59b270-fd37-81d2-a2fc-ea0086a75573',
+  'traghetto-brindisi':'3b19b270-fd37-810f-88db-d99dd3763e39'
 };
 /* mappa inversa: nelle relazioni Notion restituisce URL con id senza trattini */
 const ID_BY_NOTION = {};
@@ -1588,7 +1751,8 @@ async function salvaGiorno(ds){
       'Pomeriggio':  e.pomeriggio || '',
       'Sera':        e.sera || '',
       'Tappe del giorno': (e.tappe || []).map(id => NOTION_PAGE_ID[id]).filter(Boolean),
-      'Sosta notturna':   (e.notteId && NOTION_PAGE_ID[e.notteId]) ? [NOTION_PAGE_ID[e.notteId]] : []
+      'Sosta notturna':   (e.notteId && NOTION_PAGE_ID[e.notteId]) ? [NOTION_PAGE_ID[e.notteId]] : [],
+      'Opzioni notte':    (e.notteOpzioni || []).map(id => NOTION_PAGE_ID[id]).filter(Boolean)
     }
   });
 }
@@ -1853,6 +2017,7 @@ async function pullFromNotion(){
       e.tappe      = relToAppIds(r['Tappe del giorno']);
       const notti  = relToAppIds(r['Sosta notturna']);
       e.notteId    = notti.length ? notti[0] : null;
+      e.notteOpzioni = relToAppIds(r['Opzioni notte']).filter(x => x !== e.notteId);
       n++;
     });
     await saveState();
@@ -1888,7 +2053,8 @@ async function pushToNotion(){
         'Pomeriggio':  e.pomeriggio || '',
         'Sera':        e.sera || '',
         'Tappe del giorno': (e.tappe || []).map(id => NOTION_PAGE_ID[id]).filter(Boolean),
-        'Sosta notturna':   (e.notteId && NOTION_PAGE_ID[e.notteId]) ? [NOTION_PAGE_ID[e.notteId]] : []
+        'Sosta notturna':   (e.notteId && NOTION_PAGE_ID[e.notteId]) ? [NOTION_PAGE_ID[e.notteId]] : [],
+      'Opzioni notte':    (e.notteOpzioni || []).map(id => NOTION_PAGE_ID[id]).filter(Boolean)
       };
       setSyncStatus('💾 Salvo su Notion… ' + (i + 1) + '/' + dates.length + ' (' + dayLabelShort(ds) + ')');
       try{
