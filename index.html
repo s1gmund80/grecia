@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 7 agosto 2026 — v13.6 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 7 agosto 2026 — v13.7 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,9 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.7 (7 agosto): Voidokilia separata da Pylos (Pylos & Gialova = base delle tre notti, Voidokilia = escursione
+     dell'8 agosto); le cinque candidate per la notte del 18 spostate dalla tappa "Nafpaktos / Galaxidi / Itea" a "Delfi",
+     che è la tappa effettivamente assegnata a quel giorno. Allineato anche su Notion.
      v13.6 (7 agosto): diario del 6 agosto importato da Notion. Nuova relazione Notion "Tappa collegata"/"Soste notte":
      ogni tappa mostra ora le soste notturne candidate (campo sosteNotte[]) e ogni sosta rimanda alla tappa di riferimento.
      v13.5 (7 agosto): interfaccia semplificata. Sync Notion ed export/import spostati nel pannello "Impostazioni";
@@ -485,7 +488,7 @@
 
 <main id="mainArea"></main>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 7 agosto 2026 · v13.6 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 7 agosto 2026 · v13.7 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -561,11 +564,20 @@ const TAPPE = [
    vedere:["Lefkada town: centro pedonale e marina","Castello di Agia Mavra","Agios Nikitas: borgo scenografico","Kathisma Beach: comoda, organizzata","Porto Katsiki: spiaggia icona sotto le falesie (partire presto)","Nydri: costa est più riparata"],
    campeggio:"Non serve cambiare campeggio — resta a Preveza/Monolithi/Kanali e vai in auto.",
    link:"https://experiencelefkada.gr/beaches/", extra:false},
-  {id:"pylos", icon:"🏖️", title:"Pylos & Voidokilia ⭐", tipi:["mare","storico"], notti:"2",
-   teaser:"La costa più bella della Messenia: Voidokilia a forma di Ω, baia di Navarino, laguna di Gialova.",
-   vedere:["Spiaggia di Voidokilia + grotta di Nestore + Palaiokastro","Laguna di Gialova (birdwatching)","Pylos: piazza e castello di Niokastro","Palazzo di Nestore (sito miceneo)"],
-   campeggio:"Zona Gialova/Pylos (es. campeggio Erodios) — comoda per Voidokilia, portare ombrellone e acqua (spiaggia libera).",
-   link:"https://en.wikipedia.org/wiki/Voidokilia_Beach", extra:false},
+  {id:"pylos", icon:"⚓", title:"Pylos & Gialova", tipi:["porto","storico"], notti:"3",
+   teaser:"La base dei tre giorni in Messenia: cittadina veneziana sulla baia di Navarino, con il porticciolo e il castello di Niokastro. Da qui Voidokilia, la laguna di Gialova e il Palazzo di Nestore sono a pochi minuti.",
+   vedere:["Piazza dei Tre Ammiragli e porticciolo","Castello di Niokastro e mura veneziane","Baia di Navarino e isola di Sfacteria","Palazzo di Nestore (10 km)","Methoni e Koroni come escursioni a sud"],
+   campeggio:"Camping Erodios, Gialova — base confermata per le notti 7, 8 e 9 agosto.",
+   link:"https://en.wikipedia.org/wiki/Pylos",
+   mapsLink:"https://maps.apple.com/?ll=36.91361,21.69639&q=Pylos",
+   sosteNotte:["erodios"], extra:false},
+  {id:"voidokilia", icon:"🏖️", title:"Voidokilia ⭐", tipi:["mare","natura","storico"], notti:"0",
+   teaser:"La spiaggia a forma di omega, dune protette e acqua bassissima: una delle più belle di Grecia. Escursione in giornata da Pylos, meglio presto la mattina prima del caldo e della folla.",
+   vedere:["Spiaggia di Voidokilia, mezzaluna perfetta con acqua bassa","Grotta di Nestore sul promontorio","Palaiokastro, il castello franco sopra la baia","Laguna di Gialova adiacente, birdwatching","Sistema di dune protetto: restare sui sentieri"],
+   campeggio:"Nessun pernottamento: è area protetta e il campeggio è vietato. Si dorme al Camping Erodios di Gialova e si viene qui in giornata.",
+   link:"https://en.wikipedia.org/wiki/Voidokilia_Beach",
+   mapsLink:"https://maps.apple.com/?ll=36.95611,21.66528&q=Voidokilia",
+   extra:false},
   {id:"methoni", icon:"🏰", title:"Methoni", tipi:["borgo","mare"], notti:"0 (mezza giornata da Pylos)",
    teaser:"Castello veneziano che arriva fino al mare, col Bourtzi ottagonale collegato da una passerella. ~15-20 min da Pylos.",
    vedere:["Castello di Methoni: mura, bastioni, Bourtzi","Borgo basso, piccolo e tranquillo","Bagno sulla spiaggia sotto il castello","Se c'è tempo: Finikounda o Koroni"],
@@ -600,7 +612,7 @@ const TAPPE = [
    teaser:"Santuario dell'oracolo di Apollo, l'ombelico del mondo per i greci antichi. Vista sulla valle fino al mare.",
    vedere:["Tempio di Apollo e Via Sacra","Tesoro degli Ateniesi e teatro","La Tholos (immagine simbolo di Delfi)","Museo di Delfi: l'Auriga di bronzo","Deviazione: monastero di Osios Loukas"],
    campeggio:"Da valutare in zona Itea/Galaxidi/Arachova.",
-   link:"https://en.wikipedia.org/wiki/Delphi", extra:false},
+   link:"https://en.wikipedia.org/wiki/Delphi", sosteNotte:["delphi-camping","chrissa","apollon-delphi","trokadero","hotel-galaxidi"], extra:false},
   {id:"meteore", icon:"🏞️", title:"Meteore (Kalambaka/Kastraki)", tipi:["natura","storico"], notti:"2",
    teaser:"Torri di roccia con monasteri ortodossi \"sospesi nel cielo\", UNESCO. Base a Kastraki.",
    vedere:["6 monasteri visitabili (Gran Meteora il più grande)","Punti panoramici al tramonto","Grotta di Theopetra, lago di Plastiras"],
@@ -645,7 +657,7 @@ const TAPPE = [
    teaser:"Cittadine costiere del golfo di Corinto, utili per spezzare la risalita verso Delfi/Meteore.",
    vedere:["Nafpaktos: porticciolo veneziano","Galaxidi: borgo marinaro","Itea: base pratica per Delfi"],
    campeggio:"Da valutare in zona Itea/Galaxidi.",
-   link:"", sosteNotte:["delphi-camping","chrissa","apollon-delphi","trokadero","hotel-galaxidi"], extra:true},
+   link:"", extra:true},
   {id:"kyllini", icon:"⛴️", title:"Kyllini — spezza viaggio + Olympia", tipi:["porto","storico"], notti:"0–1",
    teaser:"Porto sul lato ovest del Peloponneso, utile come sosta per spezzare il viaggio verso/da Olympia.",
    vedere:["Scheda da approfondire su Notion"],
@@ -848,7 +860,7 @@ const DEFAULT_SCHEDULE = [
   mattina:"Voidokilia presto, prima del caldo e della folla — spiaggia, grotta di Nestore, Palaiokastro.",
   pomeriggio:"Laguna di Gialova (birdwatching) e relax.",
   sera:"Cena a Pylos, passeggiata al castello di Niokastro.",
-  tappe:["pylos"], notteOpzioni:[], notteId:"erodios"},
+  tappe:["pylos","voidokilia"], notteOpzioni:[], notteId:"erodios"},
  {date:"2026-08-09", base:"Pylos / Gialova",
   mattina:"Giornata più lenta: mare in loco oppure partenza per Methoni e il suo castello.",
   pomeriggio:"Eventuale proseguimento verso Finikounda o Koroni, altrimenti mare libero.",
@@ -1799,6 +1811,7 @@ const NOTION_PAGE_ID = {
   'preveza':'3b09b270-fd37-813a-85ed-cfafae4ac3ea',
   'lefkada':'3b09b270-fd37-817e-9ca0-f971ae35d7a0',
   'pylos':'3b09b270-fd37-81fd-a0e8-dc04253b8884',
+  'voidokilia':'3b59b270-fd37-818f-8b88-eadecda3ab40',
   'methoni':'3b09b270-fd37-81f9-9d83-de00bf94e6dc',
   'gythio':'3b09b270-fd37-8119-87dd-f1b8d86bb945',
   'elafonisos':'3b09b270-fd37-819b-8fe7-ebede87424e6',
