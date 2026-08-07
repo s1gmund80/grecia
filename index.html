@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 7 agosto 2026 — v13.4 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 7 agosto 2026 — v13.5 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,9 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.5 (7 agosto): interfaccia semplificata. Sync Notion ed export/import spostati nel pannello "Impostazioni";
+     rimosso il pulsante "Ripristina piano di base"; i campi del giorno sono in SOLA LETTURA di default (flag nelle
+     Impostazioni per abilitare la modifica) e il testo di mattina/pomeriggio/sera si vede tutto, senza aree che scorrono.
      v13.4 (7 agosto): incipit della mail cambiato in "Hi, I'm Ivan Martinelli." al posto di "Dear Sir or Madam,".
      v13.3 (7 agosto): importate da Notion 24 alternative per la notte (campeggi + fallback alberghieri) con email e
      link mappe, e collegate come "Opzioni notte" ai giorni 10-21; aggiornati email/sito di Drepanos, Vrachos, Kalami e Bekas.
@@ -232,8 +235,29 @@
   .period-input{
     width:100%; font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13.5px; color:var(--ink); line-height:1.5;
     border:none; border-left:2px solid var(--line-light); background:transparent;
-    resize:vertical; min-height:52px; padding:2px 0 4px 10px;
+    resize:none; overflow:hidden; min-height:52px; padding:2px 0 4px 10px;
   }
+  /* Testo in sola lettura: sempre tutto visibile, nessuna area che scorre. */
+  .period-text{
+    width:100%; font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13.5px; color:var(--ink); line-height:1.5;
+    border-left:2px solid var(--line-light); padding:2px 0 4px 10px;
+    white-space:pre-wrap; overflow-wrap:break-word;
+  }
+  .period-text.vuoto{ opacity:.4; font-style:italic; }
+  .base-text{
+    width:100%; font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
+    font-size:17px; font-weight:600; color:var(--deep);
+    border-bottom:1px solid var(--line-light); padding:4px 2px 8px;
+    white-space:pre-wrap; overflow-wrap:break-word;
+  }
+  .base-text.vuoto{ opacity:.4; font-style:italic; font-weight:400; }
+  #settingsPanel{ display:none; margin-top:14px; padding:14px 16px; border-radius:12px;
+    border:1px solid rgba(233,199,122,.28); background:rgba(233,199,122,.06); }
+  #settingsPanel.show{ display:block; }
+  .settings-title{ font-size:11px; text-transform:uppercase; letter-spacing:.08em; font-weight:700;
+    color:rgba(247,245,239,.6); margin-bottom:10px; }
+  .settings-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+  .settings-hint{ font-size:12px; color:rgba(247,245,239,.55); margin-top:10px; line-height:1.5; }
   .period-input:focus{ outline:none; }
   .period-block.mattina .period-input:focus{ border-left-color:var(--gold); }
   .period-block.pomeriggio .period-input:focus{ border-left-color:var(--coral); }
@@ -431,16 +455,27 @@
     </div>
     <button class="btn gold" id="btnLibrary">📖 Libreria tappe</button>
     <button class="btn gold" id="btnSoste">🌙 Soste notturne</button>
-    <label class="autosave-toggle" title="Quando chiudi la scheda di un giorno, se l'hai modificato viene salvato su Notion da solo — solo quel giorno.">
+    <button class="btn" id="btnSettings">⚙️ Impostazioni</button>
+  </div>
+
+  <div id="settingsPanel">
+    <div class="settings-title">Impostazioni</div>
+    <label class="autosave-toggle" title="Di default il piano è in sola lettura, per non modificarlo per sbaglio mentre lo consulti.">
+      <input type="checkbox" id="chkEdit">
+      <span>✏️ Consenti la modifica dei campi</span>
+    </label>
+    <label class="autosave-toggle" id="lblAutosave" title="Quando chiudi la scheda di un giorno, se l'hai modificato viene salvato su Notion da solo — solo quel giorno.">
       <input type="checkbox" id="chkAutosave">
       <span>☁️ Salvataggio automatico su Notion</span>
       <span class="autosave-dot" id="autosaveDot"></span>
     </label>
-    <button class="btn gold" id="btnPushNotion">💾 Salva su Notion</button>
-    <button class="btn gold" id="btnPullNotion">🔄 Aggiorna da Notion</button>
-    <button class="btn" id="btnExport">📤 Esporta piano</button>
-    <button class="btn" id="btnImport">📥 Importa piano</button>
-    <button class="btn" id="btnReset">Ripristina piano di base</button>
+    <div class="settings-row">
+      <button class="btn gold" id="btnPushNotion">💾 Salva su Notion</button>
+      <button class="btn gold" id="btnPullNotion">🔄 Aggiorna da Notion</button>
+      <button class="btn" id="btnExport">📤 Esporta piano</button>
+      <button class="btn" id="btnImport">📥 Importa piano</button>
+    </div>
+    <div class="settings-hint">Le schede dei luoghi restano sempre consultabili, con i link e il pulsante per la richiesta di disponibilità. La modifica va attivata qui sopra.</div>
   </div>
 </div>
 
@@ -448,7 +483,7 @@
 
 <main id="mainArea"></main>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 7 agosto 2026 · v13.4 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 7 agosto 2026 · v13.5 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -891,6 +926,16 @@ let view = 'week';
 let pickingForDate = null;
 let pickingKind = 'tappa'; // 'tappa' | 'sosta'
 let pickingComeOpzione = false; // true = la sosta scelta va tra le opzioni, non confermata
+/* Di default il piano e' in sola lettura: si consulta senza rischiare modifiche accidentali.
+   Si attiva la modifica dal pannello Impostazioni. */
+let editMode = false;
+const K_EDITMODE = 'grecia-editmode-v1';
+function loadEditMode(){
+  try{ editMode = localStorage.getItem(K_EDITMODE) === '1'; }catch(e){ editMode = false; }
+}
+function saveEditMode(){
+  try{ localStorage.setItem(K_EDITMODE, editMode ? '1' : '0'); }catch(e){}
+}
 
 function scheduleFromDefault(){
   const s = {};
@@ -1067,15 +1112,15 @@ function renderDayFields(ds){
     const t = TAPPE_BY_ID[id]; if(!t) return '';
     return `<span class="tappa-chip-lg ${primaryTipo(t)}" style="background:${chipColor(primaryTipo(t))}" data-open-item="${id}">
       ${t.icon} ${t.title}
-      <span class="x" data-remove-tappa="${id}" data-date="${ds}" title="Rimuovi">✕</span>
+      ${editMode ? `<span class="x" data-remove-tappa="${id}" data-date="${ds}" title="Rimuovi">✕</span>` : ''}
     </span>`;
   }).join('');
   const sosta = entry.notteId ? getSosta(entry.notteId) : null;
   const notteHtml = sosta ? `
     <span class="tappa-chip-lg notte" data-open-item="${sosta.id}">
       🌙 ${sosta.title}
-      <span class="x" data-remove-notte data-date="${ds}" title="Rimuovi">✕</span>
-    </span>` : `<button class="add-chip" data-add-notte-for="${ds}">+ scegli dove dormire</button>`;
+      ${editMode ? `<span class="x" data-remove-notte data-date="${ds}" title="Rimuovi">✕</span>` : ''}
+    </span>` : (editMode ? `<button class="add-chip" data-add-notte-for="${ds}">+ scegli dove dormire</button>` : '<span style="font-size:13px;opacity:.45;font-style:italic;">da definire</span>');
   const opzioniHtml = (entry.notteOpzioni || [])
     .filter(id => id !== entry.notteId)
     .map(id => {
@@ -1084,31 +1129,38 @@ function renderDayFields(ds){
       const mailBadge = oi.email ? '✉️' : '⚠️';
       return `<span class="tappa-chip-lg notte" style="opacity:.85" data-open-item="${id}">
         ${mailBadge} ${o.title}
-        <span class="x" data-conferma-notte="${id}" data-date="${ds}" title="Conferma come sosta della notte">✓</span>
-        <span class="x" data-remove-opzione="${id}" data-date="${ds}" title="Rimuovi opzione">✕</span>
+        ${editMode ? `<span class="x" data-conferma-notte="${id}" data-date="${ds}" title="Conferma come sosta della notte">✓</span>
+        <span class="x" data-remove-opzione="${id}" data-date="${ds}" title="Rimuovi opzione">✕</span>` : ''}
       </span>`;
     }).join('');
+  /* In sola lettura i periodi sono div: il testo si vede tutto, senza aree che scorrono.
+     In modifica sono textarea che crescono da sole (vedi autoGrow). */
+  const periodo = (campo, etichetta, colore, segnaposto) => {
+    const val = entry[campo] || '';
+    const corpo = editMode
+      ? `<textarea class="period-input" data-field="${campo}" data-date="${ds}" placeholder="${segnaposto}">${escapeHTML(val)}</textarea>`
+      : `<div class="period-text${val ? '' : ' vuoto'}">${escapeHTML(val) || '—'}</div>`;
+    return `<div class="period-block ${campo}">
+      <div class="period-label"><span class="pdot" style="background:${colore}"></span>${etichetta}</div>
+      ${corpo}
+    </div>`;
+  };
+  const baseHtml = editMode
+    ? `<input class="base-input" value="${escapeAttr(entry.base)}" data-field="base" data-date="${ds}" placeholder="zona di riferimento…">`
+    : `<div class="base-text${entry.base ? '' : ' vuoto'}">${escapeHTML(entry.base) || '—'}</div>`;
+
   return `
     <div class="field-label">Base / zona</div>
-    <input class="base-input" value="${escapeAttr(entry.base)}" data-field="base" data-date="${ds}" placeholder="zona di riferimento…">
+    ${baseHtml}
 
-    <div class="period-block mattina">
-      <div class="period-label"><span class="pdot" style="background:var(--gold)"></span>🌅 Mattina</div>
-      <textarea class="period-input" data-field="mattina" data-date="${ds}" placeholder="cosa si fa la mattina…">${escapeHTML(entry.mattina)}</textarea>
-    </div>
-    <div class="period-block pomeriggio">
-      <div class="period-label"><span class="pdot" style="background:var(--coral)"></span>☀️ Pomeriggio</div>
-      <textarea class="period-input" data-field="pomeriggio" data-date="${ds}" placeholder="cosa si fa il pomeriggio…">${escapeHTML(entry.pomeriggio)}</textarea>
-    </div>
-    <div class="period-block sera">
-      <div class="period-label"><span class="pdot" style="background:var(--deep)"></span>🌆 Sera</div>
-      <textarea class="period-input" data-field="sera" data-date="${ds}" placeholder="cosa si fa la sera…">${escapeHTML(entry.sera)}</textarea>
-    </div>
+    ${periodo('mattina', '🌅 Mattina', 'var(--gold)', 'cosa si fa la mattina…')}
+    ${periodo('pomeriggio', '☀️ Pomeriggio', 'var(--coral)', 'cosa si fa il pomeriggio…')}
+    ${periodo('sera', '🌆 Sera', 'var(--deep)', 'cosa si fa la sera…')}
 
     <div class="field-label" style="margin-top:8px;">Tappe / visite</div>
     <div class="tappe-row">
       ${chips}
-      <button class="add-chip" data-add-for="${ds}">+ aggiungi tappa</button>
+      ${editMode ? `<button class="add-chip" data-add-for="${ds}">+ aggiungi tappa</button>` : ''}
     </div>
     <div class="field-label" style="margin-top:14px;">🌙 Dove dormi stanotte</div>
     <div class="tappe-row">
@@ -1117,7 +1169,7 @@ function renderDayFields(ds){
     <div class="field-label" style="margin-top:14px;">💤 Opzioni per la notte <span style="font-weight:400;opacity:.6;">(candidate da contattare)</span></div>
     <div class="tappe-row">
       ${opzioniHtml}
-      <button class="add-chip" data-add-opzione-for="${ds}">+ aggiungi opzione</button>
+      ${editMode ? `<button class="add-chip" data-add-opzione-for="${ds}">+ aggiungi opzione</button>` : ''}
     </div>
   `;
 }
@@ -1490,6 +1542,10 @@ document.addEventListener('keydown', e=>{
 
 /* ============================= EVENTS ============================= */
 function bindDynamicEvents(root){
+  root.querySelectorAll('textarea.period-input').forEach(el=>{
+    autoGrow(el);
+    el.addEventListener('input', ()=> autoGrow(el));
+  });
   root.querySelectorAll('[data-field]').forEach(el=>{
     el.addEventListener('change', async e=>{
       const ds = el.getAttribute('data-date');
@@ -1578,14 +1634,6 @@ document.getElementById('btnWeek').addEventListener('click', ()=>{ view='week'; 
 document.getElementById('btnDay').addEventListener('click', ()=>{ view='day'; renderAll(); });
 document.getElementById('btnLibrary').addEventListener('click', ()=> openLibrary(null, 'tappa'));
 document.getElementById('btnSoste').addEventListener('click', ()=> openLibrary(null, 'sosta'));
-document.getElementById('btnReset').addEventListener('click', async ()=>{
-  if(confirm('Ripristinare il piano di base (Piano Verosimile da Notion)? Le modifiche fatte finora andranno perse.')){
-    schedule = scheduleFromDefault();
-    await saveState();
-    allDates().forEach(markDirty);
-    renderAll();
-  }
-});
 document.getElementById('closeLib').addEventListener('click', closeLibrary);
 document.getElementById('closeDetail').addEventListener('click', closeDetail);
 document.getElementById('closeDay').addEventListener('click', closeDayModal);
@@ -1656,6 +1704,8 @@ function renderAll(){
   bindDynamicEvents(main);
   // rebind day-modal content too (in case open)
   bindDynamicEvents(document.getElementById('dayModalContent'));
+  autoGrowAll(main);
+  autoGrowAll(document.getElementById('dayModalContent'));
 }
 
 /* ============================= NOTION SYNC ============================= */
@@ -2088,7 +2138,7 @@ function initAmbiente(){
     ['btnPushNotion','btnPullNotion'].forEach(id=>{
       const el = document.getElementById(id); if(el) el.style.display = 'none';
     });
-    const lbl = document.querySelector('.autosave-toggle');
+    const lbl = document.getElementById('lblAutosave');
     if(lbl) lbl.style.display = 'none';
     const f = document.getElementById('envNote');
     if(f) f.textContent = 'Modalità autonoma: il piano resta su questo dispositivo. Usa 📤/📥 per travasarlo da/verso Notion o un altro dispositivo.';
@@ -2097,6 +2147,37 @@ function initAmbiente(){
     if(f) f.textContent = 'Connettore Notion attivo: puoi salvare e rileggere il piano direttamente dai database.';
   }
   return bridge;
+}
+
+function autoGrow(el){
+  if(!el) return;
+  el.style.height = 'auto';
+  el.style.height = (el.scrollHeight + 2) + 'px';
+}
+/* Ogni textarea dei periodi si adatta al contenuto, cosi' non compaiono barre interne. */
+function autoGrowAll(root){
+  (root || document).querySelectorAll('textarea.period-input').forEach(autoGrow);
+}
+
+function initSettings(){
+  loadEditMode();
+  const panel = document.getElementById('settingsPanel');
+  document.getElementById('btnSettings').addEventListener('click', ()=>{
+    panel.classList.toggle('show');
+  });
+  const chk = document.getElementById('chkEdit');
+  chk.checked = editMode;
+  chk.addEventListener('change', ()=>{
+    editMode = chk.checked;
+    saveEditMode();
+    setSyncStatus(editMode
+      ? '✏️ Modifica attiva: i campi del giorno sono editabili.'
+      : '🔒 Sola lettura: i campi non sono modificabili. Riattiva la modifica dalle Impostazioni.');
+    renderAll();
+    if(document.getElementById('overlayDay').classList.contains('show') && currentModalDate){
+      openDayModal(currentModalDate);
+    }
+  });
 }
 
 function initAutosave(){
@@ -2217,6 +2298,7 @@ document.getElementById('btnPushNotion').addEventListener('click', ()=>{ avvisoS
 (async function init(){
   await Promise.all([loadState(), loadSoste(), loadOverrides()]);
   const bridge = initAmbiente();
+  initSettings();
   if(bridge) initAutosave();
   renderAll();
 })();
