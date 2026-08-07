@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 7 agosto 2026 — v13.3 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 7 agosto 2026 — v13.4 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,7 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.4 (7 agosto): incipit della mail cambiato in "Hi, I'm Ivan Martinelli." al posto di "Dear Sir or Madam,".
      v13.3 (7 agosto): importate da Notion 24 alternative per la notte (campeggi + fallback alberghieri) con email e
      link mappe, e collegate come "Opzioni notte" ai giorni 10-21; aggiornati email/sito di Drepanos, Vrachos, Kalami e Bekas.
      v13.2 (7 agosto): rilettura da Notion. Aggiunta la tappa "Traghetto Brindisi -> Igoumenitsa" creata su Notion,
@@ -447,7 +448,7 @@
 
 <main id="mainArea"></main>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 7 agosto 2026 · v13.3 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 7 agosto 2026 · v13.4 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -1316,9 +1317,9 @@ function mailtoPerSosta(id){
   }
 
   const corpo =
-`Dear Sir or Madam,
+`Hi, I'm Ivan Martinelli.
 
-we are an Italian family travelling through Greece with a caravan, and we would like to ask about the availability of a pitch at your campsite.
+We are an Italian family travelling through Greece with a caravan, and we would like to ask about the availability of a pitch at your campsite.
 
 ${righeDate}Party: 4 people - 2 adults and 2 children aged 10 and 12
 Caravan length: 7.30 metres (plus car)
