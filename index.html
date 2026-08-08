@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 8 agosto 2026 — v13.11 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 8 agosto 2026 — v13.12 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,9 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.12 (8 agosto): intestazione rifatta: andata e ritorno in due blocchi speculari con la stessa struttura
+     (data incolonnata, orari evidenziati), affiancati su schermo largo e impilati su telefono. Prima foto reale in
+     galleria, Voidokilia dell'8 agosto, servita dal repo in foto/ (ridimensionata a 1800px e senza metadati EXIF).
      v13.11 (8 agosto): galleria foto. Ogni tappa/sosta puo' avere foto:["url", ...] e/o fotoAlbum:"url";
      la scheda del giorno raccoglie automaticamente le foto delle sue tappe e della sosta. Su Notion, blocco
      "📷 Le mie foto" nel corpo delle pagine delle tappe. Attenzione: gli URL delle immagini caricate dentro
@@ -107,11 +110,24 @@
     font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; font-weight:600; font-size: clamp(28px,4vw,42px);
     margin:4px 0 2px; letter-spacing:-.01em;
   }
-  .route-line{
-    font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; font-size:16px; color:var(--white); opacity:.85;
-    display:flex; align-items:center; gap:10px; margin-top:6px;
+  /* Andata e ritorno hanno la stessa struttura: due righe ciascuno, data a sinistra
+     incolonnata, orari in evidenza. Cosi' i due versi del viaggio si leggono in parallelo. */
+  .tratte{ display:grid; grid-template-columns:1fr 1fr; gap:10px 34px; margin-top:12px; align-items:start; }
+  .tratta{ position:relative; padding-left:14px; }
+  .tratta::before{ content:""; position:absolute; left:0; top:3px; bottom:3px; width:2px;
+    background:rgba(233,199,122,.5); border-radius:2px; }
+  .tratta-tit{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--gold-soft); font-weight:600; margin-bottom:5px; }
+  .tratta-riga{
+    font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
+    font-size:15px; color:var(--white); opacity:.9; line-height:1.65;
+    display:flex; align-items:baseline; gap:6px; flex-wrap:wrap;
   }
-  .route-line .dash{ flex:0 0 auto; width:34px; border-top:1px dashed rgba(247,245,239,.4);}
+  .tratta-riga .td{ display:inline-block; min-width:52px; font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:rgba(247,245,239,.55); }
+  .tratta-riga .fr{ color:var(--gold-soft); opacity:.9; }
+  .tratta-riga .ora{ font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; font-size:12.5px;
+    padding:1px 6px; border-radius:5px; background:rgba(233,199,122,.16); color:var(--gold-soft); }
   .ferry-meta{
     display:flex; gap:26px; flex-wrap:wrap;
   }
@@ -395,7 +411,8 @@
     .ticket{ padding:16px 16px; flex-direction:column; align-items:flex-start; gap:14px; }
     .ferry-meta{ gap:20px; width:100%; }
     .ferry-meta .stat{ text-align:left; }
-    .route-line{ font-size:13.5px; flex-wrap:wrap; }
+    .tratte{ grid-template-columns:1fr; gap:12px; }
+    .tratta-riga{ font-size:14px; }
 
     .controls{ padding:0 14px; flex-direction:column; align-items:stretch; gap:12px; }
     .controls > div{ justify-content:space-between; }
@@ -457,7 +474,18 @@
       <div>
         <div class="eyebrow">Viaggio in roulotte · 3–23 agosto 2026</div>
         <h1>🇬🇷 Grecia</h1>
-        <div class="route-line">Roma → Brindisi 3 ago <span class="dash"></span> ⛴ 4 ago 13:00 → 22:00 <span class="dash"></span> Igoumenitsa &nbsp;·&nbsp; rientro 22 ago 14:00 → 21:00 + 23 ago viaggio verso Roma</div>
+        <div class="tratte">
+          <div class="tratta">
+            <div class="tratta-tit">Andata</div>
+            <div class="tratta-riga"><span class="td">3 ago</span> Roma <span class="fr">→</span> Brindisi</div>
+            <div class="tratta-riga"><span class="td">4 ago</span> ⛴ Brindisi <span class="ora">13:00</span> <span class="fr">→</span> Igoumenitsa <span class="ora">22:00</span></div>
+          </div>
+          <div class="tratta">
+            <div class="tratta-tit">Ritorno</div>
+            <div class="tratta-riga"><span class="td">22 ago</span> ⛴ Igoumenitsa <span class="ora">14:00</span> <span class="fr">→</span> Brindisi <span class="ora">21:00</span></div>
+            <div class="tratta-riga"><span class="td">23 ago</span> Brindisi <span class="fr">→</span> Roma</div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="ferry-meta">
@@ -524,7 +552,7 @@
 
 <main id="mainArea"></main>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 8 agosto 2026 · v13.11 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 8 agosto 2026 · v13.12 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -613,6 +641,7 @@ const TAPPE = [
    campeggio:"Nessun pernottamento: è area protetta e il campeggio è vietato. Si dorme al Camping Erodios di Gialova e si viene qui in giornata.",
    link:"https://en.wikipedia.org/wiki/Voidokilia_Beach",
    mapsLink:"https://maps.apple.com/?ll=36.95611,21.66528&q=Voidokilia",
+   foto:["https://s1gmund80.github.io/grecia/foto/2026-08-08-voidokilia.jpg"],
    extra:false},
   {id:"methoni", icon:"🏰", title:"Methoni", tipi:["borgo","mare"], notti:"0 (mezza giornata da Pylos)",
    teaser:"Castello veneziano che arriva fino al mare, col Bourtzi ottagonale collegato da una passerella. ~15-20 min da Pylos.",
