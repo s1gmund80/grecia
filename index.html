@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 8 agosto 2026 — v13.9 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 8 agosto 2026 — v13.10 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,10 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.10 (8 agosto): risolto il motivo per cui sul sito pubblicato si vedeva ancora il piano vecchio: loadState()
+     preferisce il piano salvato in localStorage e ignora DEFAULT_SCHEDULE. Aggiunta PLAN_VERSION: se il piano salvato
+     viene da una versione precedente compare un avviso in cima con "Carica il piano nuovo", e nelle Impostazioni c'è
+     "Ricarica il piano dall'app" (sostituisce il pulsante rimosso nel v13.5).
      v13.9 (8 agosto): riletto il diario da Notion pagina per pagina (le query SQL restituiscono dati in cache).
      Diario reale del 4 e del 7 agosto; due soste effettive nuove, Giannoulis Camper Stop (notte del 4) e Camping
      Navarino Bay (base 7-10 agosto, al posto di Erodios, che resta come opzione).
@@ -260,6 +264,12 @@
     white-space:pre-wrap; overflow-wrap:break-word;
   }
   .base-text.vuoto{ opacity:.4; font-style:italic; font-weight:400; }
+  #planUpdate{ display:none; margin-top:14px; padding:14px 16px; border-radius:12px;
+    border:1px solid rgba(224,122,95,.45); background:rgba(224,122,95,.12); }
+  #planUpdate.show{ display:block; }
+  .pu-text{ font-size:13.5px; line-height:1.55; color:rgba(247,245,239,.9); }
+  .pu-text strong{ display:block; margin-bottom:4px; color:#fff; }
+  .pu-actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
   #settingsPanel{ display:none; margin-top:14px; padding:14px 16px; border-radius:12px;
     border:1px solid rgba(233,199,122,.28); background:rgba(233,199,122,.06); }
   #settingsPanel.show{ display:block; }
@@ -467,6 +477,18 @@
     <button class="btn" id="btnSettings">⚙️ Impostazioni</button>
   </div>
 
+  <div id="planUpdate">
+    <div class="pu-text">
+      <strong>C'è un piano più recente in questa versione dell'app.</strong>
+      Sul telefono è salvato il piano di una visita precedente, quindi vedi ancora i dati vecchi.
+      Caricando il piano nuovo sostituisci i giorni con quelli aggiornati da Notion.
+    </div>
+    <div class="pu-actions">
+      <button class="btn gold" id="btnPlanLoad">♻️ Carica il piano nuovo</button>
+      <button class="btn" id="btnPlanKeep">Tieni quello che ho</button>
+    </div>
+  </div>
+
   <div id="settingsPanel">
     <div class="settings-title">Impostazioni</div>
     <label class="autosave-toggle" title="Di default il piano è in sola lettura, per non modificarlo per sbaglio mentre lo consulti.">
@@ -483,6 +505,7 @@
       <button class="btn gold" id="btnPullNotion">🔄 Aggiorna da Notion</button>
       <button class="btn" id="btnExport">📤 Esporta piano</button>
       <button class="btn" id="btnImport">📥 Importa piano</button>
+      <button class="btn" id="btnPlanReload">♻️ Ricarica il piano dall'app</button>
     </div>
     <div class="settings-hint">Le schede dei luoghi restano sempre consultabili, con i link e il pulsante per la richiesta di disponibilità. La modifica va attivata qui sopra.</div>
   </div>
@@ -492,7 +515,7 @@
 
 <main id="mainArea"></main>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 8 agosto 2026 · v13.9 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 8 agosto 2026 · v13.10 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -1009,17 +1032,46 @@ function mergeGiorniMancanti(){
   return aggiunti;
 }
 
+/* Versione del piano incluso nel file. Va alzata ogni volta che cambia DEFAULT_SCHEDULE,
+   altrimenti chi ha già usato l'app continua a vedere il piano salvato nel browser. */
+const PLAN_VERSION = '13.9';
+const K_PLANVER = 'grecia-plan-version-v1';
+let planUpdateAvailable = false;
+
+function getPlanVersion(){
+  try{ return localStorage.getItem(K_PLANVER); }catch(e){ return null; }
+}
+function setPlanVersion(v){
+  try{ localStorage.setItem(K_PLANVER, v); }catch(e){}
+}
+
+/* Sostituisce il piano salvato con quello incluso nel file. Le soste aggiunte a mano
+   e le modifiche alle schede (itemOverrides) restano: si tocca solo il calendario. */
+async function caricaPianoDalFile(){
+  schedule = scheduleFromDefault();
+  await saveState();
+  setPlanVersion(PLAN_VERSION);
+  planUpdateAvailable = false;
+  document.getElementById('planUpdate').classList.remove('show');
+  renderAll();
+  setSyncStatus('♻️ Piano ricaricato dalla versione ' + PLAN_VERSION + ' dell\'app.');
+}
+
 async function loadState(){
   try{
     const res = await LS.get('grecia-schedule-v1');
     if(res && res.value){
       schedule = JSON.parse(res.value);
       if(mergeGiorniMancanti()) await saveState();
+      /* Se il piano salvato viene da una versione precedente dell'app, lo segnaliamo
+         invece di sovrascrivere a sorpresa: decide l'utente. */
+      if(getPlanVersion() !== PLAN_VERSION) planUpdateAvailable = true;
       return;
     }
   }catch(e){ /* not found, or storage unavailable */ }
   schedule = scheduleFromDefault();
   await saveState();
+  setPlanVersion(PLAN_VERSION);
 }
 let storageWarned = false;
 function logStorageIssue(context, e){
@@ -2227,6 +2279,22 @@ function autoGrowAll(root){
   (root || document).querySelectorAll('textarea.period-input').forEach(autoGrow);
 }
 
+function initPlanUpdate(){
+  document.getElementById('btnPlanLoad').addEventListener('click', caricaPianoDalFile);
+  document.getElementById('btnPlanKeep').addEventListener('click', ()=>{
+    setPlanVersion(PLAN_VERSION);
+    planUpdateAvailable = false;
+    document.getElementById('planUpdate').classList.remove('show');
+    setSyncStatus('Ok, tengo il piano che hai sul telefono. Puoi ricaricarlo quando vuoi dalle Impostazioni.');
+  });
+  document.getElementById('btnPlanReload').addEventListener('click', async ()=>{
+    if(confirm('Ricaricare il piano incluso in questa versione dell\'app? I giorni del calendario verranno sostituiti con quelli aggiornati.')){
+      await caricaPianoDalFile();
+    }
+  });
+  if(planUpdateAvailable) document.getElementById('planUpdate').classList.add('show');
+}
+
 function initSettings(){
   loadEditMode();
   const panel = document.getElementById('settingsPanel');
@@ -2367,6 +2435,7 @@ document.getElementById('btnPushNotion').addEventListener('click', ()=>{ avvisoS
   await Promise.all([loadState(), loadSoste(), loadOverrides()]);
   const bridge = initAmbiente();
   initSettings();
+  initPlanUpdate();
   if(bridge) initAutosave();
   renderAll();
 })();
