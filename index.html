@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 8 agosto 2026 — v13.10 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 8 agosto 2026 — v13.11 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,10 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.11 (8 agosto): galleria foto. Ogni tappa/sosta puo' avere foto:["url", ...] e/o fotoAlbum:"url";
+     la scheda del giorno raccoglie automaticamente le foto delle sue tappe e della sosta. Su Notion, blocco
+     "📷 Le mie foto" nel corpo delle pagine delle tappe. Attenzione: gli URL delle immagini caricate dentro
+     Notion scadono dopo circa un'ora, quindi non sono utilizzabili qui: servono indirizzi pubblici stabili.
      v13.10 (8 agosto): risolto il motivo per cui sul sito pubblicato si vedeva ancora il piano vecchio: loadState()
      preferisce il piano salvato in localStorage e ignora DEFAULT_SCHEDULE. Aggiunta PLAN_VERSION: se il piano salvato
      viene da una versione precedente compare un avviso in cima con "Carica il piano nuovo", e nelle Impostazioni c'è
@@ -264,6 +268,11 @@
     white-space:pre-wrap; overflow-wrap:break-word;
   }
   .base-text.vuoto{ opacity:.4; font-style:italic; font-weight:400; }
+  .gallery{ display:grid; grid-template-columns:repeat(auto-fill,minmax(84px,1fr)); gap:6px; margin-top:6px; }
+  .gallery a{ display:block; }
+  .gallery img{ width:100%; aspect-ratio:1; object-fit:cover; border-radius:8px; display:block;
+    background:rgba(0,0,0,.06); border:1px solid var(--line-light); }
+  .gallery-vuota{ font-size:12.5px; color:var(--ink-soft); font-style:italic; margin-top:4px; }
   #planUpdate{ display:none; margin-top:14px; padding:14px 16px; border-radius:12px;
     border:1px solid rgba(224,122,95,.45); background:rgba(224,122,95,.12); }
   #planUpdate.show{ display:block; }
@@ -515,7 +524,7 @@
 
 <main id="mainArea"></main>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 8 agosto 2026 · v13.10 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 8 agosto 2026 · v13.11 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -1251,6 +1260,7 @@ function renderDayFields(ds){
       ${opzioniHtml}
       ${editMode ? `<button class="add-chip" data-add-opzione-for="${ds}">+ aggiungi opzione</button>` : ''}
     </div>
+    ${galleryGiorno(ds)}
   `;
 }
 function renderDayCard(ds){
@@ -1342,6 +1352,49 @@ function closeLibrary(){ document.getElementById('overlayLib').classList.remove(
    cosi' si vede subito per quali si puo' gia' mandare la richiesta di disponibilita'. */
 /* Link alla pagina Notion della voce: gli id li abbiamo gia' nella mappa NOTION_PAGE_ID,
    basta togliere i trattini per ottenere l'URL. Cosi' dalla scheda si risale alla pagina completa. */
+/* Galleria: mostra le foto il cui indirizzo e' pubblicamente raggiungibile dal browser.
+   Le immagini caricate dentro Notion NON vanno bene: Notion le serve con URL firmati che
+   scadono dopo circa un'ora, quindi si romperebbero da sole. Vedi fotoAlbum per il caso
+   in cui le foto stiano in un album condiviso. */
+function fotoDiItem(it){
+  return Array.isArray(it && it.foto) ? it.foto.filter(u => typeof u === 'string' && u.trim()) : [];
+}
+
+function galleryHtml(it){
+  const foto = fotoDiItem(it);
+  const album = (it && it.fotoAlbum) ? it.fotoAlbum : '';
+  if(!foto.length && !album) return '';
+  let out = '<h3>📷 Le mie foto</h3>';
+  if(foto.length){
+    out += '<div class="gallery">' + foto.map(u =>
+      `<a href="${escapeAttr(u)}" target="_blank" rel="noopener"><img src="${escapeAttr(u)}" alt="" loading="lazy"></a>`
+    ).join('') + '</div>';
+  }
+  if(album){
+    out += `<p style="margin-top:8px;"><a href="${escapeAttr(album)}" target="_blank" rel="noopener">📷 Apri l'album completo ↗</a></p>`;
+  }
+  return out;
+}
+
+/* Galleria della giornata: raccoglie le foto delle tappe del giorno e della sosta,
+   cosi' la scheda del giorno fa da riepilogo visivo senza doverle ripetere a mano. */
+function galleryGiorno(ds){
+  const e = dayEntry(ds);
+  const ids = [...(e.tappe || [])];
+  if(e.notteId) ids.push(e.notteId);
+  const viste = new Set();
+  const foto = [];
+  ids.forEach(id=>{
+    const it = getItem(id); if(!it) return;
+    fotoDiItem(it).forEach(u=>{ if(!viste.has(u)){ viste.add(u); foto.push({u, id, titolo: it.title}); } });
+  });
+  if(!foto.length) return '';
+  return `<div class="field-label" style="margin-top:14px;">📷 Foto della giornata</div>
+    <div class="gallery">` + foto.map(f =>
+      `<a href="${escapeAttr(f.u)}" target="_blank" rel="noopener" title="${escapeAttr(f.titolo)}"><img src="${escapeAttr(f.u)}" alt="" loading="lazy"></a>`
+    ).join('') + '</div>';
+}
+
 function notionLink(id){
   const pid = NOTION_PAGE_ID[id];
   if(!pid) return '';
@@ -1388,6 +1441,7 @@ function openDetail(id){
       </div>
       ${t.link ? `<p style="margin-top:14px;"><a href="${t.link}" target="_blank" rel="noopener">Sito ↗</a></p>` : ''}
       ${t.mapsLink ? `<p style="margin-top:6px;"><a href="${t.mapsLink}" target="_blank" rel="noopener">📍 Apri su Mappe ↗</a></p>` : ''}
+      ${galleryHtml(t)}
       ${notionLink(id)}
       ${t.custom ? `<div class="extra-note">Sosta aggiunta da te nell'app.</div>` : ''}
       <p style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;">
@@ -1410,6 +1464,7 @@ function openDetail(id){
       ${chipsSosteNotte(t)}
       ${t.link ? `<p style="margin-top:14px;"><a href="${t.link}" target="_blank" rel="noopener">Sito ↗</a></p>` : ''}
       ${t.mapsLink ? `<p style="margin-top:6px;"><a href="${t.mapsLink}" target="_blank" rel="noopener">📍 Apri su Mappe ↗</a></p>` : ''}
+      ${galleryHtml(t)}
       ${notionLink(id)}
       ${t.extra ? `<div class="extra-note">Non ancora inserita nel piano di base — aggiungila a un giorno dalla libreria se decidi di includerla.</div>` : ''}
       <p style="margin-top:18px;"><button class="btn" onclick="openEdit('${id}')">✏️ Modifica scheda</button></p>
