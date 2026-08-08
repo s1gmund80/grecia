@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 7 agosto 2026 — v13.7 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 8 agosto 2026 — v13.8 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,7 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.8 (8 agosto): ogni scheda (tappa o sosta) ha il link diretto alla sua pagina Notion, ricavato da NOTION_PAGE_ID.
      v13.7 (7 agosto): Voidokilia separata da Pylos (Pylos & Gialova = base delle tre notti, Voidokilia = escursione
      dell'8 agosto); le cinque candidate per la notte del 18 spostate dalla tappa "Nafpaktos / Galaxidi / Itea" a "Delfi",
      che è la tappa effettivamente assegnata a quel giorno. Allineato anche su Notion.
@@ -488,7 +489,7 @@
 
 <main id="mainArea"></main>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 7 agosto 2026 · v13.7 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 8 agosto 2026 · v13.8 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -1278,6 +1279,15 @@ function closeLibrary(){ document.getElementById('overlayLib').classList.remove(
 
 /* Chip delle soste notturne collegate a una tappa. Il badge dice se c'e' l'email:
    cosi' si vede subito per quali si puo' gia' mandare la richiesta di disponibilita'. */
+/* Link alla pagina Notion della voce: gli id li abbiamo gia' nella mappa NOTION_PAGE_ID,
+   basta togliere i trattini per ottenere l'URL. Cosi' dalla scheda si risale alla pagina completa. */
+function notionLink(id){
+  const pid = NOTION_PAGE_ID[id];
+  if(!pid) return '';
+  const short = pid.replace(/-/g,'');
+  return `<p style="margin-top:6px;"><a href="https://app.notion.com/p/${short}" target="_blank" rel="noopener">📓 Apri la pagina su Notion ↗</a></p>`;
+}
+
 function chipsSosteNotte(t){
   const lista = (t.sosteNotte || []).filter(sid => getSosta(sid));
   if(!lista.length) return '';
@@ -1317,6 +1327,7 @@ function openDetail(id){
       </div>
       ${t.link ? `<p style="margin-top:14px;"><a href="${t.link}" target="_blank" rel="noopener">Sito ↗</a></p>` : ''}
       ${t.mapsLink ? `<p style="margin-top:6px;"><a href="${t.mapsLink}" target="_blank" rel="noopener">📍 Apri su Mappe ↗</a></p>` : ''}
+      ${notionLink(id)}
       ${t.custom ? `<div class="extra-note">Sosta aggiunta da te nell'app.</div>` : ''}
       <p style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;">
         <button class="btn" onclick="openEdit('${id}')">✏️ Modifica scheda</button>
@@ -1338,6 +1349,7 @@ function openDetail(id){
       ${chipsSosteNotte(t)}
       ${t.link ? `<p style="margin-top:14px;"><a href="${t.link}" target="_blank" rel="noopener">Sito ↗</a></p>` : ''}
       ${t.mapsLink ? `<p style="margin-top:6px;"><a href="${t.mapsLink}" target="_blank" rel="noopener">📍 Apri su Mappe ↗</a></p>` : ''}
+      ${notionLink(id)}
       ${t.extra ? `<div class="extra-note">Non ancora inserita nel piano di base — aggiungila a un giorno dalla libreria se decidi di includerla.</div>` : ''}
       <p style="margin-top:18px;"><button class="btn" onclick="openEdit('${id}')">✏️ Modifica scheda</button></p>
     `;
