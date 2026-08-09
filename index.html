@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 9 agosto 2026 — v13.27 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 9 agosto 2026 — v13.28 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,10 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.28 (9 agosto): le giornate possono avere foto proprie (campo foto sul giorno), non solo ereditate dalle
+     tappe: serviva per il pergolato del 4 agosto, perche' la Masseria e' anche la sosta del 3 e la foto sarebbe
+     comparsa su entrambi i giorni. dayEntry recupera il campo dal piano di base, quindi si vede anche con un piano
+     salvato vecchio e senza dover ricaricare.
      v13.27 (9 agosto): titolo "Peloponneso 2026". Corretto il difetto introdotto dal v13.26: il titolo a
      white-space:nowrap non si comprimeva e, mancando min-width:0 sul figlio flex, spingeva l'ingranaggio delle
      impostazioni fuori dal bordo, dove .ticket lo tagliava. Ora il blocco del titolo si comprime e, al limite,
@@ -683,7 +687,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.27 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.28 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -1063,6 +1067,7 @@ const DEFAULT_SCHEDULE = [
   tappe:["torre-pozzelle"], notteOpzioni:[], notteId:"masseria-appia-traiana"},
  {date:"2026-08-04", base:"Igoumenitsa",
   titolo:"Imbarco a Brindisi e traversata",
+  foto:["https://s1gmund80.github.io/grecia/foto/2026-08-04-masseria-pergolato.jpg"],
   mattina:"Visita al giardino della Masseria Appia Traiana, poi check-out e partenza verso Brindisi. Arrivo al porto con anticipo per il traghetto delle 13:00 verso Igoumenitsa.",
   pomeriggio:"Prosegue la traversata in traghetto.",
   sera:"Sbarco a Igoumenitsa alle 22:00 e notte tecnica al Giannoulis Camper Stop.",
@@ -1203,7 +1208,8 @@ function saveEditMode(){
 function scheduleFromDefault(){
   const s = {};
   DEFAULT_SCHEDULE.forEach(d=> s[d.date] = {
-    titolo:d.titolo || '', base:d.base, mattina:d.mattina, pomeriggio:d.pomeriggio, sera:d.sera,
+    titolo:d.titolo || '', foto:[...(d.foto || [])],
+    base:d.base, mattina:d.mattina, pomeriggio:d.pomeriggio, sera:d.sera,
     tappe:[...d.tappe], notteId: d.notteId || null,
     notteOpzioni: [...(d.notteOpzioni || [])]
   });
@@ -1339,7 +1345,7 @@ function allDates(){
   return out;
 }
 function dayEntry(dateStr){
-  if(!schedule[dateStr]) schedule[dateStr] = {titolo:'', base:'', mattina:'', pomeriggio:'', sera:'', tappe:[], notteId:null, notteOpzioni:[]};
+  if(!schedule[dateStr]) schedule[dateStr] = {titolo:'', foto:[], base:'', mattina:'', pomeriggio:'', sera:'', tappe:[], notteId:null, notteOpzioni:[]};
   const e = schedule[dateStr];
   if(e.notteId === undefined) e.notteId = null;
   if(!Array.isArray(e.notteOpzioni)) e.notteOpzioni = [];
@@ -1348,9 +1354,10 @@ function dayEntry(dateStr){
   if(e.sera === undefined) e.sera = '';
   /* Chi ha un piano salvato da prima dei titoli non ha il campo: lo recuperiamo
      dal piano incluso nel file, cosi' il titolo compare senza dover ricaricare tutto. */
-  if(!e.titolo){
+  if(!e.titolo || !e.foto || !e.foto.length){
     const base = DEFAULT_SCHEDULE.find(d=>d.date===dateStr);
-    e.titolo = (base && base.titolo) || '';
+    if(!e.titolo) e.titolo = (base && base.titolo) || '';
+    if(!e.foto || !e.foto.length) e.foto = [...((base && base.foto) || [])];
   }
   return e;
 }
@@ -1607,6 +1614,10 @@ function galleryGiorno(ds){
   if(e.notteId) ids.push(e.notteId);
   const viste = new Set();
   const foto = [];
+  /* Le foto legate al giorno vengono prima: servono per gli scatti che non
+     appartengono a un luogo del piano, o che riguardano un giorno solo anche
+     quando il luogo compare in piu' giorni. */
+  (e.foto || []).forEach(u=>{ if(u && !viste.has(u)){ viste.add(u); foto.push({u, titolo: e.titolo || ''}); } });
   ids.forEach(id=>{
     const it = getItem(id); if(!it) return;
     fotoDiItem(it).forEach(u=>{ if(!viste.has(u)){ viste.add(u); foto.push({u, titolo: it.title}); } });
