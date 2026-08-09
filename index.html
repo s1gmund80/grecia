@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 9 agosto 2026 — v13.24 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 9 agosto 2026 — v13.25 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,10 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.25 (9 agosto): intestazione: titolo "Grecia in roulotte" con le date sulla riga sotto; notti in Grecia e
+     giorni di piano su una riga sola; il contatore dei giorni fatti e la barra di avanzamento affiancati, con la barra
+     che occupa lo spazio rimanente. Le impostazioni si aprono in una modale invece del pannello a fisarmonica.
+     La legenda dei tipi di tappa e' passata a fondo pagina.
      v13.24 (9 agosto): nella fascia di sintesi le etichette "And" e "Rit" sono sostituite da due frecce, a destra
      per l'andata e a sinistra per il ritorno; la freccia fra i porti e' attenuata per non confondersi con quella
      della direzione. Le frecce conservano title e aria-label, altrimenti chi usa uno screen reader perderebbe l'informazione.
@@ -163,6 +167,8 @@
   .eyebrow{
     font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--gold-soft); font-weight:600;
   }
+  .tk-date{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--gold-soft);
+    font-weight:600; margin-top:2px; }
   h1{
     font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; font-weight:600; font-size: clamp(28px,4vw,42px);
     margin:4px 0 2px; letter-spacing:-.01em;
@@ -173,12 +179,13 @@
     display:flex; align-items:center; gap:14px 26px; flex-wrap:wrap; width:100%;
     margin-top:14px; padding-top:14px; border-top:1px solid var(--line-dark);
   }
-  .dash .stat{ flex:0 0 auto; }
-  .dash .stat .n{ font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
-    font-size:24px; line-height:1.05; color:var(--gold-soft); }
-  .dash .stat .n .tot{ font-size:15px; opacity:.55; }
-  .dash .stat .l{ font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:rgba(247,245,239,.55); margin-top:2px; }
-  .dash .stat.done .n{ color:#fff; }
+  /* Notti e giorni stanno su una riga sola: sono due numeri di contesto, non due
+     indicatori da mettere in evidenza come l'avanzamento. */
+  .conta{ display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; min-width:0;
+    font-size:12.5px; color:rgba(247,245,239,.7); }
+  .conta-v b{ font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
+    font-size:18px; font-weight:600; color:var(--gold-soft); margin-right:3px; }
+  .conta-sep{ opacity:.35; }
   .dash .ferry{ margin-left:auto; display:flex; flex-direction:column; gap:3px; min-width:0; }
   .fr-riga{ font-size:12px; color:rgba(247,245,239,.8); white-space:nowrap; display:flex; align-items:baseline; gap:6px; }
   .fr-riga b{ font-weight:600; color:var(--gold-soft); }
@@ -190,7 +197,15 @@
   .fr-dir.back svg{ transform:scaleX(-1); }
   .fr-sep{ opacity:.45; }
   .fr-d{ color:rgba(247,245,239,.5); font-size:11px; }
-  .prog{ width:100%; height:3px; border-radius:999px; background:rgba(255,255,255,.1); margin-top:14px; overflow:hidden; }
+  /* Avanzamento: il contatore a sinistra e la barra che riempie tutto lo spazio restante. */
+  .progrow{ display:flex; align-items:center; gap:14px; width:100%; margin-top:14px;
+    padding-top:14px; border-top:1px solid var(--line-dark); }
+  .progval{ flex:0 0 auto; font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
+    font-size:23px; line-height:1; color:#fff; display:flex; align-items:baseline; gap:7px; }
+  .progval .tot{ font-size:15px; opacity:.5; margin-left:-5px; }
+  .progval-l{ font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; font-size:10px;
+    text-transform:uppercase; letter-spacing:.1em; color:rgba(247,245,239,.55); }
+  .prog{ flex:1 1 auto; min-width:60px; height:6px; border-radius:999px; background:rgba(255,255,255,.1); overflow:hidden; }
   .prog-fill{ height:100%; background:linear-gradient(90deg, var(--gold-soft), var(--gold)); border-radius:999px; width:0; transition:width .4s; }
 
   /* ---------- Controls ---------- */
@@ -255,6 +270,8 @@
 
   /* ---------- Legend ---------- */
   .legend{ display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:rgba(247,245,239,.65); }
+  .legend-fondo{ max-width:1180px; margin:26px auto 0; padding:14px 24px 0; justify-content:center;
+    gap:12px 18px; border-top:1px solid var(--line-dark); }
   .legend span{ display:inline-flex; align-items:center; gap:6px; }
   .dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
 
@@ -384,13 +401,16 @@
   .pu-text{ font-size:13.5px; line-height:1.55; color:rgba(247,245,239,.9); }
   .pu-text strong{ display:block; margin-bottom:4px; color:#fff; }
   .pu-actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
-  #settingsPanel{ display:none; margin-top:14px; padding:14px 16px; border-radius:12px;
-    border:1px solid rgba(233,199,122,.28); background:rgba(233,199,122,.06); }
-  #settingsPanel.show{ display:block; }
-  .settings-title{ font-size:11px; text-transform:uppercase; letter-spacing:.08em; font-weight:700;
-    color:rgba(247,245,239,.6); margin-bottom:10px; }
-  .settings-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
-  .settings-hint{ font-size:12px; color:rgba(247,245,239,.55); margin-top:10px; line-height:1.5; }
+  #overlaySettings{ z-index:58; }
+  /* Le impostazioni vivono in una modale chiara: i pulsanti e i toggle nati per
+     l'intestazione scura vanno riportati sui colori del testo su fondo chiaro. */
+  #overlaySettings .settings-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+  #overlaySettings .settings-hint{ font-size:12px; color:var(--ink-soft); margin-top:12px; line-height:1.5; }
+  #overlaySettings .btn{ border-color:var(--line-light); background:rgba(19,34,38,.04); color:var(--ink); }
+  #overlaySettings .btn:hover{ background:rgba(19,34,38,.08); }
+  #overlaySettings .btn.gold{ background:var(--gold); border-color:var(--gold); color:var(--ink); }
+  #overlaySettings .autosave-toggle{ color:var(--ink); border-color:var(--line-light);
+    background:rgba(210,168,74,.12); width:100%; box-sizing:border-box; margin-bottom:8px; }
   .period-input:focus{ outline:none; }
   .period-block.mattina .period-input:focus{ border-left-color:var(--gold); }
   .period-block.pomeriggio .period-input:focus{ border-left-color:var(--coral); }
@@ -552,8 +572,8 @@
   <div class="ticket">
     <div class="tk-top">
       <div>
-        <div class="eyebrow">Viaggio in roulotte · 3–23 agosto 2026</div>
-        <h1>🇬🇷 Grecia</h1>
+        <h1>🇬🇷 Grecia in roulotte</h1>
+        <div class="tk-date">3–23 agosto 2026</div>
       </div>
       <button class="icon-btn" id="btnSettings" title="Impostazioni" aria-label="Impostazioni">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Zm7.4-3.5c0-.5-.05-.98-.13-1.45l2.02-1.55-1.9-3.3-2.4.92a7.6 7.6 0 0 0-2.52-1.46L14.1 2h-4.2l-.37 2.16a7.6 7.6 0 0 0-2.52 1.46l-2.4-.92-1.9 3.3L4.73 10.55c-.08.47-.13.95-.13 1.45s.05.98.13 1.45L2.71 15l1.9 3.3 2.4-.92a7.6 7.6 0 0 0 2.52 1.46L9.9 22h4.2l.37-2.16a7.6 7.6 0 0 0 2.52-1.46l2.4.92 1.9-3.3-2.02-1.55c.08-.47.13-.95.13-1.45Z"/></svg>
@@ -561,19 +581,21 @@
     </div>
 
     <div class="dash">
-      <div class="stat done">
-        <div class="n"><span id="statFatti">–</span><span class="tot" id="statTot">/21</span></div>
-        <div class="l">giorni fatti</div>
+      <div class="conta">
+        <span class="conta-v"><b>18</b> notti in Grecia</span>
+        <span class="conta-sep">·</span>
+        <span class="conta-v"><b>21</b> giorni di piano</span>
       </div>
-      <div class="stat"><div class="n">18</div><div class="l">notti in Grecia</div></div>
-      <div class="stat"><div class="n">21</div><div class="l">giorni di piano</div></div>
       <div class="ferry">
         <div class="fr-riga"><span class="fr-dir" title="Andata" aria-label="Andata"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h11.2l-4.6-4.6L12 5l7 7-7 7-1.4-1.4L15.2 13H4z"/></svg></span><span class="fr-d">4 ago</span> ⛴ Brindisi <b>13:00</b> <span class="fr-sep">→</span> Igoumenitsa <b>22:00</b></div>
         <div class="fr-riga"><span class="fr-dir back" title="Ritorno" aria-label="Ritorno"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h11.2l-4.6-4.6L12 5l7 7-7 7-1.4-1.4L15.2 13H4z"/></svg></span><span class="fr-d">22 ago</span> ⛴ Igoumenitsa <b>14:00</b> <span class="fr-sep">→</span> Brindisi <b>21:00</b></div>
       </div>
     </div>
 
-    <div class="prog" title="Avanzamento del viaggio"><div class="prog-fill" id="progFill"></div></div>
+    <div class="progrow">
+      <div class="progval"><span id="statFatti">–</span><span class="tot" id="statTot">/21</span> <span class="progval-l">giorni fatti</span></div>
+      <div class="prog" title="Avanzamento del viaggio"><div class="prog-fill" id="progFill"></div></div>
+    </div>
   </div>
 </header>
 
@@ -586,16 +608,7 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="1.5"/><rect x="3" y="10" width="18" height="4" rx="1.5"/><rect x="3" y="16" width="18" height="4" rx="1.5"/></svg>
     </button>
   </div>
-  <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-    <div class="legend">
-      <span><i class="dot" style="background:#2E7FA0"></i>Mare</span>
-      <span><i class="dot" style="background:var(--gold)"></i>Storico</span>
-      <span><i class="dot" style="background:var(--olive)"></i>Natura</span>
-      <span><i class="dot" style="background:var(--coral)"></i>Borgo</span>
-      <span><i class="dot" style="background:#6B7A80"></i>Porto</span>
-      <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
-    </div>
-  </div>
+
 
   <div id="planUpdate">
     <div class="pu-text">
@@ -609,8 +622,12 @@
     </div>
   </div>
 
-  <div id="settingsPanel">
-    <div class="settings-title">Impostazioni</div>
+</div>
+
+<div class="overlay" id="overlaySettings">
+  <div class="modal">
+    <button class="close" id="closeSettings">✕</button>
+    <h2 style="font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; margin:0 0 16px;">Impostazioni</h2>
     <label class="autosave-toggle" title="Di default il piano è in sola lettura, per non modificarlo per sbaglio mentre lo consulti.">
       <input type="checkbox" id="chkEdit">
       <span>✏️ Consenti la modifica dei campi</span>
@@ -643,7 +660,16 @@
 
 <main id="mainArea"></main>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.24 — universale (Cowork + claude.ai)</span></footer>
+<div class="legend legend-fondo">
+  <span><i class="dot" style="background:#2E7FA0"></i>Mare</span>
+  <span><i class="dot" style="background:var(--gold)"></i>Storico</span>
+  <span><i class="dot" style="background:var(--olive)"></i>Natura</span>
+  <span><i class="dot" style="background:var(--coral)"></i>Borgo</span>
+  <span><i class="dot" style="background:#6B7A80"></i>Porto</span>
+  <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
+</div>
+
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.25 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -1505,7 +1531,10 @@ function renderLibrary(filter=''){
   }
 }
 
+/* Libreria e soste si aprono dalle impostazioni: chiudiamo la modale sotto,
+   altrimenti restano due strati sovrapposti. */
 function openLibrary(forDate, kind='tappa', comeOpzione=false){
+  chiudiSettings();   // si arriva qui dalle impostazioni: evitiamo due modali sovrapposte
   pickingForDate = forDate || null;
   pickingKind = kind;
   pickingComeOpzione = !!comeOpzione;
@@ -2050,7 +2079,8 @@ document.getElementById('libContent').addEventListener('click', async e=>{
   }
 });
 
-[  ['overlayLib', closeLibrary], ['overlayDetail', closeDetail], ['overlayDay', closeDayModal]
+[  ['overlayLib', closeLibrary], ['overlayDetail', closeDetail], ['overlayDay', closeDayModal],
+   ['overlaySettings', chiudiSettings]
 ].forEach(([id, fn])=>{
   document.getElementById(id).addEventListener('click', e=>{ if(e.target.id===id) fn(); });
 });
@@ -2599,12 +2629,21 @@ function initPlanUpdate(){
   if(planUpdateAvailable) document.getElementById('planUpdate').classList.add('show');
 }
 
+function apriSettings(){
+  document.getElementById('overlaySettings').classList.add('show');
+  document.getElementById('btnSettings').classList.add('on');
+  updateBodyScrollLock();
+}
+function chiudiSettings(){
+  document.getElementById('overlaySettings').classList.remove('show');
+  document.getElementById('btnSettings').classList.remove('on');
+  updateBodyScrollLock();
+}
+
 function initSettings(){
   loadEditMode();
-  const panel = document.getElementById('settingsPanel');
-  document.getElementById('btnSettings').addEventListener('click', ()=>{
-    panel.classList.toggle('show');
-  });
+  document.getElementById('btnSettings').addEventListener('click', apriSettings);
+  document.getElementById('closeSettings').addEventListener('click', chiudiSettings);
   const chk = document.getElementById('chkEdit');
   chk.checked = editMode;
   chk.addEventListener('change', ()=>{
