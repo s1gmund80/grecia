@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 9 agosto 2026 — v13.28 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 9 agosto 2026 — v13.29 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,8 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.29 (9 agosto): foto dell'ingresso del Necromanteion per il 5 agosto, agganciata alla tappa (che compare
+     solo in quel giorno) cosi' si vede anche aprendo la scheda del luogo.
      v13.28 (9 agosto): le giornate possono avere foto proprie (campo foto sul giorno), non solo ereditate dalle
      tappe: serviva per il pergolato del 4 agosto, perche' la Masseria e' anche la sosta del 3 e la foto sarebbe
      comparsa su entrambi i giorni. dayEntry recupera il campo dal piano di base, quindi si vede anche con un piano
@@ -687,7 +689,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.28 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.29 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -743,7 +745,8 @@ const TAPPE = [
    teaser:"L'oracolo dei morti dell'antichità sulle rive dell'Acheronte, visitato il pomeriggio del 5 agosto. A ~25 min in auto dal Camping Acrogiali.",
    vedere:["La cripta sotterranea, la parte più suggestiva del sito","Mura poligonali e ambienti a volta","Vale leggere qualcosa prima di entrare: le rovine da sole dicono poco","Alcuni studiosi contestano che sia il vero Necromanteion"],
    campeggio:"Sito recintato con biglietto d'ingresso: 10€. Orario 8:00-20:00. Tel. +30 2684 041206. Coordinate: 39.23674, 20.53353. Visita rapida, meno di un'ora.",
-   link:"https://en.wikipedia.org/wiki/Necromanteion_of_Acheron", mapsLink:"https://maps.apple.com/?ll=39.2367386,20.5335267&q=Necromanteion%20of%20Acheron", extra:false},
+   link:"https://en.wikipedia.org/wiki/Necromanteion_of_Acheron", mapsLink:"https://maps.apple.com/?ll=39.2367386,20.5335267&q=Necromanteion%20of%20Acheron", foto:["https://s1gmund80.github.io/grecia/foto/2026-08-05-necromanteion.jpg"],
+   extra:false},
   {id:"acheron-sorgenti", icon:"🏞️", title:"Sorgenti dell'Acheronte (Glyki)", tipi:["natura"], notti:"0 (mezza giornata)",
    teaser:"Passeggiata dentro il fiume e bagno, il pomeriggio del 5 agosto. Acqua tra i 5 e i 12 gradi anche in agosto. 4.9/5 su oltre 17.000 recensioni.",
    vedere:["Risalita della gola camminando nel fiume","Alcuni tratti troppo profondi: lì si nuota","Sentieri lungo il fiume e sul versante della montagna","Nel mito è il fiume degli inferi, quello di Caronte"],
