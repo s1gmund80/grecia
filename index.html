@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 9 agosto 2026 — v13.21 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 9 agosto 2026 — v13.22 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,10 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.22 (9 agosto): pulsante "Scarica di nuovo l'app dal sito" nelle Impostazioni, per l'app aggiunta alla home
+     dell'iPhone dove non esiste il pulsante di ricarica di Safari. Svuota le eventuali cache e ricarica con un
+     parametro variabile nell'URL, l'unico modo affidabile per non farsi servire la copia vecchia; il piano salvato
+     non viene toccato. Accanto compare la versione in uso, per capire subito se il ricaricamento e' servito.
      v13.21 (9 agosto): diario del 9 agosto (Methoni, il castello e il pranzo in taverna) e foto del castello in
      galleria. Aggiunta l'icona per "Aggiungi a Home" su iPhone: bandiera greca in icona/, con apple-touch-icon,
      favicon, manifest e il nome "Grecia 2026" sotto l'icona.
@@ -599,6 +603,10 @@
       <button class="btn" id="btnImport">📥 Importa piano</button>
       <button class="btn" id="btnPlanReload">♻️ Ricarica il piano dall'app</button>
     </div>
+    <div class="settings-row">
+      <button class="btn gold" id="btnHardReload">🔄 Scarica di nuovo l'app dal sito</button>
+    </div>
+    <div class="settings-hint" id="verHint"></div>
     <div class="settings-hint">Le schede dei luoghi restano sempre consultabili, con i link e il pulsante per la richiesta di disponibilità. La modifica va attivata qui sopra.</div>
   </div>
 </div>
@@ -607,7 +615,7 @@
 
 <main id="mainArea"></main>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.21 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.22 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -2491,6 +2499,31 @@ function autoGrowAll(root){
   (root || document).querySelectorAll('textarea.period-input').forEach(autoGrow);
 }
 
+/* Ricaricamento forzato. Serve soprattutto all'app aggiunta alla home dell'iPhone:
+   a tutto schermo la barra di Safari non c'e', quindi non esiste il pulsante di ricarica.
+   location.reload(true) non basta piu (il parametro e' ignorato dai browser moderni):
+   l'unico modo affidabile e' chiedere un URL diverso, con un parametro che cambia ogni volta.
+   Restiamo sullo stesso percorso, altrimenti iOS uscirebbe dalla modalita a tutto schermo. */
+async function forzaRicaricamento(){
+  try{
+    if(window.caches && window.caches.keys){
+      const chiavi = await window.caches.keys();
+      await Promise.all(chiavi.map(k=>window.caches.delete(k)));
+    }
+  }catch(e){ /* niente cache da svuotare */ }
+  location.replace(location.origin + location.pathname + '?r=' + Date.now());
+}
+
+function initHardReload(){
+  const ver = document.getElementById('verNote');
+  const hint = document.getElementById('verHint');
+  if(hint){
+    const testo = ver ? ver.textContent.replace(/^Versione:\s*/,'') : 'sconosciuta';
+    hint.textContent = 'In uso adesso: ' + testo + '. Il pulsante riscarica la pagina dal sito e non tocca il piano che hai salvato: se dopo il ricaricamento il numero non cambia, stai gia usando l\'ultima versione.';
+  }
+  document.getElementById('btnHardReload').addEventListener('click', forzaRicaricamento);
+}
+
 function initPlanUpdate(){
   document.getElementById('btnPlanLoad').addEventListener('click', caricaPianoDalFile);
   document.getElementById('btnPlanKeep').addEventListener('click', ()=>{
@@ -2648,6 +2681,7 @@ document.getElementById('btnPushNotion').addEventListener('click', ()=>{ avvisoS
   const bridge = initAmbiente();
   initSettings();
   initPlanUpdate();
+  initHardReload();
   if(bridge) initAutosave();
   renderAll();
 })();
