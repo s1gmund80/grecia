@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 9 agosto 2026 — v13.25 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 9 agosto 2026 — v13.26 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,9 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.26 (9 agosto): titolo corretto in "Peloponneso in roulotte" e ridotto (clamp 19-30px, white-space:nowrap)
+     per stare su una riga sola anche su iPhone. Libreria tappe e Soste notturne affiancate nelle impostazioni con una
+     griglia a due colonne, che a differenza del flex non manda il secondo pulsante a capo.
      v13.25 (9 agosto): intestazione: titolo "Grecia in roulotte" con le date sulla riga sotto; notti in Grecia e
      giorni di piano su una riga sola; il contatore dei giorni fatti e la barra di avanzamento affiancati, con la barra
      che occupa lo spazio rimanente. Le impostazioni si aprono in una modale invece del pannello a fisarmonica.
@@ -170,8 +173,9 @@
   .tk-date{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--gold-soft);
     font-weight:600; margin-top:2px; }
   h1{
-    font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; font-weight:600; font-size: clamp(28px,4vw,42px);
-    margin:4px 0 2px; letter-spacing:-.01em;
+    font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; font-weight:600;
+    font-size: clamp(19px,3.2vw,30px);
+    margin:0 0 2px; letter-spacing:-.01em; white-space:nowrap;
   }
   /* Riga di sintesi: i tre numeri a sinistra e i due traghetti a destra, tutto su una
      fascia sola per tenere l'intestazione bassa. */
@@ -405,6 +409,8 @@
   /* Le impostazioni vivono in una modale chiara: i pulsanti e i toggle nati per
      l'intestazione scura vanno riportati sui colori del testo su fondo chiaro. */
   #overlaySettings .settings-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+  #overlaySettings .settings-row.due{ display:grid; grid-template-columns:1fr 1fr; }
+  #overlaySettings .settings-row.due .btn{ justify-content:center; min-width:0; }
   #overlaySettings .settings-hint{ font-size:12px; color:var(--ink-soft); margin-top:12px; line-height:1.5; }
   #overlaySettings .btn{ border-color:var(--line-light); background:rgba(19,34,38,.04); color:var(--ink); }
   #overlaySettings .btn:hover{ background:rgba(19,34,38,.08); }
@@ -572,7 +578,7 @@
   <div class="ticket">
     <div class="tk-top">
       <div>
-        <h1>🇬🇷 Grecia in roulotte</h1>
+        <h1>🇬🇷 Peloponneso in roulotte</h1>
         <div class="tk-date">3–23 agosto 2026</div>
       </div>
       <button class="icon-btn" id="btnSettings" title="Impostazioni" aria-label="Impostazioni">
@@ -637,7 +643,7 @@
       <span>☁️ Salvataggio automatico su Notion</span>
       <span class="autosave-dot" id="autosaveDot"></span>
     </label>
-    <div class="settings-row">
+    <div class="settings-row due">
       <button class="btn gold" id="btnLibrary">📖 Libreria tappe</button>
       <button class="btn gold" id="btnSoste">🌙 Soste notturne</button>
     </div>
@@ -669,7 +675,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.25 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.26 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
