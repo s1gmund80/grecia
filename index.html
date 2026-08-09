@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 9 agosto 2026 — v13.23 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 9 agosto 2026 — v13.24 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,9 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.24 (9 agosto): nella fascia di sintesi le etichette "And" e "Rit" sono sostituite da due frecce, a destra
+     per l'andata e a sinistra per il ritorno; la freccia fra i porti e' attenuata per non confondersi con quella
+     della direzione. Le frecce conservano title e aria-label, altrimenti chi usa uno screen reader perderebbe l'informazione.
      v13.23 (9 agosto): intestazione compatta in stile dashboard: titolo, ingranaggio delle impostazioni in alto a
      destra, e una fascia sola con giorni fatti sul totale, notti, giorni di piano e i due traghetti ridotti a una riga
      ciascuno. Barra di avanzamento del viaggio. Selettore giorno/settimana ridotto a due icone. Libreria tappe e Soste
@@ -179,8 +182,13 @@
   .dash .ferry{ margin-left:auto; display:flex; flex-direction:column; gap:3px; min-width:0; }
   .fr-riga{ font-size:12px; color:rgba(247,245,239,.8); white-space:nowrap; display:flex; align-items:baseline; gap:6px; }
   .fr-riga b{ font-weight:600; color:var(--gold-soft); }
-  .fr-lab{ font-size:9px; letter-spacing:.12em; text-transform:uppercase; font-weight:700;
-    color:var(--ink); background:var(--gold-soft); border-radius:4px; padding:1px 5px; }
+  /* La direzione la dice la freccia: a destra si parte, a sinistra si torna.
+     Il titolo resta per chi usa uno screen reader, che senza etichetta non avrebbe nulla. */
+  .fr-dir{ flex:0 0 auto; width:19px; height:19px; border-radius:5px; background:var(--gold-soft);
+    display:inline-flex; align-items:center; justify-content:center; align-self:center; }
+  .fr-dir svg{ width:13px; height:13px; fill:var(--ink); display:block; }
+  .fr-dir.back svg{ transform:scaleX(-1); }
+  .fr-sep{ opacity:.45; }
   .fr-d{ color:rgba(247,245,239,.5); font-size:11px; }
   .prog{ width:100%; height:3px; border-radius:999px; background:rgba(255,255,255,.1); margin-top:14px; overflow:hidden; }
   .prog-fill{ height:100%; background:linear-gradient(90deg, var(--gold-soft), var(--gold)); border-radius:999px; width:0; transition:width .4s; }
@@ -560,8 +568,8 @@
       <div class="stat"><div class="n">18</div><div class="l">notti in Grecia</div></div>
       <div class="stat"><div class="n">21</div><div class="l">giorni di piano</div></div>
       <div class="ferry">
-        <div class="fr-riga"><span class="fr-lab">And</span><span class="fr-d">4 ago</span> ⛴ Brindisi <b>13:00</b> → Igoumenitsa <b>22:00</b></div>
-        <div class="fr-riga"><span class="fr-lab">Rit</span><span class="fr-d">22 ago</span> ⛴ Igoumenitsa <b>14:00</b> → Brindisi <b>21:00</b></div>
+        <div class="fr-riga"><span class="fr-dir" title="Andata" aria-label="Andata"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h11.2l-4.6-4.6L12 5l7 7-7 7-1.4-1.4L15.2 13H4z"/></svg></span><span class="fr-d">4 ago</span> ⛴ Brindisi <b>13:00</b> <span class="fr-sep">→</span> Igoumenitsa <b>22:00</b></div>
+        <div class="fr-riga"><span class="fr-dir back" title="Ritorno" aria-label="Ritorno"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h11.2l-4.6-4.6L12 5l7 7-7 7-1.4-1.4L15.2 13H4z"/></svg></span><span class="fr-d">22 ago</span> ⛴ Igoumenitsa <b>14:00</b> <span class="fr-sep">→</span> Brindisi <b>21:00</b></div>
       </div>
     </div>
 
@@ -635,7 +643,7 @@
 
 <main id="mainArea"></main>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.23 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.24 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
