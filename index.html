@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 9 agosto 2026 — v13.22 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 9 agosto 2026 — v13.23 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,10 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.23 (9 agosto): intestazione compatta in stile dashboard: titolo, ingranaggio delle impostazioni in alto a
+     destra, e una fascia sola con giorni fatti sul totale, notti, giorni di piano e i due traghetti ridotti a una riga
+     ciascuno. Barra di avanzamento del viaggio. Selettore giorno/settimana ridotto a due icone. Libreria tappe e Soste
+     notturne spostate nelle impostazioni. All'apertura la pagina scorre al giorno di oggi, evidenziato in oro.
      v13.22 (9 agosto): pulsante "Scarica di nuovo l'app dal sito" nelle Impostazioni, per l'app aggiunta alla home
      dell'iPhone dove non esiste il pulsante di ricarica di Safari. Svuota le eventuali cache e ricarica con un
      parametro variabile nell'URL, l'unico modo affidabile per non farsi servire la copia vecchia; il piano salvato
@@ -143,7 +147,16 @@
     background-image: repeating-linear-gradient(100deg, transparent 0 40px, rgba(255,255,255,0.035) 40px 41px);
     pointer-events:none;
   }
-  .ticket .route{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;}
+  .tk-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:14px; width:100%; }
+  .icon-btn{
+    flex:0 0 auto; width:38px; height:38px; border-radius:11px; cursor:pointer;
+    border:1px solid var(--line-dark); background:rgba(255,255,255,.06);
+    display:inline-flex; align-items:center; justify-content:center; padding:0; transition:.15s;
+  }
+  .icon-btn svg{ width:19px; height:19px; fill:var(--gold-soft); }
+  .icon-btn:hover{ background:rgba(233,199,122,.16); }
+  .icon-btn.on{ background:var(--gold); border-color:var(--gold); }
+  .icon-btn.on svg{ fill:var(--ink); }
   .eyebrow{
     font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--gold-soft); font-weight:600;
   }
@@ -151,30 +164,26 @@
     font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; font-weight:600; font-size: clamp(28px,4vw,42px);
     margin:4px 0 2px; letter-spacing:-.01em;
   }
-  /* Andata e ritorno hanno la stessa struttura: due righe ciascuno, data a sinistra
-     incolonnata, orari in evidenza. Cosi' i due versi del viaggio si leggono in parallelo. */
-  .tratte{ display:grid; grid-template-columns:1fr 1fr; gap:10px 34px; margin-top:12px; align-items:start; }
-  .tratta{ position:relative; padding-left:14px; }
-  .tratta::before{ content:""; position:absolute; left:0; top:3px; bottom:3px; width:2px;
-    background:rgba(233,199,122,.5); border-radius:2px; }
-  .tratta-tit{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase;
-    color:var(--gold-soft); font-weight:600; margin-bottom:5px; }
-  .tratta-riga{
-    font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
-    font-size:15px; color:var(--white); opacity:.9; line-height:1.65;
-    display:flex; align-items:baseline; gap:6px; flex-wrap:wrap;
+  /* Riga di sintesi: i tre numeri a sinistra e i due traghetti a destra, tutto su una
+     fascia sola per tenere l'intestazione bassa. */
+  .dash{
+    display:flex; align-items:center; gap:14px 26px; flex-wrap:wrap; width:100%;
+    margin-top:14px; padding-top:14px; border-top:1px solid var(--line-dark);
   }
-  .tratta-riga .td{ display:inline-block; min-width:52px; font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
-    font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:rgba(247,245,239,.55); }
-  .tratta-riga .fr{ color:var(--gold-soft); opacity:.9; }
-  .tratta-riga .ora{ font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; font-size:12.5px;
-    padding:1px 6px; border-radius:5px; background:rgba(233,199,122,.16); color:var(--gold-soft); }
-  .ferry-meta{
-    display:flex; gap:26px; flex-wrap:wrap;
-  }
-  .ferry-meta .stat{ text-align:right; }
-  .ferry-meta .stat .n{ font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; font-size:22px; color:var(--gold-soft); }
-  .ferry-meta .stat .l{ font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:rgba(247,245,239,.6); }
+  .dash .stat{ flex:0 0 auto; }
+  .dash .stat .n{ font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
+    font-size:24px; line-height:1.05; color:var(--gold-soft); }
+  .dash .stat .n .tot{ font-size:15px; opacity:.55; }
+  .dash .stat .l{ font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:rgba(247,245,239,.55); margin-top:2px; }
+  .dash .stat.done .n{ color:#fff; }
+  .dash .ferry{ margin-left:auto; display:flex; flex-direction:column; gap:3px; min-width:0; }
+  .fr-riga{ font-size:12px; color:rgba(247,245,239,.8); white-space:nowrap; display:flex; align-items:baseline; gap:6px; }
+  .fr-riga b{ font-weight:600; color:var(--gold-soft); }
+  .fr-lab{ font-size:9px; letter-spacing:.12em; text-transform:uppercase; font-weight:700;
+    color:var(--ink); background:var(--gold-soft); border-radius:4px; padding:1px 5px; }
+  .fr-d{ color:rgba(247,245,239,.5); font-size:11px; }
+  .prog{ width:100%; height:3px; border-radius:999px; background:rgba(255,255,255,.1); margin-top:14px; overflow:hidden; }
+  .prog-fill{ height:100%; background:linear-gradient(90deg, var(--gold-soft), var(--gold)); border-radius:999px; width:0; transition:width .4s; }
 
   /* ---------- Controls ---------- */
   .sliderbar-end{ font-size:10px; color:rgba(247,245,239,.35); font-weight:600; flex:0 0 auto; }
@@ -208,6 +217,10 @@
     padding:8px 18px; border-radius:999px; cursor:pointer; transition:.15s;
   }
   .seg button.active{ background:var(--gold); color:var(--ink); }
+  /* Toggle di vista ridotto a due icone: occupa poco e resta chiaro quale e' attiva. */
+  .seg-icon button{ padding:7px 12px; display:inline-flex; align-items:center; }
+  .seg-icon svg{ width:17px; height:17px; fill:rgba(247,245,239,.7); }
+  .seg-icon button.active svg{ fill:var(--ink); }
   .btn{
     border:1px solid var(--line-dark); background:rgba(255,255,255,.05); color:var(--white);
     font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-weight:600; font-size:13px; padding:9px 16px; border-radius:10px; cursor:pointer; transition:.15s;
@@ -251,6 +264,7 @@
   .daynames{ display:grid; grid-template-columns:repeat(7,1fr); gap:10px; margin-bottom:8px;}
   .daynames div{ font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:rgba(247,245,239,.45); text-align:center;}
 
+  .is-oggi{ box-shadow:0 0 0 2px var(--gold), 0 8px 22px rgba(0,0,0,.18) !important; }
   .cell{
     background:var(--white); color:var(--ink); border-radius:var(--radius);
     min-height:132px; min-width:0; padding:10px 10px 8px; cursor:pointer; position:relative;
@@ -475,16 +489,15 @@
     .dm-dnum{ font-size:20px; }
 
     header.trip{ padding:20px 14px 6px; }
-    .ticket{ padding:16px 16px; flex-direction:column; align-items:flex-start; gap:14px; }
-    .ferry-meta{ gap:20px; width:100%; }
-    .ferry-meta .stat{ text-align:left; }
-    .tratte{ grid-template-columns:1fr; gap:12px; }
-    .tratta-riga{ font-size:14px; }
+    .ticket{ padding:15px 16px; flex-direction:column; align-items:flex-start; gap:0; }
+    .dash{ gap:12px 18px; margin-top:12px; padding-top:12px; }
+    .dash .stat .n{ font-size:21px; }
+    .dash .ferry{ margin-left:0; width:100%; }
+    .fr-riga{ white-space:normal; font-size:11.5px; }
 
-    .controls{ padding:0 14px; flex-direction:column; align-items:stretch; gap:12px; }
-    .controls > div{ justify-content:space-between; }
-    .seg{ width:100%; }
-    .seg button{ flex:1; padding:10px 8px; font-size:12.5px; }
+    .controls{ padding:0 14px; flex-direction:row; align-items:center; justify-content:space-between; gap:10px; }
+    .seg{ width:auto; }
+    .seg-icon button{ padding:8px 14px; }
     .btn{ padding:11px 14px; font-size:12.5px; }
     .legend{ font-size:10.5px; gap:8px 10px; }
 
@@ -529,35 +542,41 @@
 
 <header class="trip">
   <div class="ticket">
-    <div class="route">
+    <div class="tk-top">
       <div>
         <div class="eyebrow">Viaggio in roulotte · 3–23 agosto 2026</div>
         <h1>🇬🇷 Grecia</h1>
-        <div class="tratte">
-          <div class="tratta">
-            <div class="tratta-tit">Andata</div>
-            <div class="tratta-riga"><span class="td">3 ago</span> Roma <span class="fr">→</span> Brindisi</div>
-            <div class="tratta-riga"><span class="td">4 ago</span> ⛴ Brindisi <span class="ora">13:00</span> <span class="fr">→</span> Igoumenitsa <span class="ora">22:00</span></div>
-          </div>
-          <div class="tratta">
-            <div class="tratta-tit">Ritorno</div>
-            <div class="tratta-riga"><span class="td">22 ago</span> ⛴ Igoumenitsa <span class="ora">14:00</span> <span class="fr">→</span> Brindisi <span class="ora">21:00</span></div>
-            <div class="tratta-riga"><span class="td">23 ago</span> Brindisi <span class="fr">→</span> Roma</div>
-          </div>
-        </div>
       </div>
+      <button class="icon-btn" id="btnSettings" title="Impostazioni" aria-label="Impostazioni">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Zm7.4-3.5c0-.5-.05-.98-.13-1.45l2.02-1.55-1.9-3.3-2.4.92a7.6 7.6 0 0 0-2.52-1.46L14.1 2h-4.2l-.37 2.16a7.6 7.6 0 0 0-2.52 1.46l-2.4-.92-1.9 3.3L4.73 10.55c-.08.47-.13.95-.13 1.45s.05.98.13 1.45L2.71 15l1.9 3.3 2.4-.92a7.6 7.6 0 0 0 2.52 1.46L9.9 22h4.2l.37-2.16a7.6 7.6 0 0 0 2.52-1.46l2.4.92 1.9-3.3-2.02-1.55c.08-.47.13-.95.13-1.45Z"/></svg>
+      </button>
     </div>
-    <div class="ferry-meta">
+
+    <div class="dash">
+      <div class="stat done">
+        <div class="n"><span id="statFatti">–</span><span class="tot" id="statTot">/21</span></div>
+        <div class="l">giorni fatti</div>
+      </div>
       <div class="stat"><div class="n">18</div><div class="l">notti in Grecia</div></div>
       <div class="stat"><div class="n">21</div><div class="l">giorni di piano</div></div>
+      <div class="ferry">
+        <div class="fr-riga"><span class="fr-lab">And</span><span class="fr-d">4 ago</span> ⛴ Brindisi <b>13:00</b> → Igoumenitsa <b>22:00</b></div>
+        <div class="fr-riga"><span class="fr-lab">Rit</span><span class="fr-d">22 ago</span> ⛴ Igoumenitsa <b>14:00</b> → Brindisi <b>21:00</b></div>
+      </div>
     </div>
+
+    <div class="prog" title="Avanzamento del viaggio"><div class="prog-fill" id="progFill"></div></div>
   </div>
 </header>
 
 <div class="controls">
-  <div class="seg">
-    <button id="btnWeek" class="active">Vista settimana</button>
-    <button id="btnDay">Vista giorno</button>
+  <div class="seg seg-icon">
+    <button id="btnWeek" class="active" title="Vista settimana" aria-label="Vista settimana">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="13" width="7" height="7" rx="1.5"/><rect x="14" y="13" width="7" height="7" rx="1.5"/></svg>
+    </button>
+    <button id="btnDay" title="Vista giorno" aria-label="Vista giorno">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="1.5"/><rect x="3" y="10" width="18" height="4" rx="1.5"/><rect x="3" y="16" width="18" height="4" rx="1.5"/></svg>
+    </button>
   </div>
   <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
     <div class="legend">
@@ -568,9 +587,6 @@
       <span><i class="dot" style="background:#6B7A80"></i>Porto</span>
       <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
     </div>
-    <button class="btn gold" id="btnLibrary">📖 Libreria tappe</button>
-    <button class="btn gold" id="btnSoste">🌙 Soste notturne</button>
-    <button class="btn" id="btnSettings">⚙️ Impostazioni</button>
   </div>
 
   <div id="planUpdate">
@@ -597,6 +613,10 @@
       <span class="autosave-dot" id="autosaveDot"></span>
     </label>
     <div class="settings-row">
+      <button class="btn gold" id="btnLibrary">📖 Libreria tappe</button>
+      <button class="btn gold" id="btnSoste">🌙 Soste notturne</button>
+    </div>
+    <div class="settings-row">
       <button class="btn gold" id="btnPushNotion">💾 Salva su Notion</button>
       <button class="btn gold" id="btnPullNotion">🔄 Aggiorna da Notion</button>
       <button class="btn" id="btnExport">📤 Esporta piano</button>
@@ -615,7 +635,7 @@
 
 <main id="mainArea"></main>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.22 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.23 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -2033,6 +2053,10 @@ function renderAll(){
   document.getElementById('btnDay').classList.toggle('active', view==='day');
   const main = document.getElementById('mainArea');
   main.innerHTML = view==='week' ? renderWeekView() : renderDayView();
+  aggiornaSintesi();
+  const oggiDs = fmtDate(new Date());
+  const nodoOggi = main.querySelector('[data-date="' + oggiDs + '"]');
+  if(nodoOggi) nodoOggi.classList.add('is-oggi');
   bindDynamicEvents(main);
   // rebind day-modal content too (in case open)
   bindDynamicEvents(document.getElementById('dayModalContent'));
@@ -2514,6 +2538,33 @@ async function forzaRicaricamento(){
   location.replace(location.origin + location.pathname + '?r=' + Date.now());
 }
 
+/* Sintesi in intestazione: quanti giorni del piano sono già passati, oggi incluso.
+   Prima del viaggio e' 0, a viaggio finito e' il totale. */
+function aggiornaSintesi(){
+  const date = allDates();
+  if(!date.length) return;
+  const oggi = fmtDate(new Date());
+  const fatti = date.filter(d => d <= oggi).length;
+  const el = document.getElementById('statFatti');
+  const tot = document.getElementById('statTot');
+  const fill = document.getElementById('progFill');
+  if(el) el.textContent = fatti;
+  if(tot) tot.textContent = '/' + date.length;
+  if(fill) fill.style.width = Math.round(fatti / date.length * 100) + '%';
+}
+
+/* All'apertura porta in vista il giorno di oggi, se cade nel periodo del viaggio.
+   Fuori dal periodo si resta in cima, che e' piu' utile che saltare a un estremo. */
+function scrollAOggi(){
+  const oggi = fmtDate(new Date());
+  const date = allDates();
+  if(!date.includes(oggi)) return;
+  const nodo = document.querySelector('[data-date="' + oggi + '"]');
+  if(!nodo) return;
+  nodo.classList.add('is-oggi');
+  requestAnimationFrame(()=> nodo.scrollIntoView({behavior:'smooth', block:'center'}));
+}
+
 function initHardReload(){
   const ver = document.getElementById('verNote');
   const hint = document.getElementById('verHint');
@@ -2684,6 +2735,7 @@ document.getElementById('btnPushNotion').addEventListener('click', ()=>{ avvisoS
   initHardReload();
   if(bridge) initAutosave();
   renderAll();
+  scrollAOggi();
 })();
 </script>
 </body>
