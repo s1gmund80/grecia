@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 9 agosto 2026 — v13.16 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 9 agosto 2026 — v13.17 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,10 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.17 (9 agosto): corretto il layout della vista settimane. La griglia usa minmax(0,1fr) e le celle hanno
+     min-width:0, altrimenti le chips a white-space:nowrap impedivano alle colonne di restringersi e la riga sfondava;
+     su telefono le chips passano da 96px fissi al 42% della cella. In vista settimane si mostrano al massimo tre chips
+     piu il conteggio delle altre. Giorni 5 e 6 rinominati "Preveza — Camping Acrogiali" e Drepano rimosso dalla base del 4.
      v13.16 (9 agosto): foto del 3 agosto (Torre Pozzelle) in galleria, sulla tappa torre-pozzelle.
      v13.15 (9 agosto): ogni giorno ha un titolo che dice cosa si e' fatto o si fara' (campo titolo), mostrato in cima
      alla scheda e nella cella della vista settimane. Nella cella il titolo sta sopra, sotto restano la base e la sosta
@@ -214,14 +218,14 @@
     margin:0 0 10px 4px; text-transform:uppercase; font-weight:600;
   }
   .grid{
-    display:grid; grid-template-columns:repeat(7,1fr); gap:10px;
+    display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:10px;
   }
   .daynames{ display:grid; grid-template-columns:repeat(7,1fr); gap:10px; margin-bottom:8px;}
   .daynames div{ font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:rgba(247,245,239,.45); text-align:center;}
 
   .cell{
     background:var(--white); color:var(--ink); border-radius:var(--radius);
-    min-height:132px; padding:10px 10px 8px; cursor:pointer; position:relative;
+    min-height:132px; min-width:0; padding:10px 10px 8px; cursor:pointer; position:relative;
     border:1px solid rgba(19,34,38,.06);
     display:flex; flex-direction:column; gap:6px;
     transition:.15s transform, .15s box-shadow;
@@ -232,17 +236,19 @@
   .cell .datehead{ display:flex; align-items:baseline; justify-content:space-between;}
   .cell .daynum{ font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; font-size:20px; font-weight:600; }
   .cell .daytag{ font-size:9px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.06em;}
-  .cell .cellmid{ border-top:1px dashed var(--line-light); padding-top:6px; }
+  .cell .cellmid{ border-top:1px dashed var(--line-light); padding-top:6px; min-width:0; }
   /* Il titolo dice cosa si fa quel giorno; base e sosta restano sotto, piu' piccole. */
   .cell .celltit{
     font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
     font-size:13.5px; font-weight:600; color:var(--deep); line-height:1.3; margin-bottom:3px;
+    overflow-wrap:anywhere;
   }
   .cell .base{ font-size:11px; font-weight:600; color:var(--ink-soft); line-height:1.25;
-    text-transform:uppercase; letter-spacing:.04em; }
+    text-transform:uppercase; letter-spacing:.04em; overflow-wrap:anywhere; }
   .cell .dorme{ font-size:11px; color:var(--ink-soft); line-height:1.3; margin-top:2px;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .cell .chips{ display:flex; flex-wrap:wrap; gap:4px; margin-top:auto; }
+  .cell .chips{ display:flex; flex-wrap:wrap; gap:4px; margin-top:auto; min-width:0; }
+  .chip.more{ background:rgba(19,34,38,.4); }
   .chip{
     font-size:10px; font-weight:600; padding:3px 7px; border-radius:999px; color:#fff; white-space:nowrap;
     max-width:100%; overflow:hidden; text-overflow:ellipsis;
@@ -471,8 +477,9 @@
       padding-top:0; padding-left:12px; margin:0; flex:1; min-width:0;
     }
     .cell .celltit{ font-size:13px; }
-    .cell .chips{ margin-top:0; flex-direction:column; align-items:flex-end; gap:4px; flex:0 0 auto; max-width:96px; }
-    .cell .chips .chip{ max-width:96px; }
+    .cell .chips{ margin-top:0; flex-direction:column; align-items:flex-end; gap:4px;
+      flex:0 1 auto; min-width:0; max-width:42%; }
+    .cell .chips .chip{ max-width:100%; }
 
     .day-card{ grid-template-columns:1fr; padding:16px 16px; border-radius:14px; }
     .day-card .dcol{ border-right:none; border-bottom:1px dashed var(--line-light); padding-right:0; padding-bottom:10px; margin-bottom:12px;
@@ -584,7 +591,7 @@
 
 <main id="mainArea"></main>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.16 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.17 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -961,19 +968,19 @@ const DEFAULT_SCHEDULE = [
   pomeriggio:"Trasferimento in autostrada verso Brindisi (circa 6-7h, soste comprese). Arrivo alla masseria e bagno a Torre Pozzelle (~20 min in auto, parcheggio gratuito).",
   sera:"Notte confermata: Masseria Appia Traiana, C.da Mangiamuso, Ostuni (BR) — tel. +39 335 458170. Arrivo in giornata, per essere tranquilli all'imbarco di domani alle 13:00.",
   tappe:["torre-pozzelle"], notteOpzioni:[], notteId:"masseria-appia-traiana"},
- {date:"2026-08-04", base:"Igoumenitsa / Drepano",
+ {date:"2026-08-04", base:"Igoumenitsa",
   titolo:"Imbarco a Brindisi e traversata",
   mattina:"Visita al giardino della Masseria Appia Traiana, poi check-out e partenza verso Brindisi. Arrivo al porto con anticipo per il traghetto delle 13:00 verso Igoumenitsa.",
   pomeriggio:"Prosegue la traversata in traghetto.",
   sera:"Sbarco a Igoumenitsa alle 22:00 e notte tecnica al Giannoulis Camper Stop.",
   tappe:["masseria-appia-traiana","traghetto-brindisi","igoumenitsa-parga"], notteOpzioni:[], notteId:"giannoulis"},
- {date:"2026-08-05", base:"Riza / Preveza — Camping Acrogiali",
+ {date:"2026-08-05", base:"Preveza — Camping Acrogiali",
   titolo:"Il Necromanteion e l'Acheronte",
   mattina:"Arrivo al Camping Acrogiali (Riza, Preveza) e bagno alla spiaggia del campeggio.",
   pomeriggio:"Visita al Necromanteion sull'Acheronte (Mesopotamos), poi passeggiata e bagno alle sorgenti dell'Acheronte a Glyki.",
   sera:"Rientro al Camping Acrogiali.",
   tappe:["necromanteion","acheron-sorgenti"], notteOpzioni:[], notteId:"acrogiali"},
- {date:"2026-08-06", base:"Riza / Preveza — Camping Acrogiali",
+ {date:"2026-08-06", base:"Preveza — Camping Acrogiali",
   titolo:"Mare ad Acrogiali e il drone perduto",
   mattina:"Mattinata al mare al Camping Acrogiali, con una bellissima passeggiata lungo la costa e bagno. Momento memorabile (in senso tragico): il drone è finito in acqua 🤦🏼‍♂️😭.",
   pomeriggio:"Pomeriggio di relax e giochi in campeggio.",
@@ -1146,7 +1153,7 @@ function mergeGiorniMancanti(){
 
 /* Versione del piano incluso nel file. Va alzata ogni volta che cambia DEFAULT_SCHEDULE,
    altrimenti chi ha già usato l'app continua a vedere il piano salvato nel browser. */
-const PLAN_VERSION = '13.15';
+const PLAN_VERSION = '13.17';
 const K_PLANVER = 'grecia-plan-version-v1';
 let planUpdateAvailable = false;
 
@@ -1277,10 +1284,15 @@ function renderWeekView(){
       if(!ds){ html += `<div class="cell empty"></div>`; return; }
       const entry = dayEntry(ds);
       const d = new Date(ds+'T00:00:00');
-      const chips = entry.tappe.map(id=>{
-        const t = TAPPE_BY_ID[id]; if(!t) return '';
+      /* Nella cella settimanale mostriamo poche chips: con cinque tappe (es. il giorno
+         del Mani) la cella si allargava a dismisura. Il resto si vede aprendo il giorno. */
+      const MAX_CHIP = 3;
+      const tappeValide = entry.tappe.filter(id=>TAPPE_BY_ID[id]);
+      const chips = tappeValide.slice(0, MAX_CHIP).map(id=>{
+        const t = TAPPE_BY_ID[id];
         return `<span class="chip ${primaryTipo(t)}">${t.icon} ${t.title.split(' (')[0].split(' —')[0]}</span>`;
-      }).join('');
+      }).join('') + (tappeValide.length > MAX_CHIP
+        ? `<span class="chip more">+${tappeValide.length - MAX_CHIP}</span>` : '');
       const sosta = entry.notteId ? getSosta(entry.notteId) : null;
 
       html += `<div class="cell" data-date="${ds}">
