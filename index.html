@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 9 agosto 2026 — v13.26 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 9 agosto 2026 — v13.27 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,10 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.27 (9 agosto): titolo "Peloponneso 2026". Corretto il difetto introdotto dal v13.26: il titolo a
+     white-space:nowrap non si comprimeva e, mancando min-width:0 sul figlio flex, spingeva l'ingranaggio delle
+     impostazioni fuori dal bordo, dove .ticket lo tagliava. Ora il blocco del titolo si comprime e, al limite,
+     il titolo tronca con i puntini invece di far uscire l'icona.
      v13.26 (9 agosto): titolo corretto in "Peloponneso in roulotte" e ridotto (clamp 19-30px, white-space:nowrap)
      per stare su una riga sola anche su iPhone. Libreria tappe e Soste notturne affiancate nelle impostazioni con una
      griglia a due colonne, che a differenza del flex non manda il secondo pulsante a capo.
@@ -157,7 +161,10 @@
     background-image: repeating-linear-gradient(100deg, transparent 0 40px, rgba(255,255,255,0.035) 40px 41px);
     pointer-events:none;
   }
-  .tk-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:14px; width:100%; }
+  .tk-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:14px; width:100%; min-width:0; }
+  /* Senza min-width:0 il blocco del titolo non si comprime (il titolo e' nowrap) e
+     spinge l'ingranaggio oltre il bordo, che .ticket poi taglia. */
+  .tk-top > div{ flex:1 1 auto; min-width:0; }
   .icon-btn{
     flex:0 0 auto; width:38px; height:38px; border-radius:11px; cursor:pointer;
     border:1px solid var(--line-dark); background:rgba(255,255,255,.06);
@@ -175,7 +182,8 @@
   h1{
     font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; font-weight:600;
     font-size: clamp(19px,3.2vw,30px);
-    margin:0 0 2px; letter-spacing:-.01em; white-space:nowrap;
+    margin:0 0 2px; letter-spacing:-.01em;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
   /* Riga di sintesi: i tre numeri a sinistra e i due traghetti a destra, tutto su una
      fascia sola per tenere l'intestazione bassa. */
@@ -578,7 +586,7 @@
   <div class="ticket">
     <div class="tk-top">
       <div>
-        <h1>🇬🇷 Peloponneso in roulotte</h1>
+        <h1>🇬🇷 Peloponneso 2026</h1>
         <div class="tk-date">3–23 agosto 2026</div>
       </div>
       <button class="icon-btn" id="btnSettings" title="Impostazioni" aria-label="Impostazioni">
@@ -675,7 +683,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.26 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.27 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
