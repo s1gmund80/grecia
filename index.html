@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 9 agosto 2026 — v13.13 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 9 agosto 2026 — v13.14 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,8 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.14 (9 agosto): le foto della giornata salgono in cima alla scheda del giorno: la prima a tutta larghezza
+     come immagine di apertura, le altre in striscia sotto con il conteggio.
      v13.13 (9 agosto): riletti da Notion i giorni 8-12. Diario reale dell'8; i tre giorni di Gythio riscritti, con il
      Mani spostato dall'11 al 12 e Mistrà declassato ad alternativa secondaria. Cinque tappe nuove: Mavrovouni,
      Areopoli, Grotte di Diros, Limeni, Penisola del Mani. PLAN_VERSION alzata a 13.13 perche' il piano e' cambiato.
@@ -287,6 +289,18 @@
     white-space:pre-wrap; overflow-wrap:break-word;
   }
   .base-text.vuoto{ opacity:.4; font-style:italic; font-weight:400; }
+  /* Foto della giornata: stanno in cima alla scheda e la prima fa da apertura,
+     perche' e' l'immagine che racconta il giorno a colpo d'occhio. */
+  .day-foto{ margin:0 0 18px; }
+  .day-foto-lab{ font-size:11px; text-transform:uppercase; letter-spacing:.1em; font-weight:700;
+    color:var(--ink-soft); margin-bottom:7px; }
+  .day-foto-hero{ display:block; }
+  .day-foto-hero img{ width:100%; aspect-ratio:16/10; object-fit:cover; display:block;
+    border-radius:14px; border:1px solid var(--line-light); background:rgba(0,0,0,.05);
+    box-shadow:0 6px 18px rgba(0,0,0,.14); }
+  .day-foto-strip{ display:grid; grid-template-columns:repeat(auto-fill,minmax(74px,1fr)); gap:6px; margin-top:6px; }
+  .day-foto-strip img{ width:100%; aspect-ratio:1; object-fit:cover; display:block;
+    border-radius:9px; border:1px solid var(--line-light); background:rgba(0,0,0,.05); }
   .gallery{ display:grid; grid-template-columns:repeat(auto-fill,minmax(84px,1fr)); gap:6px; margin-top:6px; }
   .gallery a{ display:block; }
   .gallery img{ width:100%; aspect-ratio:1; object-fit:cover; border-radius:8px; display:block;
@@ -555,7 +569,7 @@
 
 <main id="mainArea"></main>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.13 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.14 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -1291,6 +1305,7 @@ function renderDayFields(ds){
     : `<div class="base-text${entry.base ? '' : ' vuoto'}">${escapeHTML(entry.base) || '—'}</div>`;
 
   return `
+    ${galleryGiorno(ds)}
     <div class="field-label">Base / zona</div>
     ${baseHtml}
 
@@ -1312,7 +1327,6 @@ function renderDayFields(ds){
       ${opzioniHtml}
       ${editMode ? `<button class="add-chip" data-add-opzione-for="${ds}">+ aggiungi opzione</button>` : ''}
     </div>
-    ${galleryGiorno(ds)}
   `;
 }
 function renderDayCard(ds){
@@ -1438,13 +1452,21 @@ function galleryGiorno(ds){
   const foto = [];
   ids.forEach(id=>{
     const it = getItem(id); if(!it) return;
-    fotoDiItem(it).forEach(u=>{ if(!viste.has(u)){ viste.add(u); foto.push({u, id, titolo: it.title}); } });
+    fotoDiItem(it).forEach(u=>{ if(!viste.has(u)){ viste.add(u); foto.push({u, titolo: it.title}); } });
   });
   if(!foto.length) return '';
-  return `<div class="field-label" style="margin-top:14px;">📷 Foto della giornata</div>
-    <div class="gallery">` + foto.map(f =>
+  const primo = foto[0];
+  const resto = foto.slice(1);
+  const etichetta = foto.length > 1 ? `📷 Foto della giornata · ${foto.length}` : '📷 Foto della giornata';
+  return `<div class="day-foto">
+    <div class="day-foto-lab">${etichetta}</div>
+    <a class="day-foto-hero" href="${escapeAttr(primo.u)}" target="_blank" rel="noopener" title="${escapeAttr(primo.titolo)}">
+      <img src="${escapeAttr(primo.u)}" alt="" loading="lazy">
+    </a>
+    ${resto.length ? `<div class="day-foto-strip">` + resto.map(f =>
       `<a href="${escapeAttr(f.u)}" target="_blank" rel="noopener" title="${escapeAttr(f.titolo)}"><img src="${escapeAttr(f.u)}" alt="" loading="lazy"></a>`
-    ).join('') + '</div>';
+    ).join('') + `</div>` : ''}
+  </div>`;
 }
 
 function notionLink(id){
