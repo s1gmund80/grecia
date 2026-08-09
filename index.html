@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 9 agosto 2026 — v13.19 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 9 agosto 2026 — v13.20 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,9 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.20 (9 agosto): cella della vista settimane ricostruita come pila di righe piene: data, sintesi del giorno a
+     tutta larghezza, base, poi la riga delle chips delle tappe che va a capo, e in fondo la riga del pernottamento.
+     Tolto il limite di tre chips: ora la sequenza e' completa, perche' con le righe piene c'e' spazio.
      v13.19 (9 agosto): scambiati i programmi dell'11 e del 12: il Mani passa all'11, la giornata lenta al 12.
      Il relitto Dimitrios esce dal pomeriggio del 10 e va sul 12, nella giornata tranquilla. Spostata di conseguenza
      la formula "ultima serata alla base", che ora sta sul 12, che e' davvero l'ultima notte a Gythio.
@@ -240,22 +243,24 @@
   .cell:hover{ transform:translateY(-2px); box-shadow:0 10px 22px rgba(0,0,0,.25); }
   .cell.empty{ background:transparent; border:1px dashed rgba(247,245,239,.12); cursor:default; }
   .cell.empty:hover{ transform:none; box-shadow:none; }
-  .cell .datehead{ display:flex; align-items:baseline; justify-content:space-between;}
-  .cell .daynum{ font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; font-size:20px; font-weight:600; }
+  /* La cella e' una pila di righe piene: data, sintesi, base, chips e in fondo il
+     pernottamento. Il titolo usa tutta la larghezza invece di stare in una colonna. */
+  .cell .cellhead{ display:flex; align-items:baseline; gap:6px; min-width:0; }
+  .cell .daynum{ font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; font-size:20px; font-weight:600; line-height:1; }
   .cell .daytag{ font-size:9px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.06em;}
-  .cell .cellmid{ border-top:1px dashed var(--line-light); padding-top:6px; min-width:0; }
-  /* Il titolo dice cosa si fa quel giorno; base e sosta restano sotto, piu' piccole. */
+  .cell .daydow{ font-size:9px; font-weight:700; color:var(--ink-soft); text-transform:uppercase;
+    letter-spacing:.06em; margin-left:auto; }
   .cell .celltit{
     font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
-    font-size:13.5px; font-weight:600; color:var(--deep); line-height:1.3; margin-bottom:3px;
-    overflow-wrap:anywhere;
+    font-size:14px; font-weight:600; color:var(--deep); line-height:1.3;
+    overflow-wrap:anywhere; border-top:1px dashed var(--line-light); padding-top:6px;
   }
-  .cell .base{ font-size:11px; font-weight:600; color:var(--ink-soft); line-height:1.25;
-    text-transform:uppercase; letter-spacing:.04em; overflow-wrap:anywhere; }
-  .cell .dorme{ font-size:11px; color:var(--ink-soft); line-height:1.3; margin-top:2px;
+  .cell .base{ font-size:10.5px; font-weight:600; color:var(--ink-soft); line-height:1.25;
+    text-transform:uppercase; letter-spacing:.04em; overflow-wrap:anywhere; margin-top:-2px; }
+  .cell .dorme{ font-size:11px; color:var(--ink-soft); line-height:1.3;
+    margin-top:auto; padding-top:6px; border-top:1px dashed var(--line-light);
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .cell .chips{ display:flex; flex-wrap:wrap; gap:4px; margin-top:auto; min-width:0; }
-  .chip.more{ background:rgba(19,34,38,.4); }
   .chip{
     font-size:10px; font-weight:600; padding:3px 7px; border-radius:999px; color:#fff; white-space:nowrap;
     max-width:100%; overflow:hidden; text-overflow:ellipsis;
@@ -471,22 +476,12 @@
     /* Week view becomes a compact single-column agenda on phones */
     .daynames{ display:none; }
     .grid{ grid-template-columns:1fr; gap:8px; }
-    .cell{
-      flex-direction:row; align-items:center; min-height:auto; padding:12px 14px; gap:12px;
-      border-radius:12px;
-    }
-    .cell .datehead{ flex-direction:column; align-items:flex-start; gap:1px; min-width:38px; flex:0 0 auto; }
-    .cell .daynum{ font-size:19px; line-height:1; }
-    .cell .daytag{ font-size:9px; }
-    .cell .daydow{ display:block; font-size:9px; font-weight:700; color:var(--ink-soft); letter-spacing:.06em; }
-    .cell .cellmid{
-      border-top:none; border-left:1px dashed var(--line-light);
-      padding-top:0; padding-left:12px; margin:0; flex:1; min-width:0;
-    }
-    .cell .celltit{ font-size:13px; }
-    .cell .chips{ margin-top:0; flex-direction:column; align-items:flex-end; gap:4px;
-      flex:0 1 auto; min-width:0; max-width:42%; }
-    .cell .chips .chip{ max-width:100%; }
+    .cell{ min-height:auto; padding:13px 15px; gap:5px; border-radius:12px; }
+    .cell .daynum{ font-size:19px; }
+    .cell .celltit{ font-size:16px; }
+    .cell .base{ font-size:11px; }
+    .cell .dorme{ font-size:12px; white-space:normal; }
+    .cell .chips{ margin-top:4px; }
 
     .day-card{ grid-template-columns:1fr; padding:16px 16px; border-radius:14px; }
     .day-card .dcol{ border-right:none; border-bottom:1px dashed var(--line-light); padding-right:0; padding-bottom:10px; margin-bottom:12px;
@@ -598,7 +593,7 @@
 
 <main id="mainArea"></main>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.19 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.20 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -1291,25 +1286,22 @@ function renderWeekView(){
       if(!ds){ html += `<div class="cell empty"></div>`; return; }
       const entry = dayEntry(ds);
       const d = new Date(ds+'T00:00:00');
-      /* Nella cella settimanale mostriamo poche chips: con cinque tappe (es. il giorno
-         del Mani) la cella si allargava a dismisura. Il resto si vede aprendo il giorno. */
-      const MAX_CHIP = 3;
-      const tappeValide = entry.tappe.filter(id=>TAPPE_BY_ID[id]);
-      const chips = tappeValide.slice(0, MAX_CHIP).map(id=>{
+      /* Le chips stanno su una riga tutta loro che va a capo: ci sta la sequenza
+         completa delle tappe senza schiacciare il resto della cella. */
+      const chips = entry.tappe.filter(id=>TAPPE_BY_ID[id]).map(id=>{
         const t = TAPPE_BY_ID[id];
         return `<span class="chip ${primaryTipo(t)}">${t.icon} ${t.title.split(' (')[0].split(' —')[0]}</span>`;
-      }).join('') + (tappeValide.length > MAX_CHIP
-        ? `<span class="chip more">+${tappeValide.length - MAX_CHIP}</span>` : '');
+      }).join('');
       const sosta = entry.notteId ? getSosta(entry.notteId) : null;
 
       html += `<div class="cell" data-date="${ds}">
-        <div class="datehead"><span class="daynum">${d.getDate()}</span><span class="daytag">${MESI[d.getMonth()]}</span><span class="daydow">${DOW[dowIndex(d)]}</span></div>
-        <div class="cellmid">
-          ${entry.titolo ? `<div class="celltit">${escapeHTML(entry.titolo)}</div>` : ''}
-          <div class="base">${entry.base || '<span style="opacity:.4;font-weight:400">senza base…</span>'}</div>
-          ${sosta ? `<div class="dorme">🌙 ${escapeHTML(sosta.title)}</div>` : ''}
+        <div class="cellhead">
+          <span class="daynum">${d.getDate()}</span><span class="daytag">${MESI[d.getMonth()]}</span><span class="daydow">${DOW[dowIndex(d)]}</span>
         </div>
-        <div class="chips">${chips}</div>
+        ${entry.titolo ? `<div class="celltit">${escapeHTML(entry.titolo)}</div>` : ''}
+        <div class="base">${entry.base || '<span style="opacity:.4;font-weight:400">senza base…</span>'}</div>
+        ${chips ? `<div class="chips">${chips}</div>` : ''}
+        <div class="dorme">${sosta ? `🌙 ${escapeHTML(sosta.title)}` : '<span style="opacity:.45">🌙 notte da definire</span>'}</div>
       </div>`;
     });
     html += `</div></div>`;
