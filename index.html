@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 9 agosto 2026 — v13.17 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 9 agosto 2026 — v13.18 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,10 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.18 (9 agosto): tappa Gythio risincronizzata da Notion (rinominata da "Areopoli, Mani & Gythio" a "Gythio",
+     ora che Areopoli e Penisola del Mani sono tappe separate). Tutte e cinque le soste collegate alla base sono
+     raggiungibili: Gythion Bay resta la confermata, le altre quattro compaiono tra le opzioni del 10, 11 e 12.
+     Mani Beach e' inclusa ma resta segnata ⛔ perche' in agosto chiede 7 notti e il soggiorno e' di 3.
      v13.17 (9 agosto): corretto il layout della vista settimane. La griglia usa minmax(0,1fr) e le celle hanno
      min-width:0, altrimenti le chips a white-space:nowrap impedivano alle colonne di restringersi e la riga sfondava;
      su telefono le chips passano da 96px fissi al 42% della cella. In vista settimane si mostrano al massimo tre chips
@@ -591,7 +595,7 @@
 
 <main id="mainArea"></main>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.17 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.18 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -708,10 +712,10 @@ const TAPPE = [
    teaser:"Itinerario panoramico tra montagne, case-torre, villaggi fortificati e costa selvaggia.",
    vedere:["Vathia, Capo Tenaro, villaggi del Mani e punti panoramici lungo la penisola"],
    campeggio:"Escursione in giornata da Gythio / Mavrovouni.", extra:false},
-  {id:"gythio", icon:"🏞️", title:"Areopoli, Mani & Gythio", tipi:["natura","borgo","mare"], notti:"2",
-   teaser:"Il Mani: case-torri in pietra, villaggi arroccati, calette. Gythio è la porta d'accesso, porticciolo grazioso.",
-   vedere:["Areopoli: borgo di pietra, capitale del Mani","Grotte di Diros (Vlychada): barca tra stalattiti","Vathia: villaggio-torre abbandonato","Relitto Dimitrios sulla spiaggia di Valtaki","Capo Tenaro, punta più a sud"],
-   campeggio:"Gythion Bay Camping — sul mare, spazioso, ombreggiato, ottimo per roulotte.",
+  {id:"gythio", icon:"⚓", title:"Gythio", tipi:["mare","borgo"], notti:"3 (10–12 agosto)",
+   teaser:"Città portuale e porta d'accesso al Mani, con centro storico e lungomare.",
+   vedere:["Porto e centro storico di Gythio","Relitto Dimitrios a Valtaki"],
+   campeggio:"Tappa principale di Gythio; le opzioni di pernottamento dell'area restano collegate a questa base.",
    link:"https://gythiocamping.gr/", sosteNotte:["gythion-bay","meltemi","dias-beach","mani-beach","castello-antico"], extra:false},
   {id:"elafonisos", icon:"🏖️", title:"Elafonisos (Simos) ⭐", tipi:["mare"], notti:"2",
    teaser:"Isola raggiunta con breve traghetto da Pounta: Simos, tra le spiagge più belle di Grecia, acqua turchese e dune.",
@@ -1009,19 +1013,19 @@ const DEFAULT_SCHEDULE = [
   mattina:"Trasferimento verso Gythio; arrivo previsto indicativamente verso l'ora di pranzo e sistemazione alla base.",
   pomeriggio:"Visita tranquilla di Gythio: porto, centro e lungomare. Se c'è tempo, relitto Dimitrios a Valtaki.",
   sera:"Mavrovouni: bagno e serata rilassata sul mare.",
-  tappe:["gythio","mavrovouni"], notteOpzioni:["meltemi","dias-beach","castello-antico"], notteId:"gythion-bay"},
+  tappe:["gythio","mavrovouni"], notteOpzioni:["meltemi","dias-beach","castello-antico","mani-beach"], notteId:"gythion-bay"},
  {date:"2026-08-11", base:"Gythio",
   titolo:"Giornata lenta a Mavrovouni",
   mattina:"Giornata volutamente lenta: mare e relax a Mavrovouni.",
   pomeriggio:"Mare e recupero; eventuale visita di ciò che non si è riusciti a vedere a Gythio il giorno dell'arrivo.",
   sera:"Rientro alla base e serata tranquilla. Mistrà resta solo come alternativa secondaria, non come prima scelta.",
-  tappe:["gythio","mavrovouni"], notteOpzioni:["meltemi","dias-beach","castello-antico"], notteId:"gythion-bay"},
+  tappe:["gythio","mavrovouni"], notteOpzioni:["meltemi","dias-beach","castello-antico","mani-beach"], notteId:"gythion-bay"},
  {date:"2026-08-12", base:"Gythio",
   titolo:"Il Mani: Areopoli, Diros e Limeni",
   mattina:"Partenza per il Mani: Areopoli e proseguimento verso le Grotte di Diros.",
   pomeriggio:"Grotte di Diros, poi Limeni per pranzo tardivo/bagno e prosecuzione panoramica nella Penisola del Mani secondo tempi ed energie.",
   sera:"Rientro a Gythio dopo la giornata nel Mani e ultima serata alla base.",
-  tappe:["areopoli","grotte-diros","limeni","penisola-mani","gythio"], notteOpzioni:["meltemi","dias-beach","castello-antico"], notteId:"gythion-bay"},
+  tappe:["areopoli","grotte-diros","limeni","penisola-mani","gythio"], notteOpzioni:["meltemi","dias-beach","castello-antico","mani-beach"], notteId:"gythion-bay"},
  {date:"2026-08-13", base:"Elafonisos / Simos",
   titolo:"Arrivo a Elafonisos, primo bagno a Simos",
   mattina:"Spostamento breve verso Pounta (circa 1h15), traghettino per Elafonisos e sistemazione.",
@@ -1153,7 +1157,7 @@ function mergeGiorniMancanti(){
 
 /* Versione del piano incluso nel file. Va alzata ogni volta che cambia DEFAULT_SCHEDULE,
    altrimenti chi ha già usato l'app continua a vedere il piano salvato nel browser. */
-const PLAN_VERSION = '13.17';
+const PLAN_VERSION = '13.18';
 const K_PLANVER = 'grecia-plan-version-v1';
 let planUpdateAvailable = false;
 
