@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 9 agosto 2026 — v13.20 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 9 agosto 2026 — v13.21 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,9 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.21 (9 agosto): diario del 9 agosto (Methoni, il castello e il pranzo in taverna) e foto del castello in
+     galleria. Aggiunta l'icona per "Aggiungi a Home" su iPhone: bandiera greca in icona/, con apple-touch-icon,
+     favicon, manifest e il nome "Grecia 2026" sotto l'icona.
      v13.20 (9 agosto): cella della vista settimane ricostruita come pila di righe piene: data, sintesi del giorno a
      tutta larghezza, base, poi la riga delle chips delle tappe che va a capo, e in fondo la riga del pernottamento.
      Tolto il limite di tre chips: ora la sequenza e' completa, perche' con le righe piene c'e' spazio.
@@ -76,6 +79,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Grecia 2026 — Calendario di viaggio</title>
+<!-- Icona e metadati per "Aggiungi a Home" su iPhone: apple-touch-icon e' quella che iOS
+     usa sulla schermata home, apple-mobile-web-app-title e' il nome sotto l'icona. -->
+<link rel="apple-touch-icon" sizes="180x180" href="icona/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icona/favicon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="Grecia 2026">
+<meta name="application-name" content="Grecia 2026">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#132226">
 <style>
   :root{
     color-scheme: light;
@@ -593,7 +607,7 @@
 
 <main id="mainArea"></main>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.20 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.21 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -689,7 +703,8 @@ const TAPPE = [
    teaser:"Castello veneziano che arriva fino al mare, col Bourtzi ottagonale collegato da una passerella. ~15-20 min da Pylos.",
    vedere:["Castello di Methoni: mura, bastioni, Bourtzi","Borgo basso, piccolo e tranquillo","Bagno sulla spiaggia sotto il castello","Se c'è tempo: Finikounda o Koroni"],
    campeggio:"Nessuno — si visita in giornata dalla base di Pylos/Gialova.",
-   link:"https://www.hh.gr/en/destinations/methoni-castle/", extra:false},
+   link:"https://www.hh.gr/en/destinations/methoni-castle/", foto:["https://s1gmund80.github.io/grecia/foto/2026-08-09-methoni.jpg"],
+   extra:false},
   {id:"mavrovouni", icon:"🏖️", title:"Mavrovouni", tipi:["mare"], notti:"0",
    teaser:"Località balneare a sud di Gythio, nota per la lunga spiaggia e per i campeggi sul mare.",
    vedere:["Spiaggia di Mavrovouni e mare; tappa balneare separata da Gythio"],
@@ -1001,10 +1016,10 @@ const DEFAULT_SCHEDULE = [
   sera:"Cena a Gialova, sul mare.",
   tappe:["voidokilia","pylos"], notteOpzioni:["erodios"], notteId:"navarino-bay"},
  {date:"2026-08-09", base:"Pylos / Gialova",
-  titolo:"Giornata lenta, forse Methoni",
-  mattina:"Giornata più lenta: mare in loco oppure partenza per Methoni e il suo castello.",
-  pomeriggio:"Eventuale proseguimento verso Finikounda o Koroni, altrimenti mare libero.",
-  sera:"Rientro e cena in campeggio.",
+  titolo:"Methoni e il castello sul mare",
+  mattina:"Visita a Methoni e al suo castello veneziano sul mare: bellissimo, con il ponte a più arcate e il Bourtzi.",
+  pomeriggio:"Pranzo in una taverna a Methoni, molto buono e al fresco sotto il venticello naturale.",
+  sera:"Rientro alla base e cena al Camping Navarino Bay o a Gialova.",
   tappe:["pylos","methoni"], notteOpzioni:["erodios"], notteId:"navarino-bay"},
  {date:"2026-08-10", base:"Gythio",
   titolo:"Arrivo a Gythio e bagno a Mavrovouni",
@@ -1155,7 +1170,7 @@ function mergeGiorniMancanti(){
 
 /* Versione del piano incluso nel file. Va alzata ogni volta che cambia DEFAULT_SCHEDULE,
    altrimenti chi ha già usato l'app continua a vedere il piano salvato nel browser. */
-const PLAN_VERSION = '13.19';
+const PLAN_VERSION = '13.21';
 const K_PLANVER = 'grecia-plan-version-v1';
 let planUpdateAvailable = false;
 
