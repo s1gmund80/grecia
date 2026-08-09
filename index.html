@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 9 agosto 2026 — v13.15 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 9 agosto 2026 — v13.16 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,7 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.16 (9 agosto): foto del 3 agosto (Torre Pozzelle) in galleria, sulla tappa torre-pozzelle.
      v13.15 (9 agosto): ogni giorno ha un titolo che dice cosa si e' fatto o si fara' (campo titolo), mostrato in cima
      alla scheda e nella cella della vista settimane. Nella cella il titolo sta sopra, sotto restano la base e la sosta
      dove si dorme, e le chips accanto elencano solo le tappe.
@@ -583,7 +584,7 @@
 
 <main id="mainArea"></main>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.15 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.16 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -623,7 +624,8 @@ const TAPPE = [
    teaser:"Calette di roccia lavica alternate a piccoli tratti di sabbia, a ~12 km dalla masseria. Ampio parcheggio gratuito.",
    vedere:["Calette scavate nella roccia, ognuna un po' appartata","Snorkeling: acqua limpida e fondale interessante","Piccole vasche naturali con cristalli di sale","Bar sulla spiaggia con docce"],
    campeggio:"Nessun campeggio: spiaggia libera raggiungibile in auto dalla Masseria Appia Traiana in ~20 minuti. Scarpette da scoglio consigliate, la parte sabbiosa è piccola.",
-   link:"http://www.comune.ostuni.br.it/turismo/le-spiagge/", mapsLink:"https://maps.apple.com/?ll=40.769200,17.663390&q=Parcheggio%20Torre%20Pozzelle", extra:false},
+   link:"http://www.comune.ostuni.br.it/turismo/le-spiagge/", mapsLink:"https://maps.apple.com/?ll=40.769200,17.663390&q=Parcheggio%20Torre%20Pozzelle", foto:["https://s1gmund80.github.io/grecia/foto/2026-08-03-torre-pozzelle.jpg"],
+   extra:false},
   {id:"villanova-camerini", icon:"🏖️", title:"Villanova / Camerini (Ostuni)", tipi:["mare","porto"], notti:"0 (gita in giornata)",
    teaser:"La spiaggia più vicina alla masseria (~5 minuti in auto), con parcheggio gratuito sul fronte mare. Buona per un bagno veloce.",
    vedere:["Mangiamuso Beach: sabbia e scogli, parcheggio libero","Baia di Camerini: stabilimenti, bar e noleggio ombrelloni","Piccolo porto e borgo marinaro di Villanova","Stabilimento Il Faro per pranzo o aperitivo"],
