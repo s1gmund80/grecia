@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 9 agosto 2026 — v13.14 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 9 agosto 2026 — v13.15 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,9 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.15 (9 agosto): ogni giorno ha un titolo che dice cosa si e' fatto o si fara' (campo titolo), mostrato in cima
+     alla scheda e nella cella della vista settimane. Nella cella il titolo sta sopra, sotto restano la base e la sosta
+     dove si dorme, e le chips accanto elencano solo le tappe.
      v13.14 (9 agosto): le foto della giornata salgono in cima alla scheda del giorno: la prima a tutta larghezza
      come immagine di apertura, le altre in striscia sotto con il conteggio.
      v13.13 (9 agosto): riletti da Notion i giorni 8-12. Diario reale dell'8; i tre giorni di Gythio riscritti, con il
@@ -228,10 +231,16 @@
   .cell .datehead{ display:flex; align-items:baseline; justify-content:space-between;}
   .cell .daynum{ font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif; font-size:20px; font-weight:600; }
   .cell .daytag{ font-size:9px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.06em;}
-  .cell .base{
-    font-size:12.5px; font-weight:600; color:var(--deep); line-height:1.25;
-    border-top:1px dashed var(--line-light); padding-top:6px;
+  .cell .cellmid{ border-top:1px dashed var(--line-light); padding-top:6px; }
+  /* Il titolo dice cosa si fa quel giorno; base e sosta restano sotto, piu' piccole. */
+  .cell .celltit{
+    font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
+    font-size:13.5px; font-weight:600; color:var(--deep); line-height:1.3; margin-bottom:3px;
   }
+  .cell .base{ font-size:11px; font-weight:600; color:var(--ink-soft); line-height:1.25;
+    text-transform:uppercase; letter-spacing:.04em; }
+  .cell .dorme{ font-size:11px; color:var(--ink-soft); line-height:1.3; margin-top:2px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .cell .chips{ display:flex; flex-wrap:wrap; gap:4px; margin-top:auto; }
   .chip{
     font-size:10px; font-weight:600; padding:3px 7px; border-radius:999px; color:#fff; white-space:nowrap;
@@ -291,6 +300,10 @@
   .base-text.vuoto{ opacity:.4; font-style:italic; font-weight:400; }
   /* Foto della giornata: stanno in cima alla scheda e la prima fa da apertura,
      perche' e' l'immagine che racconta il giorno a colpo d'occhio. */
+  .giorno-tit{
+    font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
+    font-size:21px; font-weight:600; color:var(--deep); line-height:1.25; margin:0 0 14px;
+  }
   .day-foto{ margin:0 0 18px; }
   .day-foto-lab{ font-size:11px; text-transform:uppercase; letter-spacing:.1em; font-weight:700;
     color:var(--ink-soft); margin-bottom:7px; }
@@ -452,10 +465,11 @@
     .cell .daynum{ font-size:19px; line-height:1; }
     .cell .daytag{ font-size:9px; }
     .cell .daydow{ display:block; font-size:9px; font-weight:700; color:var(--ink-soft); letter-spacing:.06em; }
-    .cell .base{
+    .cell .cellmid{
       border-top:none; border-left:1px dashed var(--line-light);
-      padding-top:0; padding-left:12px; margin:0; flex:1; font-size:12.5px;
+      padding-top:0; padding-left:12px; margin:0; flex:1; min-width:0;
     }
+    .cell .celltit{ font-size:13px; }
     .cell .chips{ margin-top:0; flex-direction:column; align-items:flex-end; gap:4px; flex:0 0 auto; max-width:96px; }
     .cell .chips .chip{ max-width:96px; }
 
@@ -569,7 +583,7 @@
 
 <main id="mainArea"></main>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.14 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.15 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -940,106 +954,127 @@ function getItem(id){
 
 const DEFAULT_SCHEDULE = [
  {date:"2026-08-03", base:"Roma → Brindisi",
+  titolo:"In Puglia, bagno a Torre Pozzelle",
   mattina:"Partenza da Roma con la roulotte, direzione Puglia.",
   pomeriggio:"Trasferimento in autostrada verso Brindisi (circa 6-7h, soste comprese). Arrivo alla masseria e bagno a Torre Pozzelle (~20 min in auto, parcheggio gratuito).",
   sera:"Notte confermata: Masseria Appia Traiana, C.da Mangiamuso, Ostuni (BR) — tel. +39 335 458170. Arrivo in giornata, per essere tranquilli all'imbarco di domani alle 13:00.",
   tappe:["torre-pozzelle"], notteOpzioni:[], notteId:"masseria-appia-traiana"},
  {date:"2026-08-04", base:"Igoumenitsa / Drepano",
+  titolo:"Imbarco a Brindisi e traversata",
   mattina:"Visita al giardino della Masseria Appia Traiana, poi check-out e partenza verso Brindisi. Arrivo al porto con anticipo per il traghetto delle 13:00 verso Igoumenitsa.",
   pomeriggio:"Prosegue la traversata in traghetto.",
   sera:"Sbarco a Igoumenitsa alle 22:00 e notte tecnica al Giannoulis Camper Stop.",
   tappe:["masseria-appia-traiana","traghetto-brindisi","igoumenitsa-parga"], notteOpzioni:[], notteId:"giannoulis"},
  {date:"2026-08-05", base:"Riza / Preveza — Camping Acrogiali",
+  titolo:"Il Necromanteion e l'Acheronte",
   mattina:"Arrivo al Camping Acrogiali (Riza, Preveza) e bagno alla spiaggia del campeggio.",
   pomeriggio:"Visita al Necromanteion sull'Acheronte (Mesopotamos), poi passeggiata e bagno alle sorgenti dell'Acheronte a Glyki.",
   sera:"Rientro al Camping Acrogiali.",
   tappe:["necromanteion","acheron-sorgenti"], notteOpzioni:[], notteId:"acrogiali"},
  {date:"2026-08-06", base:"Riza / Preveza — Camping Acrogiali",
+  titolo:"Mare ad Acrogiali e il drone perduto",
   mattina:"Mattinata al mare al Camping Acrogiali, con una bellissima passeggiata lungo la costa e bagno. Momento memorabile (in senso tragico): il drone è finito in acqua 🤦🏼‍♂️😭.",
   pomeriggio:"Pomeriggio di relax e giochi in campeggio.",
   sera:"Cena fuori a Preveza, poi rientro al Camping Acrogiali per l'ultima notte prima della partenza del mattino successivo.",
   tappe:[], notteOpzioni:[], notteId:"acrogiali"},
  {date:"2026-08-07", base:"Pylos / Gialova",
+  titolo:"Olympia e l'arrivo a Navarino Bay",
   mattina:"Partenza dal Camping Acrogiali. Viaggio di circa 3–4 ore fino a Olympia, dove abbiamo fatto sosta e visitato tutto il sito archeologico. Pranzo a Olympia prima di ripartire.",
   pomeriggio:"Ripartenza da Olympia nel pomeriggio e arrivo nel tardo pomeriggio al Camping Navarino Bay. Montata la roulotte e primo bagno in mare.",
   sera:"Cena al Camping Navarino Bay guardando il tramonto; più tardi abbiamo visto anche i fuochi d'artificio.",
   tappe:["pylos","olympia"], notteOpzioni:["erodios"], notteId:"navarino-bay"},
  {date:"2026-08-08", base:"Pylos / Gialova",
+  titolo:"Tutto il giorno a Voidokilia",
   mattina:"Partenza presto per la spiaggia di Voidokilia. Mattinata trascorsa al mare in una spiaggia splendida, restando lì fino al pomeriggio.",
   pomeriggio:"Ancora mare a Voidokilia fino al pomeriggio, poi rientro in campeggio e aperitivo a Gialova.",
   sera:"Cena a Gialova, sul mare.",
   tappe:["voidokilia","pylos"], notteOpzioni:["erodios"], notteId:"navarino-bay"},
  {date:"2026-08-09", base:"Pylos / Gialova",
+  titolo:"Giornata lenta, forse Methoni",
   mattina:"Giornata più lenta: mare in loco oppure partenza per Methoni e il suo castello.",
   pomeriggio:"Eventuale proseguimento verso Finikounda o Koroni, altrimenti mare libero.",
   sera:"Rientro e cena in campeggio.",
   tappe:["pylos","methoni"], notteOpzioni:["erodios"], notteId:"navarino-bay"},
  {date:"2026-08-10", base:"Gythio",
+  titolo:"Arrivo a Gythio e bagno a Mavrovouni",
   mattina:"Trasferimento verso Gythio; arrivo previsto indicativamente verso l'ora di pranzo e sistemazione alla base.",
   pomeriggio:"Visita tranquilla di Gythio: porto, centro e lungomare. Se c'è tempo, relitto Dimitrios a Valtaki.",
   sera:"Mavrovouni: bagno e serata rilassata sul mare.",
   tappe:["gythio","mavrovouni"], notteOpzioni:["meltemi","dias-beach","castello-antico"], notteId:"gythion-bay"},
  {date:"2026-08-11", base:"Gythio",
+  titolo:"Giornata lenta a Mavrovouni",
   mattina:"Giornata volutamente lenta: mare e relax a Mavrovouni.",
   pomeriggio:"Mare e recupero; eventuale visita di ciò che non si è riusciti a vedere a Gythio il giorno dell'arrivo.",
   sera:"Rientro alla base e serata tranquilla. Mistrà resta solo come alternativa secondaria, non come prima scelta.",
   tappe:["gythio","mavrovouni"], notteOpzioni:["meltemi","dias-beach","castello-antico"], notteId:"gythion-bay"},
  {date:"2026-08-12", base:"Gythio",
+  titolo:"Il Mani: Areopoli, Diros e Limeni",
   mattina:"Partenza per il Mani: Areopoli e proseguimento verso le Grotte di Diros.",
   pomeriggio:"Grotte di Diros, poi Limeni per pranzo tardivo/bagno e prosecuzione panoramica nella Penisola del Mani secondo tempi ed energie.",
   sera:"Rientro a Gythio dopo la giornata nel Mani e ultima serata alla base.",
   tappe:["areopoli","grotte-diros","limeni","penisola-mani","gythio"], notteOpzioni:["meltemi","dias-beach","castello-antico"], notteId:"gythion-bay"},
  {date:"2026-08-13", base:"Elafonisos / Simos",
+  titolo:"Arrivo a Elafonisos, primo bagno a Simos",
   mattina:"Spostamento breve verso Pounta (circa 1h15), traghettino per Elafonisos e sistemazione.",
   pomeriggio:"Primo bagno a Simos.",
   sera:"Passeggiata nel paesino di Elafonisos, cena di pesce.",
   tappe:["elafonisos"], notteOpzioni:["berdoussis","elafonisos-resort","hotel-elafonissos","limira-mare"], notteId:"simos"},
  {date:"2026-08-14", base:"Elafonisos / Simos",
+  titolo:"Megalo e Mikro Simos",
   mattina:"Mare a Megalo Simos.",
   pomeriggio:"Mikro Simos o relax tra le dune.",
   sera:"Cena in paese.",
   tappe:["elafonisos"], notteOpzioni:["berdoussis","elafonisos-resort","hotel-elafonissos","limira-mare"], notteId:"simos"},
  {date:"2026-08-15", base:"Elafonisos / Simos",
+  titolo:"Ultimo giorno a Simos",
   mattina:"Giornata lenta: ancora Simos, con calma.",
   pomeriggio:"In alternativa Kato Nisi/Panagia, se si vuole cambiare spiaggia.",
   sera:"Ultima serata a Elafonisos, passeggiata in paese.",
   tappe:["elafonisos"], notteOpzioni:["berdoussis","elafonisos-resort","hotel-elafonissos","limira-mare"], notteId:"simos"},
  {date:"2026-08-16", base:"Nafplio / Drepano / Vivari",
+  titolo:"Ritorno sul continente, verso Nafplio",
   mattina:"Traghettino di ritorno a Pounta e partenza per l’Argolide.",
   pomeriggio:"Prosegue il trasferimento verso Nafplio / Drepano / Vivari.",
   sera:"Sistemazione e, se l'arrivo non è troppo tardi, prima passeggiata a Nafplio.",
   tappe:["nafplio"], notteOpzioni:["lefka-beach","kastraki-assini","lido-tolo","ancient-assini"], notteId:"nafplio-camp"},
  {date:"2026-08-17", base:"Nafplio / Drepano / Vivari",
+  titolo:"Micene, Nafplio e il Palamidi",
   mattina:"Micene: Porta dei Leoni, tombe reali, Tesoro di Atreo (da visitare presto, poca ombra).",
   pomeriggio:"Nafplio: centro storico e fortezza di Palamidi. In alternativa: Epidauro + Palaia Epidavros.",
   sera:"Cena a Nafplio, passeggiata nel centro veneziano.",
   tappe:["nafplio","micene","epidauro"], notteOpzioni:["lefka-beach","kastraki-assini","lido-tolo","ancient-assini"], notteId:"nafplio-camp"},
  {date:"2026-08-18", base:"Itea / Galaxidi",
+  titolo:"Il santuario di Delfi",
   mattina:"Partenza e lungo trasferimento verso Delfi, via Corinto.",
   pomeriggio:"Visita al santuario di Delfi: Via Sacra, tempio di Apollo, museo.",
   sera:"Sistemazione a Itea o Galaxidi; passeggiata sul porto se si vuole.",
   tappe:["delfi"], notteOpzioni:["delphi-camping","chrissa","apollon-delphi","trokadero","hotel-galaxidi"], notteId:"itea-galaxidi-camp"},
  {date:"2026-08-19", base:"Meteore / Kastraki",
+  titolo:"Arrivo alle Meteore, giro al tramonto",
   mattina:"Partenza e trasferimento verso le Meteore.",
   pomeriggio:"Prosegue il viaggio; arrivo a Kastraki e sistemazione.",
   sera:"Giro panoramico al tramonto tra le torri di roccia.",
   tappe:["meteore"], notteOpzioni:["meteora-garden","the-cave-kastraki","doupiani-house","meteora-hotel-kastraki"], notteId:"kastraki-vrachos"},
  {date:"2026-08-20", base:"Meteore / Kastraki",
+  titolo:"I monasteri delle Meteore",
   mattina:"Visita a 2-3 monasteri (Gran Meteora e altri).",
   pomeriggio:"Pausa e relax in campeggio (piscina).",
   sera:"Secondo giro panoramico nel tardo pomeriggio/sera.",
   tappe:["meteore"], notteOpzioni:["meteora-garden","the-cave-kastraki","doupiani-house","meteora-hotel-kastraki"], notteId:"kastraki-vrachos"},
  {date:"2026-08-21", base:"Parga / Igoumenitsa",
+  titolo:"Ultimo giorno sullo Ionio, verso Parga",
   mattina:"Partenza e trasferimento verso la costa Ionica.",
   pomeriggio:"Prosegue il viaggio verso Parga o Igoumenitsa.",
   sera:"Ultima notte prudente prima del traghetto; se si vuole mare bello, tappa a Parga.",
   tappe:["igoumenitsa-parga"], notteOpzioni:["kalami-beach","elena-beach","sofas","valtos-parga"], notteId:"drepanos"},
  {date:"2026-08-22", base:"Traghetto di ritorno",
+  titolo:"Traghetto di ritorno a Brindisi",
   mattina:"Ultimi preparativi, colazione con calma.",
   pomeriggio:"Partenza da Igoumenitsa alle 14:00 — arrivare al porto con anticipo.",
   sera:"In traghetto verso l'Italia, arrivo a Brindisi previsto alle 21:00.",
   tappe:[], notteOpzioni:[], notteId:null},
  {date:"2026-08-23", base:"Viaggio Brindisi → Roma",
+  titolo:"Rientro a Roma",
   mattina:"Sbarco a Brindisi (arrivo la sera prima), colazione con calma e partenza verso Roma.",
   pomeriggio:"Lungo trasferimento in autostrada verso Roma (circa 6-7h da Brindisi).",
   sera:"Arrivo a Roma.",
@@ -1066,7 +1101,7 @@ function saveEditMode(){
 function scheduleFromDefault(){
   const s = {};
   DEFAULT_SCHEDULE.forEach(d=> s[d.date] = {
-    base:d.base, mattina:d.mattina, pomeriggio:d.pomeriggio, sera:d.sera,
+    titolo:d.titolo || '', base:d.base, mattina:d.mattina, pomeriggio:d.pomeriggio, sera:d.sera,
     tappe:[...d.tappe], notteId: d.notteId || null,
     notteOpzioni: [...(d.notteOpzioni || [])]
   });
@@ -1109,7 +1144,7 @@ function mergeGiorniMancanti(){
 
 /* Versione del piano incluso nel file. Va alzata ogni volta che cambia DEFAULT_SCHEDULE,
    altrimenti chi ha già usato l'app continua a vedere il piano salvato nel browser. */
-const PLAN_VERSION = '13.13';
+const PLAN_VERSION = '13.15';
 const K_PLANVER = 'grecia-plan-version-v1';
 let planUpdateAvailable = false;
 
@@ -1202,13 +1237,19 @@ function allDates(){
   return out;
 }
 function dayEntry(dateStr){
-  if(!schedule[dateStr]) schedule[dateStr] = {base:'', mattina:'', pomeriggio:'', sera:'', tappe:[], notteId:null, notteOpzioni:[]};
+  if(!schedule[dateStr]) schedule[dateStr] = {titolo:'', base:'', mattina:'', pomeriggio:'', sera:'', tappe:[], notteId:null, notteOpzioni:[]};
   const e = schedule[dateStr];
   if(e.notteId === undefined) e.notteId = null;
   if(!Array.isArray(e.notteOpzioni)) e.notteOpzioni = [];
   if(e.mattina === undefined) e.mattina = '';
   if(e.pomeriggio === undefined) e.pomeriggio = (e.note || ''); // migrazione da versione precedente a 3 fasce
   if(e.sera === undefined) e.sera = '';
+  /* Chi ha un piano salvato da prima dei titoli non ha il campo: lo recuperiamo
+     dal piano incluso nel file, cosi' il titolo compare senza dover ricaricare tutto. */
+  if(!e.titolo){
+    const base = DEFAULT_SCHEDULE.find(d=>d.date===dateStr);
+    e.titolo = (base && base.titolo) || '';
+  }
   return e;
 }
 
@@ -1239,11 +1280,15 @@ function renderWeekView(){
         return `<span class="chip ${primaryTipo(t)}">${t.icon} ${t.title.split(' (')[0].split(' —')[0]}</span>`;
       }).join('');
       const sosta = entry.notteId ? getSosta(entry.notteId) : null;
-      const nottaChip = sosta ? `<span class="chip notte">🌙 ${sosta.title.split(' / ')[0].split(' — ')[0]}</span>` : '';
+
       html += `<div class="cell" data-date="${ds}">
         <div class="datehead"><span class="daynum">${d.getDate()}</span><span class="daytag">${MESI[d.getMonth()]}</span><span class="daydow">${DOW[dowIndex(d)]}</span></div>
-        <div class="base">${entry.base || '<span style="opacity:.4;font-weight:400">senza base…</span>'}</div>
-        <div class="chips">${chips}${nottaChip}</div>
+        <div class="cellmid">
+          ${entry.titolo ? `<div class="celltit">${escapeHTML(entry.titolo)}</div>` : ''}
+          <div class="base">${entry.base || '<span style="opacity:.4;font-weight:400">senza base…</span>'}</div>
+          ${sosta ? `<div class="dorme">🌙 ${escapeHTML(sosta.title)}</div>` : ''}
+        </div>
+        <div class="chips">${chips}</div>
       </div>`;
     });
     html += `</div></div>`;
@@ -1304,7 +1349,12 @@ function renderDayFields(ds){
     ? `<input class="base-input" value="${escapeAttr(entry.base)}" data-field="base" data-date="${ds}" placeholder="zona di riferimento…">`
     : `<div class="base-text${entry.base ? '' : ' vuoto'}">${escapeHTML(entry.base) || '—'}</div>`;
 
+  const titoloHtml = entry.titolo
+    ? `<div class="giorno-tit">${escapeHTML(entry.titolo)}</div>`
+    : '';
+
   return `
+    ${titoloHtml}
     ${galleryGiorno(ds)}
     <div class="field-label">Base / zona</div>
     ${baseHtml}
