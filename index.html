@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 9 agosto 2026 — v13.32 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 9 agosto 2026 — v13.33 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,11 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.33 (9 agosto): pulsante "Aggiorna" nella barra dei controlli, sulla stessa riga del toggle giorno/settimana:
+     un tocco solo che ricarica il codice dell'app e, al rientro, sostituisce anche il piano con quello incluso nel
+     file scaricato — prima serviva aprire le Impostazioni e premere due pulsanti separati. Il reload distrugge il
+     contesto JS, quindi l'intenzione di aggiornare anche il piano viene scritta in localStorage e letta all'avvio
+     successivo, prima di qualunque render.
      v13.32 (9 agosto): foto aerea (drone) della costa ad Acrogiali per il 6 agosto, l'ultimo scatto del drone prima
      che finisse in acqua. Agganciata al giorno e non alla sosta, perche' Acrogiali e' anche la notte del 5.
      v13.31 (9 agosto): foto del sito di Olympia (colonna del tempio di Zeus) per il 7 agosto, agganciata alla tappa
@@ -265,6 +270,11 @@
     padding:8px 18px; border-radius:999px; cursor:pointer; transition:.15s;
   }
   .seg button.active{ background:var(--gold); color:var(--ink); }
+  /* Un solo tocco per avere sia il codice sia il piano più recenti, senza passare
+     dalle impostazioni: sta sulla stessa riga del toggle, spinto a destra dal
+     justify-content:space-between di .controls. */
+  .refresh-btn{ display:inline-flex; align-items:center; gap:6px; padding:9px 15px; }
+  .refresh-btn svg{ width:15px; height:15px; fill:var(--gold-soft); }
   /* Toggle di vista ridotto a due icone: occupa poco e resta chiaro quale e' attiva. */
   .seg-icon button{ padding:7px 12px; display:inline-flex; align-items:center; }
   .seg-icon svg{ width:17px; height:17px; fill:rgba(247,245,239,.7); }
@@ -636,6 +646,11 @@
     </button>
   </div>
 
+  <button class="btn refresh-btn" id="btnAggiorna" title="Ricarica l'app e il piano più recenti">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.44 11h-2.13A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35Z"/></svg>
+    <span>Aggiorna</span>
+  </button>
+
 
   <div id="planUpdate">
     <div class="pu-text">
@@ -696,7 +711,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.32 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.33 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -2603,6 +2618,17 @@ function autoGrowAll(root){
    location.reload(true) non basta piu (il parametro e' ignorato dai browser moderni):
    l'unico modo affidabile e' chiedere un URL diverso, con un parametro che cambia ogni volta.
    Restiamo sullo stesso percorso, altrimenti iOS uscirebbe dalla modalita a tutto schermo. */
+/* Un tocco, due effetti: si ricarica la pagina (codice aggiornato) e, appena
+   ripartita, il piano viene sostituito con quello incluso nel file appena scaricato.
+   Il reload distrugge il contesto JS corrente, quindi l'intenzione va lasciata scritta
+   da qualche parte che sopravviva al reload: localStorage e' la scelta naturale. */
+const K_AUTOPIANO = 'grecia-auto-carica-piano-v1';
+
+async function aggiornaTutto(){
+  try{ localStorage.setItem(K_AUTOPIANO, '1'); }catch(e){}
+  await forzaRicaricamento();
+}
+
 async function forzaRicaricamento(){
   try{
     if(window.caches && window.caches.keys){
@@ -2648,6 +2674,8 @@ function initHardReload(){
     hint.textContent = 'In uso adesso: ' + testo + '. Il pulsante riscarica la pagina dal sito e non tocca il piano che hai salvato: se dopo il ricaricamento il numero non cambia, stai gia usando l\'ultima versione.';
   }
   document.getElementById('btnHardReload').addEventListener('click', forzaRicaricamento);
+  const btn = document.getElementById('btnAggiorna');
+  if(btn) btn.addEventListener('click', aggiornaTutto);
 }
 
 function initPlanUpdate(){
@@ -2813,6 +2841,17 @@ document.getElementById('btnPushNotion').addEventListener('click', ()=>{ avvisoS
 
 (async function init(){
   await Promise.all([loadState(), loadSoste(), loadOverrides()]);
+  /* Se il precedente tocco su "Aggiorna" ha lasciato il segnale, il codice e' gia'
+     stato ricaricato: ora tocca sostituire il piano, prima di qualunque render. */
+  let autoCarica = false;
+  try{ autoCarica = localStorage.getItem(K_AUTOPIANO) === '1'; }catch(e){}
+  if(autoCarica){
+    try{ localStorage.removeItem(K_AUTOPIANO); }catch(e){}
+    schedule = scheduleFromDefault();
+    await saveState();
+    setPlanVersion(PLAN_VERSION);
+    planUpdateAvailable = false;
+  }
   const bridge = initAmbiente();
   initSettings();
   initPlanUpdate();
