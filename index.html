@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 9 agosto 2026 — v13.31 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 9 agosto 2026 — v13.32 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,8 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.32 (9 agosto): foto aerea (drone) della costa ad Acrogiali per il 6 agosto, l'ultimo scatto del drone prima
+     che finisse in acqua. Agganciata al giorno e non alla sosta, perche' Acrogiali e' anche la notte del 5.
      v13.31 (9 agosto): foto del sito di Olympia (colonna del tempio di Zeus) per il 7 agosto, agganciata alla tappa
      olympia, che compare solo in quel giorno.
      v13.30 (9 agosto): diario del 9: aperitivo a Pylos nel tardo pomeriggio e cena in campeggio. Confermato il
@@ -694,7 +696,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.31 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.32 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -1089,6 +1091,7 @@ const DEFAULT_SCHEDULE = [
   tappe:["necromanteion","acheron-sorgenti"], notteOpzioni:[], notteId:"acrogiali"},
  {date:"2026-08-06", base:"Preveza — Camping Acrogiali",
   titolo:"Mare ad Acrogiali e il drone perduto",
+  foto:["https://s1gmund80.github.io/grecia/foto/2026-08-06-acrogiali-drone.jpg"],
   mattina:"Mattinata al mare al Camping Acrogiali, con una bellissima passeggiata lungo la costa e bagno. Momento memorabile (in senso tragico): il drone è finito in acqua 🤦🏼‍♂️😭.",
   pomeriggio:"Pomeriggio di relax e giochi in campeggio.",
   sera:"Cena fuori a Preveza, poi rientro al Camping Acrogiali per l'ultima notte prima della partenza del mattino successivo.",
