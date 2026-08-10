@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 9 agosto 2026 — v13.30 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 9 agosto 2026 — v13.31 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,8 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.31 (9 agosto): foto del sito di Olympia (colonna del tempio di Zeus) per il 7 agosto, agganciata alla tappa
+     olympia, che compare solo in quel giorno.
      v13.30 (9 agosto): diario del 9: aperitivo a Pylos nel tardo pomeriggio e cena in campeggio. Confermato il
      Camping Dias Beach per le notti 10-12 a Gythio: sostituisce Gythion Bay come sosta confermata, che resta tra
      le opzioni insieme a Meltemi, Castello Antico e Mani Beach.
@@ -692,7 +694,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.30 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.31 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -850,7 +852,8 @@ const TAPPE = [
    teaser:"Santuario dove nacquero le Olimpiadi (776 a.C.), in una valle verde tra i fiumi Alfeo e Cladeo.",
    vedere:["Stadio antico (si corre sulla pista originale)","Tempio di Zeus e Tempio di Hera","La palestra e l'officina di Fidia","Museo: l’Hermes di Prassitele"],
    campeggio:"Campeggi nel paese di Olympia, pochi minuti dal sito.",
-   link:"https://en.wikipedia.org/wiki/Olympia,_Greece", extra:false},
+   link:"https://en.wikipedia.org/wiki/Olympia,_Greece", foto:["https://s1gmund80.github.io/grecia/foto/2026-08-07-olympia.jpg"],
+   extra:false},
   {id:"atene", icon:"🏛️", title:"Atene", tipi:["storico"], notti:"2",
    teaser:"Non inclusa nel Piano Verosimile attuale. Acropoli e centro storico — richiede tempo e gestione del traffico con roulotte.",
    vedere:["Scheda completa da approfondire su Notion"],
