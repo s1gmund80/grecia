@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 9 agosto 2026 — v13.29 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 9 agosto 2026 — v13.30 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,9 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.30 (9 agosto): diario del 9: aperitivo a Pylos nel tardo pomeriggio e cena in campeggio. Confermato il
+     Camping Dias Beach per le notti 10-12 a Gythio: sostituisce Gythion Bay come sosta confermata, che resta tra
+     le opzioni insieme a Meltemi, Castello Antico e Mani Beach.
      v13.29 (9 agosto): foto dell'ingresso del Necromanteion per il 5 agosto, agganciata alla tappa (che compare
      solo in quel giorno) cosi' si vede anche aprendo la scheda del luogo.
      v13.28 (9 agosto): le giornate possono avere foto proprie (campo foto sul giorno), non solo ereditate dalle
@@ -689,7 +692,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.29 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 9 agosto 2026 · v13.30 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -1103,26 +1106,26 @@ const DEFAULT_SCHEDULE = [
   titolo:"Methoni e il castello sul mare",
   mattina:"Visita a Methoni e al suo castello veneziano sul mare: bellissimo, con il ponte a più arcate e il Bourtzi.",
   pomeriggio:"Pranzo in una taverna a Methoni, molto buono e al fresco sotto il venticello naturale.",
-  sera:"Rientro alla base e cena al Camping Navarino Bay o a Gialova.",
+  sera:"Aperitivo a Pylos nel tardo pomeriggio, poi cena in campeggio.",
   tappe:["pylos","methoni"], notteOpzioni:["erodios"], notteId:"navarino-bay"},
  {date:"2026-08-10", base:"Gythio",
   titolo:"Arrivo a Gythio e bagno a Mavrovouni",
   mattina:"Trasferimento verso Gythio; arrivo previsto indicativamente verso l'ora di pranzo e sistemazione alla base.",
   pomeriggio:"Visita tranquilla di Gythio: porto, centro e lungomare.",
   sera:"Mavrovouni: bagno e serata rilassata sul mare.",
-  tappe:["gythio","mavrovouni"], notteOpzioni:["meltemi","dias-beach","castello-antico","mani-beach"], notteId:"gythion-bay"},
+  tappe:["gythio","mavrovouni"], notteOpzioni:["meltemi","gythion-bay","castello-antico","mani-beach"], notteId:"dias-beach"},
  {date:"2026-08-11", base:"Gythio",
   titolo:"Il Mani: Areopoli, Diros e Limeni",
   mattina:"Partenza per il Mani: Areopoli e proseguimento verso le Grotte di Diros.",
   pomeriggio:"Grotte di Diros, poi Limeni per pranzo tardivo/bagno e prosecuzione panoramica nella Penisola del Mani secondo tempi ed energie.",
   sera:"Rientro a Gythio dopo la giornata nel Mani.",
-  tappe:["areopoli","grotte-diros","limeni","penisola-mani","gythio"], notteOpzioni:["meltemi","dias-beach","castello-antico","mani-beach"], notteId:"gythion-bay"},
+  tappe:["areopoli","grotte-diros","limeni","penisola-mani","gythio"], notteOpzioni:["meltemi","gythion-bay","castello-antico","mani-beach"], notteId:"dias-beach"},
  {date:"2026-08-12", base:"Gythio",
   titolo:"Giornata lenta e il relitto Dimitrios",
   mattina:"Giornata volutamente lenta: mare e relax a Mavrovouni.",
   pomeriggio:"Relitto Dimitrios sulla spiaggia di Valtaki, poi mare e recupero; eventuale visita di ciò che non si è riusciti a vedere a Gythio il giorno dell'arrivo.",
   sera:"Rientro alla base e ultima serata tranquilla a Gythio. Mistrà resta solo come alternativa secondaria, non come prima scelta.",
-  tappe:["gythio","mavrovouni"], notteOpzioni:["meltemi","dias-beach","castello-antico","mani-beach"], notteId:"gythion-bay"},
+  tappe:["gythio","mavrovouni"], notteOpzioni:["meltemi","gythion-bay","castello-antico","mani-beach"], notteId:"dias-beach"},
  {date:"2026-08-13", base:"Elafonisos / Simos",
   titolo:"Arrivo a Elafonisos, primo bagno a Simos",
   mattina:"Spostamento breve verso Pounta (circa 1h15), traghettino per Elafonisos e sistemazione.",
@@ -1255,7 +1258,7 @@ function mergeGiorniMancanti(){
 
 /* Versione del piano incluso nel file. Va alzata ogni volta che cambia DEFAULT_SCHEDULE,
    altrimenti chi ha già usato l'app continua a vedere il piano salvato nel browser. */
-const PLAN_VERSION = '13.21';
+const PLAN_VERSION = '13.30';
 const K_PLANVER = 'grecia-plan-version-v1';
 let planUpdateAvailable = false;
 
