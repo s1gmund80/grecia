@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 11 agosto 2026 — v13.37 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 11 agosto 2026 — v13.38 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,10 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.38 (11 agosto): foto di Limeni (baia con case in pietra e torre) sulla tappa "limeni", usata solo l'11 agosto;
+     foto degli ulivi lungo la strada sulla tappa "sparta-mistra", usata solo il 10. Aggiornato anche il teaser di
+     Sparta & Mistra', che era rimasto vecchio (parlava ancora di un'opzione per il 12 agosto, prima che diventasse
+     una tappa reale del 10).
      v13.37 (11 agosto): "Penisola del Mani" (Vathia, Capo Tenaro) spostata dall'11 al 12 agosto, come possibilita'
      eventuale nel pomeriggio (dipende da tempo/energie) e non come tappa certa — era stata tolta dall'11 perche' non
      visitata quel giorno.
@@ -723,7 +727,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 11 agosto 2026 · v13.37 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 11 agosto 2026 · v13.38 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -837,7 +841,8 @@ const TAPPE = [
   {id:"limeni", icon:"⛵", title:"Limeni", tipi:["mare","borgo"], notti:"0",
    teaser:"Piccolo borgo marinaro del Mani con case in pietra e acqua trasparente.",
    vedere:["Borgo, lungomare e bagno nelle acque di Limeni"],
-   campeggio:"Escursione in giornata da Gythio / Mavrovouni.", extra:false},
+   campeggio:"Escursione in giornata da Gythio / Mavrovouni.", extra:false,
+   foto:["https://s1gmund80.github.io/grecia/foto/2026-08-11-limeni.jpg"]},
   {id:"penisola-mani", icon:"🏔️", title:"Penisola del Mani", tipi:["natura","borgo"], notti:"0",
    teaser:"Itinerario panoramico tra montagne, case-torre, villaggi fortificati e costa selvaggia.",
    vedere:["Vathia, Capo Tenaro, villaggi del Mani e punti panoramici lungo la penisola"],
@@ -894,10 +899,11 @@ const TAPPE = [
    campeggio:"Nessuno — tappa di passaggio.",
    link:"", extra:true},
   {id:"sparta-mistra", icon:"🏛️", title:"Sparta & Mistrà", tipi:["storico"], notti:"1",
-   teaser:"Citata come opzione culturale per una giornata libera a Gythio (12 ago). Mistrà: città bizantina UNESCO sulle pendici del Taigeto.",
-   vedere:["Città bizantina di Mistrà (UNESCO)","Sparta: museo e resti archeologici"],
-   campeggio:"Da valutare, eventualmente in giornata da Gythio.",
-   link:"", extra:true},
+   teaser:"Tappa lungo la strada da Navarino Bay a Gythio (10 ago): memoriale di Leonida, acropoli e la campagna di ulivi intorno alla città. Mistrà, città bizantina UNESCO sulle pendici del Taigeto, resta una possibile aggiunta.",
+   vedere:["Memoriale di Leonida e acropoli di Sparta","Città bizantina di Mistrà (UNESCO)"],
+   campeggio:"Sosta di passaggio, non richiede pernottamento.",
+   link:"", extra:false,
+   foto:["https://s1gmund80.github.io/grecia/foto/2026-08-10-sparta-ulivi.jpg"]},
   {id:"monemvasia", icon:"🏰", title:"Monemvasia", tipi:["borgo","mare"], notti:"1",
    teaser:"Città-fortezza su isolotto roccioso collegato da un ponte — una delle più scenografiche del Peloponneso. Non ancora inserita nel piano.",
    vedere:["Città bassa medievale","Fortezza superiore","Bagno sulla spiaggia sotto la rocca"],
