@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 10 agosto 2026 — v13.36 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 11 agosto 2026 — v13.37 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,9 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.37 (11 agosto): "Penisola del Mani" (Vathia, Capo Tenaro) spostata dall'11 al 12 agosto, come possibilita'
+     eventuale nel pomeriggio (dipende da tempo/energie) e non come tappa certa — era stata tolta dall'11 perche' non
+     visitata quel giorno.
      v13.36 (10 agosto): diario reale dell'11 agosto — mattina verso Areopoli con pranzo in una panetteria del paese,
      poi Grotte di Diros con bagno, quindi Limeni con un altro bagno nella baia e aperitivo in riva al mare, infine
      rientro a Gythio e cena in taverna in spiaggia. Rimossa "Penisola del Mani" dalle tappe (era un proseguimento
@@ -720,7 +723,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 10 agosto 2026 · v13.36 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 11 agosto 2026 · v13.37 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -1153,9 +1156,9 @@ const DEFAULT_SCHEDULE = [
  {date:"2026-08-12", base:"Gythio",
   titolo:"Giornata lenta e il relitto Dimitrios",
   mattina:"Giornata volutamente lenta: mare e relax a Mavrovouni.",
-  pomeriggio:"Relitto Dimitrios sulla spiaggia di Valtaki, poi mare e recupero; eventuale visita di ciò che non si è riusciti a vedere a Gythio il giorno dell'arrivo.",
+  pomeriggio:"Relitto Dimitrios sulla spiaggia di Valtaki, poi mare e recupero; eventuale visita di ciò che non si è riusciti a vedere a Gythio il giorno dell'arrivo. Se restano tempo ed energia, possibile puntata fino a Vathia e Capo Tenaro, la punta estrema del Mani.",
   sera:"Rientro alla base e ultima serata tranquilla a Gythio. Mistrà resta solo come alternativa secondaria, non come prima scelta.",
-  tappe:["gythio","mavrovouni"], notteOpzioni:["meltemi","gythion-bay","castello-antico","mani-beach"], notteId:"dias-beach"},
+  tappe:["gythio","mavrovouni","penisola-mani"], notteOpzioni:["meltemi","gythion-bay","castello-antico","mani-beach"], notteId:"dias-beach"},
  {date:"2026-08-13", base:"Elafonisos / Simos",
   titolo:"Arrivo a Elafonisos, primo bagno a Simos",
   mattina:"Spostamento breve verso Pounta (circa 1h15), traghettino per Elafonisos e sistemazione.",
@@ -1288,7 +1291,7 @@ function mergeGiorniMancanti(){
 
 /* Versione del piano incluso nel file. Va alzata ogni volta che cambia DEFAULT_SCHEDULE,
    altrimenti chi ha già usato l'app continua a vedere il piano salvato nel browser. */
-const PLAN_VERSION = '13.36';
+const PLAN_VERSION = '13.37';
 const K_PLANVER = 'grecia-plan-version-v1';
 let planUpdateAvailable = false;
 
