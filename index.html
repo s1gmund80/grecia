@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 10 agosto 2026 — v13.35 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 10 agosto 2026 — v13.36 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,10 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.36 (10 agosto): diario reale dell'11 agosto — mattina verso Areopoli con pranzo in una panetteria del paese,
+     poi Grotte di Diros con bagno, quindi Limeni con un altro bagno nella baia e aperitivo in riva al mare, infine
+     rientro a Gythio e cena in taverna in spiaggia. Rimossa "Penisola del Mani" dalle tappe (era un proseguimento
+     generico verso Vathia/Capo Tenaro, non risulta fatto).
      v13.35 (10 agosto): aggiunto al diario del 9 agosto il bagno sotto il castello di Methoni, nel pomeriggio.
      v13.34 (10 agosto): diario reale del 10 agosto — partenza da Navarino Bay, sosta a Sparta (memoriale di Leonida
      e acropoli) lungo la strada, arrivo a Gythio con bagno al mare del campeggio (Dias Beach) e serata con passeggiata
@@ -716,7 +720,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 10 agosto 2026 · v13.35 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 10 agosto 2026 · v13.36 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -1142,10 +1146,10 @@ const DEFAULT_SCHEDULE = [
   tappe:["sparta-mistra","gythio"], notteOpzioni:["meltemi","gythion-bay","castello-antico","mani-beach"], notteId:"dias-beach"},
  {date:"2026-08-11", base:"Gythio",
   titolo:"Il Mani: Areopoli, Diros e Limeni",
-  mattina:"Partenza per il Mani: Areopoli e proseguimento verso le Grotte di Diros.",
-  pomeriggio:"Grotte di Diros, poi Limeni per pranzo tardivo/bagno e prosecuzione panoramica nella Penisola del Mani secondo tempi ed energie.",
-  sera:"Rientro a Gythio dopo la giornata nel Mani.",
-  tappe:["areopoli","grotte-diros","limeni","penisola-mani","gythio"], notteOpzioni:["meltemi","gythion-bay","castello-antico","mani-beach"], notteId:"dias-beach"},
+  mattina:"Partenza per il Mani verso Areopoli: pranzo in un forno-panetteria del paese.",
+  pomeriggio:"Grotte di Diros e bagno li'. Poi Limeni: un altro bagno, splendido, nella baia, e aperitivo in riva al mare.",
+  sera:"Rientro al campeggio a Gythio, cena in taverna in spiaggia.",
+  tappe:["areopoli","grotte-diros","limeni","gythio"], notteOpzioni:["meltemi","gythion-bay","castello-antico","mani-beach"], notteId:"dias-beach"},
  {date:"2026-08-12", base:"Gythio",
   titolo:"Giornata lenta e il relitto Dimitrios",
   mattina:"Giornata volutamente lenta: mare e relax a Mavrovouni.",
@@ -1284,7 +1288,7 @@ function mergeGiorniMancanti(){
 
 /* Versione del piano incluso nel file. Va alzata ogni volta che cambia DEFAULT_SCHEDULE,
    altrimenti chi ha già usato l'app continua a vedere il piano salvato nel browser. */
-const PLAN_VERSION = '13.35';
+const PLAN_VERSION = '13.36';
 const K_PLANVER = 'grecia-plan-version-v1';
 let planUpdateAvailable = false;
 
