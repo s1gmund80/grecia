@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 15 agosto 2026 — v13.39 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 15 agosto 2026 — v13.40 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,11 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.40 (15 agosto): foto del relitto Dimitrios (con i graffiti sullo scafo) sul giorno 12 agosto; foto della
+     baia di Simos (nuotatori lontani, non riconoscibili) sul giorno 14. Entrambe agganciate al giorno e non alla
+     tappa: "elafonisos" ricorre sia il 13 sia il 14, mentre il relitto non e' tra le tappe elencate del 12. Una
+     terza foto di Simos, con i volti dei bambini chiaramente riconoscibili, non e' stata pubblicata: sospesa in
+     attesa di conferma di Ivan, per lo stesso motivo di privacy gia' visto con Torre Pozzelle.
      v13.39 (15 agosto): diario reale 12-14 agosto, allineato da Notion (fonte autorevole per queste modifiche).
      12 ago: sostituita la giornata lenta a Mavrovouni con la gita reale a Monemvasia (mattina, pranzo nel paese
      basso) seguita dal relitto Dimitrios nel pomeriggio; tolta "Penisola del Mani" (non fatta), aggiunta "Monemvasia"
@@ -735,7 +740,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 15 agosto 2026 · v13.39 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 15 agosto 2026 · v13.40 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -1169,6 +1174,7 @@ const DEFAULT_SCHEDULE = [
   tappe:["areopoli","grotte-diros","limeni","gythio"], notteOpzioni:["meltemi","gythion-bay","castello-antico","mani-beach"], notteId:"dias-beach"},
  {date:"2026-08-12", base:"Gythio",
   titolo:"Monemvasia e il relitto Dimitrios",
+  foto:["https://s1gmund80.github.io/grecia/foto/2026-08-12-relitto-dimitrios.jpg"],
   mattina:"Dopo un risveglio lento, partenza in macchina per Monemvasia. Giro per il paese basso e pranzo lì.",
   pomeriggio:"Dopo pranzo, visita al relitto Dimitrios sulla spiaggia di Valtaki e un po' di tempo trascorso sulla spiaggia.",
   sera:"Cena al ristorante del campeggio, sulla spiaggia: ottima cena con musica dal vivo.",
@@ -1181,6 +1187,7 @@ const DEFAULT_SCHEDULE = [
   tappe:["elafonisos"], notteOpzioni:["berdoussis","elafonisos-resort","hotel-elafonissos","limira-mare"], notteId:"simos"},
  {date:"2026-08-14", base:"Elafonisos / Simos",
   titolo:"Megalo e Mikro Simos, tra burraco e Risiko",
+  foto:["https://s1gmund80.github.io/grecia/foto/2026-08-14-simos.jpg"],
   mattina:"Mattinata in spiaggia tra Megalo Simos e Mikro Simos, con passeggiata per vedere entrambe le baie. Giornata ancora molto ventosa, ma abbiamo trovato riparo in una duna e sistemato lì la nostra piccola base. Mare bellissimo e pranzo in spiaggia.",
   pomeriggio:"Dopo pranzo rientro in roulotte per riposare. Pomeriggio tranquillo con partita a burraco tutti insieme, anche con Giulia. Poi docce e preparativi per uscire.",
   sera:"Passeggiata nel paese di Elafonisos e cena fuori. Rientro in roulotte e partita a Risiko fino a tardi.",
