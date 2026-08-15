@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 15 agosto 2026 — v13.41 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 15 agosto 2026 — v13.42 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,11 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.42 (15 agosto): aggiornati i dettagli operativi dei giorni 16, 17 e 19 agosto con tempi precisi di partenza,
+     durate stimate dei trasferimenti, orari di visita ai siti e note su priorita' di visite e ritmi. 16 ago: base e titolo
+     allineati a Kastraki/Tolo, partenza mezzogiorno da Simos, arrivo Kastraki 17:00-18:00, opzionale Nafplio sera. 17 ago:
+     base Kastraki (roulotte ferma), partenza 9:30, Micene 40-45 min, Epidauro ~1h, Palaia Epidavros opzionale con snorkeling.
+     19 ago: partenza 9:30-10:00, arrivo Kastraki 13:00-14:00, primo giro panoramico senza internare nei monasteri.
      v13.41 (15 agosto): pubblicata anche la terza foto di Simos (bambini in acqua, volti riconoscibili) sul giorno 13,
      dopo conferma esplicita di Ivan.
      v13.40 (15 agosto): foto del relitto Dimitrios (con i graffiti sullo scafo) sul giorno 12 agosto; foto della
@@ -742,7 +747,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 15 agosto 2026 · v13.41 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 15 agosto 2026 · v13.42 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -1201,17 +1206,17 @@ const DEFAULT_SCHEDULE = [
   pomeriggio:"In alternativa Kato Nisi/Panagia, se si vuole cambiare spiaggia.",
   sera:"Ultima serata a Elafonisos, passeggiata in paese.",
   tappe:["elafonisos"], notteOpzioni:["berdoussis","elafonisos-resort","hotel-elafonissos","limira-mare"], notteId:"simos"},
- {date:"2026-08-16", base:"Nafplio / Drepano / Vivari",
-  titolo:"Ritorno sul continente, verso Nafplio",
-  mattina:"Traghettino di ritorno a Pounta e partenza per l’Argolide.",
-  pomeriggio:"Prosegue il trasferimento verso Nafplio / Drepano / Vivari.",
-  sera:"Sistemazione e, se l'arrivo non è troppo tardi, prima passeggiata a Nafplio.",
+ {date:"2026-08-16", base:"Kastraki Camping / Tolo",
+  titolo:"Ritorno sul continente, verso Kastraki",
+  mattina:"Traghettino di ritorno a Pounta (partenza intorno a mezzogiorno) e viaggio verso Kastraki. Tempo totale: 3h15-3h45 con roulotte. Arrivo realistico alle 17:00-18:00.",
+  pomeriggio:"Trasferimento da Simos a Kastraki/Tolo. Arrivo al campeggio e sistemazione; se tempo, bagno nella caletta dell'Antica Asini.",
+  sera:"Opzionale: uscita in auto a Nafplio per passeggiata, cena e centro storico. Niente visita impegnativa a Palamidi stasera.",
   tappe:["nafplio"], notteOpzioni:["lefka-beach","kastraki-assini","lido-tolo","ancient-assini"], notteId:"nafplio-camp"},
- {date:"2026-08-17", base:"Nafplio / Drepano / Vivari",
+ {date:"2026-08-17", base:"Kastraki Camping / Tolo",
   titolo:"Micene, Nafplio e il Palamidi",
-  mattina:"Micene: Porta dei Leoni, tombe reali, Tesoro di Atreo (da visitare presto, poca ombra).",
-  pomeriggio:"Nafplio: centro storico e fortezza di Palamidi. In alternativa: Epidauro + Palaia Epidavros.",
-  sera:"Cena a Nafplio, passeggiata nel centro veneziano.",
+  mattina:"Partenza 9:30 dal Kastraki Camping (roulotte ferma). Micene in ~40-45 min: Porta dei Leoni, cittadella, Tesoro di Atreo. Visita 10:15-12:30.",
+  pomeriggio:"Epidauro in ~1h da Micene: teatro antico e santuario di Asclepio, 14:00-16:30. Se tempo: Palaia Epidavros (Sunken City) per bagno/snorkeling fino alle 17:30. Rientro ~45-55 min.",
+  sera:"Se Nafplio non visitata il 16, andare dopo doccia/cena. Altrimenti serata tranquilla a Tolo o cena a Nafplio con passeggiata nel centro veneziano.",
   tappe:["nafplio","micene","epidauro"], notteOpzioni:["lefka-beach","kastraki-assini","lido-tolo","ancient-assini"], notteId:"nafplio-camp"},
  {date:"2026-08-18", base:"Itea / Galaxidi",
   titolo:"Il santuario di Delfi",
@@ -1221,9 +1226,9 @@ const DEFAULT_SCHEDULE = [
   tappe:["delfi"], notteOpzioni:["delphi-camping","chrissa","apollon-delphi","trokadero","hotel-galaxidi"], notteId:"itea-galaxidi-camp"},
  {date:"2026-08-19", base:"Meteore / Kastraki",
   titolo:"Arrivo alle Meteore, giro al tramonto",
-  mattina:"Partenza e trasferimento verso le Meteore.",
-  pomeriggio:"Prosegue il viaggio; arrivo a Kastraki e sistemazione.",
-  sera:"Giro panoramico al tramonto tra le torri di roccia.",
+  mattina:"Partenza 9:30-10:00 da Itea/Kirra, senza visite programmate al mattino. Colazione, smontaggio e viaggio.",
+  pomeriggio:"Itea/Kirra → Kastraki: ~3-3.5h con roulotte. Arrivo 13:00-14:00, sistemazione e pranzo. Primo giro panoramico in auto, senza monasteri.",
+  sera:"Tramonto panoramico tra le torri di roccia. Evitare una corsa tra monasteri: le visite interne restano per il 20 agosto.",
   tappe:["meteore"], notteOpzioni:["meteora-garden","the-cave-kastraki","doupiani-house","meteora-hotel-kastraki"], notteId:"kastraki-vrachos"},
  {date:"2026-08-20", base:"Meteore / Kastraki",
   titolo:"I monasteri delle Meteore",
@@ -1315,7 +1320,7 @@ function mergeGiorniMancanti(){
 
 /* Versione del piano incluso nel file. Va alzata ogni volta che cambia DEFAULT_SCHEDULE,
    altrimenti chi ha già usato l'app continua a vedere il piano salvato nel browser. */
-const PLAN_VERSION = '13.39';
+const PLAN_VERSION = '13.42';
 const K_PLANVER = 'grecia-plan-version-v1';
 let planUpdateAvailable = false;
 
