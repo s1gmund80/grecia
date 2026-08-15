@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 15 agosto 2026 — v13.40 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 15 agosto 2026 — v13.41 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,11 +9,13 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.41 (15 agosto): pubblicata anche la terza foto di Simos (bambini in acqua, volti riconoscibili) sul giorno 13,
+     dopo conferma esplicita di Ivan.
      v13.40 (15 agosto): foto del relitto Dimitrios (con i graffiti sullo scafo) sul giorno 12 agosto; foto della
      baia di Simos (nuotatori lontani, non riconoscibili) sul giorno 14. Entrambe agganciate al giorno e non alla
      tappa: "elafonisos" ricorre sia il 13 sia il 14, mentre il relitto non e' tra le tappe elencate del 12. Una
-     terza foto di Simos, con i volti dei bambini chiaramente riconoscibili, non e' stata pubblicata: sospesa in
-     attesa di conferma di Ivan, per lo stesso motivo di privacy gia' visto con Torre Pozzelle.
+     terza foto di Simos, con i volti dei bambini chiaramente riconoscibili, non e' stata pubblicata inizialmente:
+     sospesa in attesa di conferma di Ivan, per lo stesso motivo di privacy gia' visto con Torre Pozzelle.
      v13.39 (15 agosto): diario reale 12-14 agosto, allineato da Notion (fonte autorevole per queste modifiche).
      12 ago: sostituita la giornata lenta a Mavrovouni con la gita reale a Monemvasia (mattina, pranzo nel paese
      basso) seguita dal relitto Dimitrios nel pomeriggio; tolta "Penisola del Mani" (non fatta), aggiunta "Monemvasia"
@@ -740,7 +742,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 15 agosto 2026 · v13.40 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 15 agosto 2026 · v13.41 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -1181,6 +1183,7 @@ const DEFAULT_SCHEDULE = [
   tappe:["monemvasia","gythio"], notteOpzioni:["meltemi","gythion-bay","castello-antico"], notteId:"dias-beach"},
  {date:"2026-08-13", base:"Elafonisos / Simos",
   titolo:"Arrivo a Elafonisos, primo bagno a Simos",
+  foto:["https://s1gmund80.github.io/grecia/foto/2026-08-13-simos.jpg"],
   mattina:"Spostamento verso Elafonisos: circa 2 ore e mezza di auto, poi circa un'ora di attesa per imbarcare auto e roulotte sul traghetto. Traversata molto rapida. Arrivo al Simos Camping, sistemazione e montaggio nella piazzola n. 1, molto esposta al sole. Pranzo tardi in campeggio.",
   pomeriggio:"Verso le 17 primo bagno a Simos Beach. Siamo rimasti in spiaggia fino a sera, con aperitivo direttamente sulla spiaggia e tramonto a Simos.",
   sera:"Cena in campeggio e serata tranquilla dopo il tramonto.",
