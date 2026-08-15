@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 11 agosto 2026 — v13.38 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 15 agosto 2026 — v13.39 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,14 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.39 (15 agosto): diario reale 12-14 agosto, allineato da Notion (fonte autorevole per queste modifiche).
+     12 ago: sostituita la giornata lenta a Mavrovouni con la gita reale a Monemvasia (mattina, pranzo nel paese
+     basso) seguita dal relitto Dimitrios nel pomeriggio; tolta "Penisola del Mani" (non fatta), aggiunta "Monemvasia"
+     (gia' in libreria). notteOpzioni allineate a Notion (rimossa mani-beach, non piu' tra le opzioni).
+     13 ago: dettagli reali del trasferimento (attesa imbarco traghetto, piazzola n.1 esposta al sole) e della sera
+     (aperitivo in spiaggia, tramonto a Simos).
+     14 ago: mattinata tra le due baie con riparo in una duna, pomeriggio con partita a burraco, sera con passeggiata
+     a Elafonisos e Risiko.
      v13.38 (11 agosto): foto di Limeni (baia con case in pietra e torre) sulla tappa "limeni", usata solo l'11 agosto;
      foto degli ulivi lungo la strada sulla tappa "sparta-mistra", usata solo il 10. Aggiornato anche il teaser di
      Sparta & Mistra', che era rimasto vecchio (parlava ancora di un'opzione per il 12 agosto, prima che diventasse
@@ -727,7 +735,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 11 agosto 2026 · v13.38 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 15 agosto 2026 · v13.39 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -1160,22 +1168,22 @@ const DEFAULT_SCHEDULE = [
   sera:"Rientro al campeggio a Gythio, cena in taverna in spiaggia.",
   tappe:["areopoli","grotte-diros","limeni","gythio"], notteOpzioni:["meltemi","gythion-bay","castello-antico","mani-beach"], notteId:"dias-beach"},
  {date:"2026-08-12", base:"Gythio",
-  titolo:"Giornata lenta e il relitto Dimitrios",
-  mattina:"Giornata volutamente lenta: mare e relax a Mavrovouni.",
-  pomeriggio:"Relitto Dimitrios sulla spiaggia di Valtaki, poi mare e recupero; eventuale visita di ciò che non si è riusciti a vedere a Gythio il giorno dell'arrivo. Se restano tempo ed energia, possibile puntata fino a Vathia e Capo Tenaro, la punta estrema del Mani.",
-  sera:"Rientro alla base e ultima serata tranquilla a Gythio. Mistrà resta solo come alternativa secondaria, non come prima scelta.",
-  tappe:["gythio","mavrovouni","penisola-mani"], notteOpzioni:["meltemi","gythion-bay","castello-antico","mani-beach"], notteId:"dias-beach"},
+  titolo:"Monemvasia e il relitto Dimitrios",
+  mattina:"Dopo un risveglio lento, partenza in macchina per Monemvasia. Giro per il paese basso e pranzo lì.",
+  pomeriggio:"Dopo pranzo, visita al relitto Dimitrios sulla spiaggia di Valtaki e un po' di tempo trascorso sulla spiaggia.",
+  sera:"Cena al ristorante del campeggio, sulla spiaggia: ottima cena con musica dal vivo.",
+  tappe:["monemvasia","gythio"], notteOpzioni:["meltemi","gythion-bay","castello-antico"], notteId:"dias-beach"},
  {date:"2026-08-13", base:"Elafonisos / Simos",
   titolo:"Arrivo a Elafonisos, primo bagno a Simos",
-  mattina:"Spostamento breve verso Pounta (circa 1h15), traghettino per Elafonisos e sistemazione.",
-  pomeriggio:"Primo bagno a Simos.",
-  sera:"Passeggiata nel paesino di Elafonisos, cena di pesce.",
+  mattina:"Spostamento verso Elafonisos: circa 2 ore e mezza di auto, poi circa un'ora di attesa per imbarcare auto e roulotte sul traghetto. Traversata molto rapida. Arrivo al Simos Camping, sistemazione e montaggio nella piazzola n. 1, molto esposta al sole. Pranzo tardi in campeggio.",
+  pomeriggio:"Verso le 17 primo bagno a Simos Beach. Siamo rimasti in spiaggia fino a sera, con aperitivo direttamente sulla spiaggia e tramonto a Simos.",
+  sera:"Cena in campeggio e serata tranquilla dopo il tramonto.",
   tappe:["elafonisos"], notteOpzioni:["berdoussis","elafonisos-resort","hotel-elafonissos","limira-mare"], notteId:"simos"},
  {date:"2026-08-14", base:"Elafonisos / Simos",
-  titolo:"Megalo e Mikro Simos",
-  mattina:"Mare a Megalo Simos.",
-  pomeriggio:"Mikro Simos o relax tra le dune.",
-  sera:"Cena in paese.",
+  titolo:"Megalo e Mikro Simos, tra burraco e Risiko",
+  mattina:"Mattinata in spiaggia tra Megalo Simos e Mikro Simos, con passeggiata per vedere entrambe le baie. Giornata ancora molto ventosa, ma abbiamo trovato riparo in una duna e sistemato lì la nostra piccola base. Mare bellissimo e pranzo in spiaggia.",
+  pomeriggio:"Dopo pranzo rientro in roulotte per riposare. Pomeriggio tranquillo con partita a burraco tutti insieme, anche con Giulia. Poi docce e preparativi per uscire.",
+  sera:"Passeggiata nel paese di Elafonisos e cena fuori. Rientro in roulotte e partita a Risiko fino a tardi.",
   tappe:["elafonisos"], notteOpzioni:["berdoussis","elafonisos-resort","hotel-elafonissos","limira-mare"], notteId:"simos"},
  {date:"2026-08-15", base:"Elafonisos / Simos",
   titolo:"Ultimo giorno a Simos",
@@ -1297,7 +1305,7 @@ function mergeGiorniMancanti(){
 
 /* Versione del piano incluso nel file. Va alzata ogni volta che cambia DEFAULT_SCHEDULE,
    altrimenti chi ha già usato l'app continua a vedere il piano salvato nel browser. */
-const PLAN_VERSION = '13.37';
+const PLAN_VERSION = '13.39';
 const K_PLANVER = 'grecia-plan-version-v1';
 let planUpdateAvailable = false;
 
