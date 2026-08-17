@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 15 agosto 2026 — v13.43 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 17 agosto 2026 — v13.44 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,12 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.44 (17 agosto): aggiornati i diari reali dei giorni 16 e 17 agosto da Notion. 16 ago: mattina a Simos con
+     poco vento, bagno e video fino alle 11, partenza mezzogiorno, traghetto rapido, arrivo Kastraki 17:00-18:00, sera
+     a Nafplio con gyros e passeggiata. 17 ago: partenza 9:30, Micene e cittadella, sosta in strada presso artigianato
+     in legno e antiquariato, Epidauro e teatro, Palaia Epidavros a 17:30 con mare mosso (no bagno), cena in campeggio.
+     Foto aggiunte: spiaggia Simos (15 ago), spiaggia Elafonisos (16 ago), Porta dei Leoni Micene (17 ago). Base 18 agosto
+     aggiornata da "Itea / Galaxidi" a "Delfi"; sosta notturna confermata: delphi-camping (da itea-galaxidi-camp).
      v13.43 (15 agosto): aggiornati titolo giorno 17 ("Micene, Epidauro e Kastraki") e sosta notturna confermata per
      giorni 16-17 allineata a Kastraki/Assini (camping di base). Titolo 16 gia' aggiornato a "Ritorno sul continente,
      verso Kastraki". Dettagli operativi rimangono dalla v13.42: 16 ago partenza mezzogiorno da Simos, arrivo Kastraki
@@ -752,7 +758,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 15 agosto 2026 · v13.43 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 17 agosto 2026 · v13.44 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -1186,7 +1192,7 @@ const DEFAULT_SCHEDULE = [
   tappe:["areopoli","grotte-diros","limeni","gythio"], notteOpzioni:["meltemi","gythion-bay","castello-antico","mani-beach"], notteId:"dias-beach"},
  {date:"2026-08-12", base:"Gythio",
   titolo:"Monemvasia e il relitto Dimitrios",
-  foto:["https://s1gmund80.github.io/grecia/foto/2026-08-12-relitto-dimitrios.jpg"],
+  foto:["https://s1gmund80.github.io/grecia/foto/2026-08-15-spiaggia-simos.jpg"],
   mattina:"Dopo un risveglio lento, partenza in macchina per Monemvasia. Giro per il paese basso e pranzo lì.",
   pomeriggio:"Dopo pranzo, visita al relitto Dimitrios sulla spiaggia di Valtaki e un po' di tempo trascorso sulla spiaggia.",
   sera:"Cena al ristorante del campeggio, sulla spiaggia: ottima cena con musica dal vivo.",
@@ -1213,22 +1219,22 @@ const DEFAULT_SCHEDULE = [
   tappe:["elafonisos"], notteOpzioni:["berdoussis","elafonisos-resort","hotel-elafonissos","limira-mare"], notteId:"simos"},
  {date:"2026-08-16", base:"Kastraki Camping / Tolo",
   titolo:"Ritorno sul continente, verso Kastraki",
-  mattina:"Traghettino di ritorno a Pounta (partenza intorno a mezzogiorno) e viaggio verso Kastraki. Tempo totale: 3h15-3h45 con roulotte. Arrivo realistico alle 17:00-18:00.",
+  mattina:"Mattina a Simos Beach con poco vento: bagno, qualche video e spiaggia fino alle 11 circa. Rientro al campeggio, chiusura e preparazione della roulotte; partenza da Simos Camping verso mezzogiorno e traghetto da Elafonisos preso rapidamente.",
   pomeriggio:"Trasferimento da Simos a Kastraki/Tolo. Arrivo al campeggio e sistemazione; se tempo, bagno nella caletta dell'Antica Asini.",
-  sera:"Opzionale: uscita in auto a Nafplio per passeggiata, cena e centro storico. Niente visita impegnativa a Palamidi stasera.",
-  tappe:["nafplio"], notteOpzioni:["lefka-beach","kastraki-assini","lido-tolo","ancient-assini"], notteId:"kastraki-assini"},
+  sera:"Uscita a Nafplio: cena con gyros, passeggiata nel centro storico e sul porto. Poi rientro al Kastraki Camping per dormire.",
+  foto:["https://s1gmund80.github.io/grecia/foto/2026-08-16-spiaggia-elafonisos.jpg"], tappe:["nafplio"], notteOpzioni:["lefka-beach","kastraki-assini","lido-tolo","ancient-assini"], notteId:"kastraki-assini"},
  {date:"2026-08-17", base:"Kastraki Camping / Tolo",
   titolo:"Micene, Epidauro e Kastraki",
-  mattina:"Partenza 9:30 dal Kastraki Camping (roulotte ferma). Micene in ~40-45 min: Porta dei Leoni, cittadella, Tesoro di Atreo. Visita 10:15-12:30.",
-  pomeriggio:"Epidauro in ~1h da Micene: teatro antico e santuario di Asclepio, 14:00-16:30. Se tempo: Palaia Epidavros (Sunken City) per bagno/snorkeling fino alle 17:30. Rientro ~45-55 min.",
-  sera:"Se Nafplio non visitata il 16, andare dopo doccia/cena. Altrimenti serata tranquilla a Tolo o cena a Nafplio con passeggiata nel centro veneziano.",
-  tappe:["nafplio","micene","epidauro"], notteOpzioni:["lefka-beach","kastraki-assini","lido-tolo","ancient-assini"], notteId:"kastraki-assini"},
- {date:"2026-08-18", base:"Itea / Galaxidi",
+  mattina:"Partenza dal Kastraki verso le 9:30. Visita di Micene: Porta dei Leoni, cittadella e poi Tesoro di Atreo. In seguito partenza in direzione Epidauro, con sosta lungo la strada in un posto che vendeva bellissime lavorazioni in legno, pezzi di antiquariato e oggetti restaurati.",
+  pomeriggio:"Pranzo lungo la strada e poi visita di Epidauro: teatro antico e santuario di Asclepio. Verso le 17:30 spostamento a Palaia Epidavros / Sunken City per vedere il mare, ma con mare mosso e poco piacevole: niente bagno.",
+  sera:"Rientro al Kastraki Camping e serata tranquilla con cena in campeggio.",
+  foto:["https://s1gmund80.github.io/grecia/foto/2026-08-17-micene.jpg"], tappe:["nafplio","micene","epidauro"], notteOpzioni:["lefka-beach","kastraki-assini","lido-tolo","ancient-assini"], notteId:"kastraki-assini"},
+ {date:"2026-08-18", base:"Delfi",
   titolo:"Il santuario di Delfi",
   mattina:"Partenza e lungo trasferimento verso Delfi, via Corinto.",
   pomeriggio:"Visita al santuario di Delfi: Via Sacra, tempio di Apollo, museo.",
   sera:"Sistemazione a Itea o Galaxidi; passeggiata sul porto se si vuole.",
-  tappe:["delfi"], notteOpzioni:["delphi-camping","chrissa","apollon-delphi","trokadero","hotel-galaxidi"], notteId:"itea-galaxidi-camp"},
+  tappe:["delfi"], notteOpzioni:["delphi-camping","chrissa","apollon-delphi","trokadero","hotel-galaxidi"], notteId:"delphi-camping"},
  {date:"2026-08-19", base:"Meteore / Kastraki",
   titolo:"Arrivo alle Meteore, giro al tramonto",
   mattina:"Partenza 9:30-10:00 da Itea/Kirra, senza visite programmate al mattino. Colazione, smontaggio e viaggio.",
@@ -1325,7 +1331,7 @@ function mergeGiorniMancanti(){
 
 /* Versione del piano incluso nel file. Va alzata ogni volta che cambia DEFAULT_SCHEDULE,
    altrimenti chi ha già usato l'app continua a vedere il piano salvato nel browser. */
-const PLAN_VERSION = '13.43';
+const PLAN_VERSION = '13.44';
 const K_PLANVER = 'grecia-plan-version-v1';
 let planUpdateAvailable = false;
 
