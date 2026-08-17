@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 17 agosto 2026 — v13.46 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 17 agosto 2026 — v13.47 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,9 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.47 (17 agosto): corretto un errore di battitura: la foto della spiaggia con le nuvole di tempesta era stata
+     agganciata per sbaglio al 12 agosto (Monemvasia) invece che al 15 (ultimo giorno a Simos). Spostata al giorno
+     corretto.
      v13.46 (17 agosto): diario reale 15 agosto da Ivan (Notion non aggiornabile in questa sessione, sincronizzare
      manualmente): sveglia presto, Simos dalle 9:30 con mattinata ventosa ma mare bello, pranzo e relax in piazzola,
      pomeriggio giro fino a Kato Nisi/Panagia con tempo cupo, sera pizze in piazzola.
@@ -764,7 +767,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 17 agosto 2026 · v13.46 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 17 agosto 2026 · v13.47 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -1198,7 +1201,6 @@ const DEFAULT_SCHEDULE = [
   tappe:["areopoli","grotte-diros","limeni","gythio"], notteOpzioni:["meltemi","gythion-bay","castello-antico","mani-beach"], notteId:"dias-beach"},
  {date:"2026-08-12", base:"Gythio",
   titolo:"Monemvasia e il relitto Dimitrios",
-  foto:["https://s1gmund80.github.io/grecia/foto/2026-08-15-spiaggia-simos.jpg"],
   mattina:"Dopo un risveglio lento, partenza in macchina per Monemvasia. Giro per il paese basso e pranzo lì.",
   pomeriggio:"Dopo pranzo, visita al relitto Dimitrios sulla spiaggia di Valtaki e un po' di tempo trascorso sulla spiaggia.",
   sera:"Cena al ristorante del campeggio, sulla spiaggia: ottima cena con musica dal vivo.",
@@ -1219,6 +1221,7 @@ const DEFAULT_SCHEDULE = [
   tappe:["elafonisos"], notteOpzioni:["berdoussis","elafonisos-resort","hotel-elafonissos","limira-mare"], notteId:"simos"},
  {date:"2026-08-15", base:"Elafonisos / Simos",
   titolo:"Ultimo giorno a Simos",
+  foto:["https://s1gmund80.github.io/grecia/foto/2026-08-15-spiaggia-simos.jpg"],
   mattina:"Sveglia presto e spiaggia a Simos dalle 9:30. Mattinata ventosa ma con mare bello.",
   pomeriggio:"Pranzo e relax in piazzola, poi giro per l'isola fino all'altra spiaggia, Kato Nisi/Panagia, ma con tempo cupo.",
   sera:"Pizze in piazzola.",
@@ -1337,7 +1340,7 @@ function mergeGiorniMancanti(){
 
 /* Versione del piano incluso nel file. Va alzata ogni volta che cambia DEFAULT_SCHEDULE,
    altrimenti chi ha già usato l'app continua a vedere il piano salvato nel browser. */
-const PLAN_VERSION = '13.46';
+const PLAN_VERSION = '13.47';
 const K_PLANVER = 'grecia-plan-version-v1';
 let planUpdateAvailable = false;
 
