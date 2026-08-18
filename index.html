@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 18 agosto 2026 — v13.50 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 18 agosto 2026 — v13.51 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,9 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.51 (18 agosto): aggiunte le tappe specifiche dei singoli monasteri delle Meteore (Santissima Trinità,
+     Santo Stefano, Gran Meteora, Varlaam, Rousanou, San Nicola Anapafsas), con schede, link e Apple Maps; ora
+     compaiono come chip separati nel 19 e nel 20 agosto invece della sola tappa generica "Meteore".
      v13.50 (18 agosto): dettagli operativi 19-20 agosto da Notion. 19 ago: visita al monastero della
      Santissima Trinità (chiuso il giovedì, quindi da fare oggi) ed eventualmente Santo Stefano 15:30-17:30.
      20 ago: Gran Meteora all'apertura (09:30) e Varlaam al mattino; pomeriggio Rousanou (aperto giovedì) e,
@@ -775,7 +778,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 18 agosto 2026 · v13.50 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 18 agosto 2026 · v13.51 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -930,6 +933,36 @@ const TAPPE = [
    vedere:["6 monasteri visitabili (Gran Meteora il più grande)","Punti panoramici al tramonto","Grotta di Theopetra, lago di Plastiras"],
    campeggio:"Camping Vrachos Kastraki — piscina, staff italiano, 1 km da Kalambaka.",
    link:"https://www.campingkastraki.com/en/", sosteNotte:["kastraki-vrachos","meteora-garden","the-cave-kastraki","doupiani-house","meteora-hotel-kastraki"], extra:false},
+  {id:"meteore-trinita", icon:"⛪", title:"Santissima Trinità (Agia Triada)", tipi:["storico","natura"], notti:"0 (visita)",
+   teaser:"Il monastero più spettacolare per posizione isolata, su una guglia di roccia. Reso famoso da una scena di James Bond.",
+   vedere:["Chiesa e terrazze panoramiche","Accesso impegnativo: oltre 300 gradini tra sentiero e scalinata","Estate 10:00-16:00, chiuso il giovedì"],
+   campeggio:"In auto fino al parcheggio sopra Kalambaka, poi tratto a piedi e scalinata scavata nella roccia.",
+   link:"https://en.wikipedia.org/wiki/Monastery_of_the_Holy_Trinity,_Meteora", mapsLink:"https://maps.apple.com/?ll=39.7132,21.6358&q=Holy%20Trinity%20Monastery%20Meteora", extra:false},
+  {id:"meteore-stefano", icon:"⛪", title:"Santo Stefano (Agios Stefanos)", tipi:["storico","natura"], notti:"0 (visita)",
+   teaser:"Il monastero più accessibile: si entra con un ponte pedonale, quasi senza scale. Vista ampia su Kalambaka e la pianura.",
+   vedere:["Chiese, museo e giardini","Terrazza panoramica su Kalambaka","Estate 09:00-13:30 e 15:30-17:30, chiuso il lunedì"],
+   campeggio:"Parcheggio molto vicino all'ingresso; accesso tramite piccolo ponte pedonale.",
+   link:"https://en.wikipedia.org/wiki/Monastery_of_Saint_Stephen_(Meteora)", mapsLink:"https://maps.apple.com/?ll=39.71417,21.62694&q=Agios%20Stefanos%20Monastery%20Meteora", extra:false},
+  {id:"meteore-gran-meteora", icon:"⛪", title:"Gran Meteora (Megalo Meteoro)", tipi:["storico","natura"], notti:"0 (visita)",
+   teaser:"Il più grande e antico dei sei monasteri attivi: la visita più completa per storia, architettura e musei.",
+   vedere:["Katholikon della Trasfigurazione e affreschi","Museo e ambienti monastici storici","Accesso impegnativo: oltre 300 gradini","Estate 09:30-15:00, chiuso il martedì"],
+   campeggio:"Da Kastraki in auto lungo la strada panoramica; parcheggio vicino all'accesso, molto affollato tra le 10 e le 14.",
+   link:"https://en.wikipedia.org/wiki/Monastery_of_Great_Meteoron", mapsLink:"https://maps.apple.com/?ll=39.72389,21.62444&q=Great%20Meteoron%20Monastery", extra:false},
+  {id:"meteore-varlaam", icon:"⛪", title:"Varlaam", tipi:["storico","natura"], notti:"0 (visita)",
+   teaser:"Secondo monastero più grande delle Meteore: uno dei più belli per affreschi, museo e vista.",
+   vedere:["Chiesa di Ognissanti e affreschi","Museo e antichi sistemi di sollevamento con rete e verricello","Circa 140-195 gradini secondo il percorso","Estate 09:00-16:00, chiuso il venerdì"],
+   campeggio:"In auto fino al parcheggio lungo la strada dei monasteri; facile da abbinare al Gran Meteora.",
+   link:"https://en.wikipedia.org/wiki/Monastery_of_Varlaam", mapsLink:"https://maps.apple.com/?ll=39.72519,21.63019&q=Varlaam%20Monastery%20Meteora", extra:false},
+  {id:"meteore-rousanou", icon:"⛪", title:"Rousanou", tipi:["storico","natura"], notti:"0 (visita)",
+   teaser:"Monastero compatto e molto fotogenico, arroccato su una roccia stretta; oggi convento femminile.",
+   vedere:["Katholikon e affreschi","Vista sulla valle","Circa 140 gradini e ponti di accesso","Estate 09:00-15:30, chiuso il mercoledì"],
+   campeggio:"Si raggiunge in auto dalla strada principale; due accessi possibili, con parcheggi limitati.",
+   link:"https://en.wikipedia.org/wiki/Monastery_of_Rousanou", mapsLink:"https://maps.apple.com/?ll=39.72167,21.63194&q=Rousanou%20Monastery%20Meteora", extra:false},
+  {id:"meteore-anapafsas", icon:"⛪", title:"San Nicola Anapafsas", tipi:["storico","natura"], notti:"0 (visita)",
+   teaser:"Il più piccolo e verticale dei monasteri: interessante per gli affreschi di Teofane il Cretese e per un'esperienza più raccolta.",
+   vedere:["Affreschi del katholikon","Struttura sviluppata in verticale, circa 140 gradini","Orario da riverificare sul posto (alcune fonti: chiuso il venerdì)"],
+   campeggio:"È il primo monastero salendo da Kastraki; parcheggio lungo la strada e salita a piedi.",
+   link:"https://en.wikipedia.org/wiki/Monastery_of_St._Nicholas_Anapausas", mapsLink:"https://maps.apple.com/?ll=39.7209,21.6215&q=Agios%20Nikolaos%20Anapafsas%20Monastery", extra:false},
   {id:"olympia", icon:"🏛️", title:"Olympia", tipi:["storico"], notti:"1",
    teaser:"Santuario dove nacquero le Olimpiadi (776 a.C.), in una valle verde tra i fiumi Alfeo e Cladeo.",
    vedere:["Stadio antico (si corre sulla pista originale)","Tempio di Zeus e Tempio di Hera","La palestra e l'officina di Fidia","Museo: l’Hermes di Prassitele"],
@@ -1259,13 +1292,13 @@ const DEFAULT_SCHEDULE = [
   mattina:"Partenza 9:30-10:00 da Itea/Kirra, senza visite programmate al mattino. Colazione, smontaggio e viaggio verso Kastraki/Kalambaka (circa 3h-3h30 con roulotte).",
   pomeriggio:"Arrivo previsto 13:00-14:00, sistemazione e pranzo. Primo assaggio delle Meteore: monastero della Santissima Trinità (da vedere oggi perché il giovedì è chiuso) e, se i tempi lo consentono, Santo Stefano nell'ultima fascia 15:30-17:30.",
   sera:"Punti panoramici lungo la strada dei monasteri e tramonto. Rientro a Kastraki/Kalambaka per una serata tranquilla: priorità al riposo, si parte presto il 20.",
-  tappe:["meteore"], notteOpzioni:["meteora-garden","the-cave-kastraki","doupiani-house","meteora-hotel-kastraki"], notteId:"kastraki-vrachos"},
+  tappe:["meteore","meteore-trinita","meteore-stefano"], notteOpzioni:["meteora-garden","the-cave-kastraki","doupiani-house","meteora-hotel-kastraki"], notteId:"kastraki-vrachos"},
  {date:"2026-08-20", base:"Meteore / Kastraki",
   titolo:"Gran Meteora, Varlaam e Rousanou",
   mattina:"Partenza presto. Priorità al monastero della Gran Meteora all'apertura (09:30) e subito dopo Varlaam, per sfruttare gli orari e limitare i problemi di parcheggio.",
   pomeriggio:"Dopo una pausa breve: monastero di Rousanou (aperto il giovedì) e, solo se il ritmo regge bene, San Nicola Anapafsas. Santo Stefano resta un eventuale recupero solo se saltato il 19.",
   sera:"Secondo giro panoramico e tramonto; niente altre visite interne se la giornata è già piena.",
-  tappe:["meteore"], notteOpzioni:["meteora-garden","the-cave-kastraki","doupiani-house","meteora-hotel-kastraki"], notteId:"kastraki-vrachos"},
+  tappe:["meteore","meteore-gran-meteora","meteore-varlaam","meteore-rousanou","meteore-anapafsas","meteore-stefano"], notteOpzioni:["meteora-garden","the-cave-kastraki","doupiani-house","meteora-hotel-kastraki"], notteId:"kastraki-vrachos"},
  {date:"2026-08-21", base:"Parga / Igoumenitsa",
   titolo:"Ultimo giorno sullo Ionio, verso Parga",
   mattina:"Partenza e trasferimento verso la costa Ionica.",
@@ -1350,7 +1383,7 @@ function mergeGiorniMancanti(){
 
 /* Versione del piano incluso nel file. Va alzata ogni volta che cambia DEFAULT_SCHEDULE,
    altrimenti chi ha già usato l'app continua a vedere il piano salvato nel browser. */
-const PLAN_VERSION = '13.50';
+const PLAN_VERSION = '13.51';
 const K_PLANVER = 'grecia-plan-version-v1';
 let planUpdateAvailable = false;
 
@@ -2300,6 +2333,12 @@ const NOTION_PAGE_ID = {
   'epidauro':'3b09b270-fd37-813a-b2de-e9d3ef21acd7',
   'delfi':'3b09b270-fd37-8158-8afc-d93df9378f67',
   'meteore':'3b09b270-fd37-818e-887d-fed5e8a7b988',
+  'meteore-trinita':'3c09b270-fd37-813a-b6a5-d0085e49ca36',
+  'meteore-stefano':'3c09b270-fd37-8100-a697-d4d277f5bf8b',
+  'meteore-gran-meteora':'3c09b270-fd37-81ef-9c9c-c52b3da3228f',
+  'meteore-varlaam':'3c09b270-fd37-818c-82d3-ff66a4077be5',
+  'meteore-rousanou':'3c09b270-fd37-8155-90b6-eae996659b8a',
+  'meteore-anapafsas':'3c09b270-fd37-81fb-a596-d255931d617e',
   'olympia':'3b09b270-fd37-811b-838f-f053c7f332e2',
   'atene':'3b09b270-fd37-81b7-84a0-c83cbcd03c74',
   'corinto':'3b09b270-fd37-8187-8ade-c4e538508009',
