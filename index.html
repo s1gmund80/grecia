@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 18 agosto 2026 — v13.51 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 18 agosto 2026 — v13.52 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,10 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.52 (18 agosto): FIX bug layout — su iOS lo scroll della pagina sotto la modale del giorno non veniva
+     bloccato (overflow:hidden non basta su Safari iOS), quindi scorrendo dentro il modal si vedeva la vista
+     Settimana sottostante scorrere insieme, come se fosse "attaccata" dopo la scheda del giorno. Ora il body
+     viene fissato con position:fixed mentre una modale e' aperta.
      v13.51 (18 agosto): aggiunte le tappe specifiche dei singoli monasteri delle Meteore (Santissima Trinità,
      Santo Stefano, Gran Meteora, Varlaam, Rousanou, San Nicola Anapafsas), con schede, link e Apple Maps; ora
      compaiono come chip separati nel 19 e nel 20 agosto invece della sola tappa generica "Meteore".
@@ -778,7 +782,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 18 agosto 2026 · v13.51 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 18 agosto 2026 · v13.52 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -1383,7 +1387,7 @@ function mergeGiorniMancanti(){
 
 /* Versione del piano incluso nel file. Va alzata ogni volta che cambia DEFAULT_SCHEDULE,
    altrimenti chi ha già usato l'app continua a vedere il piano salvato nel browser. */
-const PLAN_VERSION = '13.51';
+const PLAN_VERSION = '13.52';
 const K_PLANVER = 'grecia-plan-version-v1';
 let planUpdateAvailable = false;
 
@@ -1963,11 +1967,34 @@ function closeDetail(){ document.getElementById('overlayDetail').classList.remov
 /* ============================= DAY MODAL (from week view) ============================= */
 let currentModalDate = null;
 
+let scrollLockY = 0;
+/* Su iOS Safari, overflow:hidden da solo non blocca lo scroll della pagina
+   sotto una modale: il body va "fissato" con position:fixed e il suo offset
+   compensato, altrimenti la vista Settimana sotto continua a scorrere insieme
+   al modal del giorno e si vede in trasparenza dietro/dopo la scheda. */
 function updateBodyScrollLock(){
   const anyOpen = ['overlayDay','overlayLib','overlayDetail']
     .some(id => document.getElementById(id).classList.contains('show'));
   document.documentElement.style.overflow = anyOpen ? 'hidden' : '';
-  document.body.style.overflow = anyOpen ? 'hidden' : '';
+  if(anyOpen){
+    if(document.body.style.position !== 'fixed'){
+      scrollLockY = window.scrollY || window.pageYOffset || 0;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollLockY}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+    }
+  } else if(document.body.style.position === 'fixed'){
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    document.body.style.overflow = '';
+    window.scrollTo(0, scrollLockY);
+  }
 }
 
 function dmTopbarHtml(ds){
