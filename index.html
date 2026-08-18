@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 17 agosto 2026 — v13.48 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 18 agosto 2026 — v13.49 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,8 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.49 (18 agosto): sosta notturna del 18 agosto CONFERMATA a Delphi Camping (base aggiornata a "Delfi"),
+     dopo la giornata in loco. Aggiunta foto del Tesoro degli Ateniesi al santuario di Delfi.
      v13.48 (17 agosto): ripristinata la foto del relitto Dimitrios sul 12 agosto, rimasta senza foto dopo il fix
      della v13.47.
      v13.47 (17 agosto): corretto un errore di battitura: la foto della spiaggia con le nuvole di tempesta era stata
@@ -769,7 +771,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 17 agosto 2026 · v13.48 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 18 agosto 2026 · v13.49 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -1241,12 +1243,13 @@ const DEFAULT_SCHEDULE = [
   pomeriggio:"Pranzo lungo la strada e poi visita di Epidauro: teatro antico e santuario di Asclepio. Verso le 17:30 spostamento a Palaia Epidavros / Sunken City per vedere il mare, ma con mare mosso e poco piacevole: niente bagno.",
   sera:"Rientro al Kastraki Camping e serata tranquilla con cena in campeggio.",
   foto:["https://s1gmund80.github.io/grecia/foto/2026-08-17-micene.jpg"], tappe:["nafplio","micene","epidauro"], notteOpzioni:["lefka-beach","kastraki-assini","lido-tolo","ancient-assini"], notteId:"kastraki-assini"},
- {date:"2026-08-18", base:"Itea / Galaxidi",
+ {date:"2026-08-18", base:"Delfi",
   titolo:"Il santuario di Delfi",
+  foto:["https://s1gmund80.github.io/grecia/foto/2026-08-18-delfi.jpg"],
   mattina:"Partenza e lungo trasferimento verso Delfi, via Corinto.",
   pomeriggio:"Visita al santuario di Delfi: Via Sacra, tempio di Apollo, museo.",
-  sera:"Sistemazione a Itea o Galaxidi; passeggiata sul porto se si vuole.",
-  tappe:["delfi"], notteOpzioni:["delphi-camping","chrissa","apollon-delphi","trokadero","hotel-galaxidi"], notteId:"itea-galaxidi-camp"},
+  sera:"Sistemazione al Delphi Camping.",
+  tappe:["delfi"], notteOpzioni:["delphi-camping","chrissa","apollon-delphi","trokadero","hotel-galaxidi"], notteId:"delphi-camping"},
  {date:"2026-08-19", base:"Meteore / Kastraki",
   titolo:"Arrivo alle Meteore, giro al tramonto",
   mattina:"Partenza 9:30-10:00 da Itea/Kirra, senza visite programmate al mattino. Colazione, smontaggio e viaggio.",
@@ -1343,7 +1346,7 @@ function mergeGiorniMancanti(){
 
 /* Versione del piano incluso nel file. Va alzata ogni volta che cambia DEFAULT_SCHEDULE,
    altrimenti chi ha già usato l'app continua a vedere il piano salvato nel browser. */
-const PLAN_VERSION = '13.48';
+const PLAN_VERSION = '13.49';
 const K_PLANVER = 'grecia-plan-version-v1';
 let planUpdateAvailable = false;
 
