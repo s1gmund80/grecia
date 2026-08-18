@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 18 agosto 2026 — v13.49 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 18 agosto 2026 — v13.50 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,10 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.50 (18 agosto): dettagli operativi 19-20 agosto da Notion. 19 ago: visita al monastero della
+     Santissima Trinità (chiuso il giovedì, quindi da fare oggi) ed eventualmente Santo Stefano 15:30-17:30.
+     20 ago: Gran Meteora all'apertura (09:30) e Varlaam al mattino; pomeriggio Rousanou (aperto giovedì) e,
+     tempo permettendo, San Nicola Anapafsas; Santo Stefano come recupero solo se saltato il 19.
      v13.49 (18 agosto): sosta notturna del 18 agosto CONFERMATA a Delphi Camping (base aggiornata a "Delfi"),
      dopo la giornata in loco. Aggiunta foto del Tesoro degli Ateniesi al santuario di Delfi.
      v13.48 (17 agosto): ripristinata la foto del relitto Dimitrios sul 12 agosto, rimasta senza foto dopo il fix
@@ -771,7 +775,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 18 agosto 2026 · v13.49 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 18 agosto 2026 · v13.50 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -1251,16 +1255,16 @@ const DEFAULT_SCHEDULE = [
   sera:"Sistemazione al Delphi Camping.",
   tappe:["delfi"], notteOpzioni:["delphi-camping","chrissa","apollon-delphi","trokadero","hotel-galaxidi"], notteId:"delphi-camping"},
  {date:"2026-08-19", base:"Meteore / Kastraki",
-  titolo:"Arrivo alle Meteore, giro al tramonto",
-  mattina:"Partenza 9:30-10:00 da Itea/Kirra, senza visite programmate al mattino. Colazione, smontaggio e viaggio.",
-  pomeriggio:"Itea/Kirra → Kastraki: ~3-3.5h con roulotte. Arrivo 13:00-14:00, sistemazione e pranzo. Primo giro panoramico in auto, senza monasteri.",
-  sera:"Tramonto panoramico tra le torri di roccia. Evitare una corsa tra monasteri: le visite interne restano per il 20 agosto.",
+  titolo:"Arrivo alle Meteore e monastero della Santissima Trinità",
+  mattina:"Partenza 9:30-10:00 da Itea/Kirra, senza visite programmate al mattino. Colazione, smontaggio e viaggio verso Kastraki/Kalambaka (circa 3h-3h30 con roulotte).",
+  pomeriggio:"Arrivo previsto 13:00-14:00, sistemazione e pranzo. Primo assaggio delle Meteore: monastero della Santissima Trinità (da vedere oggi perché il giovedì è chiuso) e, se i tempi lo consentono, Santo Stefano nell'ultima fascia 15:30-17:30.",
+  sera:"Punti panoramici lungo la strada dei monasteri e tramonto. Rientro a Kastraki/Kalambaka per una serata tranquilla: priorità al riposo, si parte presto il 20.",
   tappe:["meteore"], notteOpzioni:["meteora-garden","the-cave-kastraki","doupiani-house","meteora-hotel-kastraki"], notteId:"kastraki-vrachos"},
  {date:"2026-08-20", base:"Meteore / Kastraki",
-  titolo:"I monasteri delle Meteore",
-  mattina:"Visita a 2-3 monasteri (Gran Meteora e altri).",
-  pomeriggio:"Pausa e relax in campeggio (piscina).",
-  sera:"Secondo giro panoramico nel tardo pomeriggio/sera.",
+  titolo:"Gran Meteora, Varlaam e Rousanou",
+  mattina:"Partenza presto. Priorità al monastero della Gran Meteora all'apertura (09:30) e subito dopo Varlaam, per sfruttare gli orari e limitare i problemi di parcheggio.",
+  pomeriggio:"Dopo una pausa breve: monastero di Rousanou (aperto il giovedì) e, solo se il ritmo regge bene, San Nicola Anapafsas. Santo Stefano resta un eventuale recupero solo se saltato il 19.",
+  sera:"Secondo giro panoramico e tramonto; niente altre visite interne se la giornata è già piena.",
   tappe:["meteore"], notteOpzioni:["meteora-garden","the-cave-kastraki","doupiani-house","meteora-hotel-kastraki"], notteId:"kastraki-vrachos"},
  {date:"2026-08-21", base:"Parga / Igoumenitsa",
   titolo:"Ultimo giorno sullo Ionio, verso Parga",
@@ -1346,7 +1350,7 @@ function mergeGiorniMancanti(){
 
 /* Versione del piano incluso nel file. Va alzata ogni volta che cambia DEFAULT_SCHEDULE,
    altrimenti chi ha già usato l'app continua a vedere il piano salvato nel browser. */
-const PLAN_VERSION = '13.49';
+const PLAN_VERSION = '13.50';
 const K_PLANVER = 'grecia-plan-version-v1';
 let planUpdateAvailable = false;
 
