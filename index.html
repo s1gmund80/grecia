@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 19 agosto 2026 — v13.53 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 20 agosto 2026 — v13.54 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -9,6 +9,8 @@
      v12.5: schede sosta/tappa ora editabili direttamente dall'app (pulsante "Modifica scheda", persistenza via itemOverrides).
      v12.6: aggiunte tappe Torre Pozzelle (pomeriggio 3 ago) e Villanova/Camerini (mattina 4 ago), entrambe con link sito + Apple Maps.
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
+     v13.54 (20 agosto): diario reale 20 agosto (Gran Meteora, Varlaam, Rousanou, piscina campeggio) + foto
+     panorama Meteore; aggiunte 2 nuove opzioni notte 21 agosto da Notion (Lichnos, Nautilos Camping).
      v13.53 (19 agosto): quando una notte ha gia' una sosta CONFERMATA, le opzioni alternative non compaiono
      piu' tutte in vista ma dentro un accordion richiudibile ("Altre opzioni per la notte"), da apr con un tap.
      In modifica (editMode) il comportamento resta quello di prima, con tutte le opzioni sempre visibili.
@@ -793,7 +795,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 19 agosto 2026 · v13.53 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 20 agosto 2026 · v13.54 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -860,7 +862,7 @@ const TAPPE = [
    teaser:"Porto di sbarco dall'Italia; a 35 km il borgo pastello di Parga con castello veneziano.",
    vedere:["Parga e il castello veneziano sul mare","Spiagge di Valtos, Lichnos, Kryoneri","Isolotto della Panagia","Gita in barca alle grotte vicine"],
    campeggio:"Campeggi sulla costa tra Igoumenitsa e Parga (zona Plataria/Lichnos), comodi per roulotte, pochi minuti dal porto.",
-   link:"https://en.wikipedia.org/wiki/Parga", sosteNotte:["drepanos","kalami-beach","elena-beach","sofas","valtos-parga"], extra:false},
+   link:"https://en.wikipedia.org/wiki/Parga", sosteNotte:["drepanos","kalami-beach","elena-beach","sofas","valtos-parga","lichnos-parga","nautilos-camping"], extra:false},
   {id:"preveza", icon:"🏖️", title:"Preveza / Monolithi / Kanali", tipi:["mare","storico","natura"], notti:"1–2",
    teaser:"Tappa ponte pratica sullo Ionio: base a Monolithi/Kanali, con Nikopolis e il fiume Acheron nei dintorni.",
    vedere:["Preveza città: lungomare e taverne (bella la sera)","Monolithi Beach: lunga, tramonti","Kanali/Kastrosykia: spiaggia organizzata","Ammoudia: sabbia e fondale basso, family","Necromanteion dell'Acheron","Antica Nikopolis e museo"],
@@ -1184,6 +1186,14 @@ const SOSTE = [
    teaser:"La scelta migliore se si vuole dedicare il 21 a Parga, ma è la meno prudente delle cinque per il traghetto del 22.",
    note:"Campeggio a Valtos, 100 m dal mare e vicino a Parga. Notti previste: 1 (21 agosto).",
    link:"https://valtoscamping.gr/en/", email:"info@campingvaltos.gr", mapsLink:"https://www.google.com/maps/search/?api=1&query=Valtos+Camping+Parga", custom:false},
+  {id:"lichnos-parga", icon:"🏕️", title:"Camping Lichnos / Enjoy Lichnos Bay", zona:"Lichnos / Parga",
+   teaser:"Opzione prioritaria se si vuole privilegiare il mare: campeggio nella baia di Lichnos, direttamente vicino alla spiaggia.",
+   note:"Da verificare disponibilità per roulotte + corrente. Notti previste: 1 (21 agosto).",
+   link:"", email:"", mapsLink:"https://www.google.com/maps/search/?api=1&query=Camping+Lichnos+Enjoy+Lichnos+Bay+Parga", custom:false},
+  {id:"nautilos-camping", icon:"🏕️", title:"Nautilos Camping", zona:"Plataria / Sivota",
+   teaser:"Ottimo compromesso mare/logistica: spiaggia direttamente al campeggio, più vicino a Igoumenitsa rispetto a Parga.",
+   note:"Da verificare piazzola roulotte + corrente. Notti previste: 1 (21 agosto).",
+   link:"", email:"", mapsLink:"https://www.google.com/maps/search/?api=1&query=Nautilos+Camping+Plataria+Sivota", custom:false},
 ];
 let customSoste = []; // aggiunte dall'utente direttamente in app, persistite separatamente
 let itemOverrides = {}; // modifiche dell'utente a schede esistenti (sosta o tappa), keyed by id, persistite separatamente
@@ -1310,16 +1320,17 @@ const DEFAULT_SCHEDULE = [
   tappe:["meteore","meteore-trinita","meteore-stefano"], notteOpzioni:["meteora-garden","the-cave-kastraki","doupiani-house","meteora-hotel-kastraki"], notteId:"kastraki-vrachos"},
  {date:"2026-08-20", base:"Meteore / Kastraki",
   titolo:"Gran Meteora, Varlaam e Rousanou",
-  mattina:"Partenza presto. Priorità al monastero della Gran Meteora all'apertura (09:30) e subito dopo Varlaam, per sfruttare gli orari e limitare i problemi di parcheggio.",
-  pomeriggio:"Dopo una pausa breve: monastero di Rousanou (aperto il giovedì) e, solo se il ritmo regge bene, San Nicola Anapafsas. Santo Stefano resta un eventuale recupero solo se saltato il 19.",
-  sera:"Secondo giro panoramico e tramonto; niente altre visite interne se la giornata è già piena.",
-  tappe:["meteore","meteore-gran-meteora","meteore-varlaam","meteore-rousanou","meteore-anapafsas","meteore-stefano"], notteOpzioni:["meteora-garden","the-cave-kastraki","doupiani-house","meteora-hotel-kastraki"], notteId:"kastraki-vrachos"},
+  foto:["https://s1gmund80.github.io/grecia/foto/2026-08-20-meteore-panorama.jpg"],
+  mattina:"Come da programma: monastero della Gran Meteora all'apertura e subito dopo Varlaam.",
+  pomeriggio:"Pranzo in giro, poi visita al monastero di Rousanou nel primo pomeriggio.",
+  sera:"Alcuni spot panoramici molto belli lungo la strada dei monasteri, poi bagni in piscina al campeggio.",
+  tappe:["meteore","meteore-gran-meteora","meteore-varlaam","meteore-rousanou"], notteOpzioni:["meteora-garden","the-cave-kastraki","doupiani-house","meteora-hotel-kastraki"], notteId:"kastraki-vrachos"},
  {date:"2026-08-21", base:"Parga / Igoumenitsa",
   titolo:"Ultimo giorno sullo Ionio, verso Parga",
   mattina:"Partenza e trasferimento verso la costa Ionica.",
   pomeriggio:"Prosegue il viaggio verso Parga o Igoumenitsa.",
   sera:"Ultima notte prudente prima del traghetto; se si vuole mare bello, tappa a Parga.",
-  tappe:["igoumenitsa-parga"], notteOpzioni:["kalami-beach","elena-beach","sofas","valtos-parga"], notteId:"drepanos"},
+  tappe:["igoumenitsa-parga"], notteOpzioni:["kalami-beach","elena-beach","sofas","valtos-parga","lichnos-parga","nautilos-camping"], notteId:"drepanos"},
  {date:"2026-08-22", base:"Traghetto di ritorno",
   titolo:"Traghetto di ritorno a Brindisi",
   mattina:"Ultimi preparativi, colazione con calma.",
@@ -1398,7 +1409,7 @@ function mergeGiorniMancanti(){
 
 /* Versione del piano incluso nel file. Va alzata ogni volta che cambia DEFAULT_SCHEDULE,
    altrimenti chi ha già usato l'app continua a vedere il piano salvato nel browser. */
-const PLAN_VERSION = '13.53';
+const PLAN_VERSION = '13.54';
 const K_PLANVER = 'grecia-plan-version-v1';
 let planUpdateAvailable = false;
 
@@ -2435,7 +2446,9 @@ const NOTION_PAGE_ID = {
   'meteora-hotel-kastraki':'3b59b270-fd37-8149-b2da-ca257c72b784',
   'elena-beach':'3b59b270-fd37-8184-876d-d4d208cd924e',
   'sofas':'3b59b270-fd37-81e1-8cb9-d802a5f26b98',
-  'valtos-parga':'3b59b270-fd37-81ee-bac8-e2c5f4883dca'
+  'valtos-parga':'3b59b270-fd37-81ee-bac8-e2c5f4883dca',
+  'lichnos-parga':'3c29b270-fd37-810d-8e4e-c68a2b30fc0e',
+  'nautilos-camping':'3c29b270-fd37-8176-9fda-c44ff0b5e8e8'
 };
 /* mappa inversa: nelle relazioni Notion restituisce URL con id senza trattini */
 const ID_BY_NOTION = {};
