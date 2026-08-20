@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Ultima modifica: 20 agosto 2026 — v13.54 universale (Cowork + claude.ai): fix date fuso orario,
+<!-- Ultima modifica: 20 agosto 2026 — v13.55 universale (Cowork + claude.ai): fix date fuso orario,
      sync Notion via callMcpTool, merge giorni mancanti, autosave per singolo giorno, export/import JSON.
      Storico versioni:
      v12.1: candidata sosta 3 ago (Getsemani, Ostuni/Villanova).
@@ -11,6 +11,9 @@
      v12.7: risincronizzato da Notion (fonte autorevole): mattina 4 ago e link mappe Torre Pozzelle ora punta al parcheggio.
      v13.54 (20 agosto): diario reale 20 agosto (Gran Meteora, Varlaam, Rousanou, piscina campeggio) + foto
      panorama Meteore; aggiunte 2 nuove opzioni notte 21 agosto da Notion (Lichnos, Nautilos Camping).
+     v13.55 (20 agosto): unificate le due schede Notion duplicate "Camping Kalami Beach" in un'unica voce
+     (spiaggia diretta + corrente da verificare, utile per semplificare la partenza del 22). Doppione ancora
+     presente su Notion, da rimuovere alla fonte (scritture Notion non riuscite da claude.ai).
      v13.53 (19 agosto): quando una notte ha gia' una sosta CONFERMATA, le opzioni alternative non compaiono
      piu' tutte in vista ma dentro un accordion richiudibile ("Altre opzioni per la notte"), da apr con un tap.
      In modifica (editMode) il comportamento resta quello di prima, con tutte le opzioni sempre visibili.
@@ -795,7 +798,7 @@
   <span><i class="dot" style="background:var(--deep); border:1px solid var(--gold-soft);"></i>Notte</span>
 </div>
 
-<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 20 agosto 2026 · v13.54 — universale (Cowork + claude.ai)</span></footer>
+<footer>Dati importati da Notion (Grecia · Piano Verosimile · Tappe) — modifica liberamente, tutto si salva automaticamente.<br><span id="envNote" style="opacity:.75;font-size:12px;"></span><br><span id="verNote" style="opacity:.6;font-size:11px;">Versione: 20 agosto 2026 · v13.55 — universale (Cowork + claude.ai)</span></footer>
 
 <!-- Library / picker modal -->
 <div class="overlay" id="overlayLib">
@@ -1061,7 +1064,7 @@ const SOSTE = [
    note:"Verificare orari reception per arrivi serali (sbarco previsto alle 22:00).", link:"", custom:false},
   {id:"kalami-beach", icon:"🏕️", title:"Camping Kalami Beach", zona:"Plataria / Igoumenitsa — 6-10 km dal porto",
    email:"info@campingkalamibeach.gr",
-   teaser:"Opzione da contattare per l'ultima notte prima del traghetto. Piazzole ampie e terrazzate, adatte a caravan; già sulla strada principale, a differenza di Drepano che sta sulla penisola opposta.",
+   teaser:"Opzione da contattare per l'ultima notte prima del traghetto: direttamente sulla spiaggia, piazzole ampie e terrazzate adatte a caravan, con corrente (da verificare disponibilità). Preferibile se si vuole semplificare la partenza del 22; già sulla strada principale, a differenza di Drepano che sta sulla penisola opposta.",
    note:"Coordinate: 39.47366, 20.24035. Tel. +30 2665 071211. Terrazzato sul fianco della collina: attenzione in manovra con la roulotte. Ristorante chiuso dopo le 20:00. Orari di ingresso flessibili secondo le recensioni. 4.6/5 su 988 recensioni. Sito ed email ancora da trovare.",
    link:"https://campingkalamibeach.gr/en/", mapsLink:"https://www.google.com/maps/search/?api=1&query=Camping+Kalami+Beach+Plataria", custom:false},
   {id:"acrogiali", icon:"✅", title:"Camping Acrogiali (Riza, Preveza)", zona:"Paralia Riza, 481 00 Preveza — 25 km da Preveza",
@@ -1409,7 +1412,7 @@ function mergeGiorniMancanti(){
 
 /* Versione del piano incluso nel file. Va alzata ogni volta che cambia DEFAULT_SCHEDULE,
    altrimenti chi ha già usato l'app continua a vedere il piano salvato nel browser. */
-const PLAN_VERSION = '13.54';
+const PLAN_VERSION = '13.55';
 const K_PLANVER = 'grecia-plan-version-v1';
 let planUpdateAvailable = false;
 
